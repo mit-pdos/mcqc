@@ -1,8 +1,14 @@
 module Main where
+import Control.Applicative
+import Data.Aeson
+import Data.Text (Text)
 import System.Environment
+import Schema
 
 main :: IO ()
 
-main = do  
+handleJsonFilename name = decode (readFile name) :: Maybe Value
+
+main = do
     args <- getArgs
-    mapM_ putStrLn args
+    mapM_ handleJsonFilename args
