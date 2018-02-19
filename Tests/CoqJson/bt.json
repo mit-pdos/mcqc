@@ -44,7 +44,7 @@
     },
     {
       "what": "decl:term", "name": "get_left",
-      "type": {
+      "typ": {
         "what": "type:arrow",
         "left": {
           "what": "type:glob", "name": "tree",
@@ -107,7 +107,7 @@
     },
     {
       "what": "decl:term", "name": "get_val",
-      "type": {
+      "typ": {
         "what": "type:arrow",
         "left": {
           "what": "type:glob", "name": "tree",

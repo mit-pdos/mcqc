@@ -3,23 +3,22 @@ import Prelude hiding (readFile, writeFile, putStrLn)
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
-import Data.Maybe
+import Data.Either
 import Data.Text (Text)
 import System.Environment
 import Schema
 import Utilities
 import Data.ByteString.Lazy.Char8 (ByteString, writeFile, readFile, putStrLn)
-import Data.Aeson.Encode.Pretty
 
 -- Pure codegen function to be used as Functor
-codegen :: Value -> ByteString
+codegen :: Module -> ByteString
 codegen _ = "TO BE FILED LATER"
 
-errorHandler :: Maybe Value -> IO ()
-errorHandler (Just ast) = do { writeFile "test.bpl" $ codegen ast; print ast}
-errorHandler Nothing = putStrLn "Error parsing input file"
+errorHandler :: Either String Module -> IO ()
+errorHandler (Right ast) = do { writeFile "test.bpl" $ codegen ast; print ast}
+errorHandler (Left err) = putStr $ "Error parsing input file " ++ err ++ "\n"
 
-jsonReader :: String -> IO (Maybe Value)
+jsonReader :: String -> IO (Either String Module)
 jsonReader filename = parseModule <$> readFile filename
 
 -- main :: IO Bool
