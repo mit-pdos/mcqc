@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Schema where
+import Prelude hiding (readFile)
 import Data.Aeson
 import Data.Aeson.TH
 import Data.Text (Text)
