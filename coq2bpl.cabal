@@ -17,8 +17,7 @@ cabal-version:       >=1.10
 
 executable coq2bpl
   main-is:             Main.hs
-  other-modules:       Schema,
-                       Utilities
+  other-modules:       Schema, Codegen
   -- other-extensions:
   build-depends:       aeson >= 1.2.4 && < 1.3,
                        base  >= 4.10.1 && < 4.11,
@@ -29,13 +28,13 @@ executable coq2bpl
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  DuplicateRecordFields,
-                       OverloadedStrings
-  other-extensions:    TemplateHaskell
+                       OverloadedStrings,
+                       TemplateHaskell
 
 test-Suite coq2bpl-testsuite
   type:                exitcode-stdio-1.0
   main-is:             Json.hs
-  other-modules:       Schema, ModuleTest
+  other-modules:       Schema, Codegen, ModuleTest
   hs-source-dirs:      test, src
   default-language:    Haskell2010
   build-depends:       aeson >= 1.2.4 && < 1.3,
@@ -46,7 +45,7 @@ test-Suite coq2bpl-testsuite
                        hspec >= 2.4.8 && < 2.5
   ghc-options:         -Wall
   default-extensions:  DuplicateRecordFields,
-                       OverloadedStrings
-  other-extensions:    TemplateHaskell
+                       OverloadedStrings,
+                       TemplateHaskell
 
 

@@ -1,29 +1,21 @@
 module Main where
-import Prelude hiding (readFile, writeFile, putStrLn)
-import Control.Applicative
-import Control.Monad
-import Data.Aeson
-import Data.Either
-import Data.Text (Text)
+import Prelude hiding (readFile, writeFile)
+import System.IO hiding (readFile, writeFile)
 import System.Environment
-import Schema
-import Utilities
-import Data.ByteString.Lazy.Char8 (ByteString, writeFile, readFile, putStrLn)
+import System.IO (hPutStrLn)
+import Data.ByteString.Lazy.Char8 (ByteString, unpack, pack, writeFile, concat, readFile)
+import Codegen
 
--- Pure codegen function to be used as Functor
-codegen :: Module -> ByteString
-codegen _ = "TO BE FILED LATER"
+-- Calls codegen and prints errors
+boogieWriter :: String -> Either String ByteString -> IO ()
+boogieWriter fn (Right bpl) = writeFile fn bpl
+boogieWriter _ (Left s) = hPutStrLn stderr s
 
-errorHandler :: Either String Module -> IO ()
-errorHandler (Right ast) = do { writeFile "test.bpl" $ codegen ast; print ast}
-errorHandler (Left err) = putStr $ "Error parsing input file " ++ err ++ "\n"
+main :: IO ()
+main = do
+  argv <- getArgs
+  mapM_ (\arg -> do
+    coq_json <- readFile arg
+    let boogie_out= (makeModule coq_json >>= codegen)
+    boogieWriter "foo.bpl" boogie_out) argv
 
-jsonReader :: String -> IO (Either String Module)
-jsonReader filename = parseModule <$> readFile filename
-
--- main :: IO Bool
-main = do {
-    [arg] <- getArgs;
-    errorHandler =<< jsonReader arg;
-    -- and <$> mapM check parseFile args;
-}
