@@ -9,8 +9,5 @@ main :: IO ()
 main = hspec $ do
   describe "JSON parseModule tests" $ do
     it "Parses a JSON file to a Module" $
-      readFile "test/JSON/bt.json" >>= testModuleWhat . makeModule
-
-    it "Parses a bad JSON file and should throw an error" $
-      readFile "test/JSON/bad.json" >>= testModuleWhat . makeModule
+      readFile "test/JSON/bt.json" >>= testModuleWhat . parse
 

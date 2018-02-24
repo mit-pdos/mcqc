@@ -16,6 +16,6 @@ main = do
   argv <- getArgs
   mapM_ (\arg -> do
     coq_json <- readFile arg
-    let boogie_out= (makeModule coq_json >>= codegen)
+    let boogie_out= (parse coq_json >>= makeModule)
     boogieWriter "foo.bpl" boogie_out) argv
 

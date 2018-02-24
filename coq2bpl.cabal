@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable coq2bpl
   main-is:             Main.hs
-  other-modules:       Schema, Codegen
+  other-modules:       Schema, Codegen, Utils
   -- other-extensions:
   build-depends:       aeson >= 1.2.4 && < 1.3,
                        base  >= 4.10.1 && < 4.11,
@@ -34,7 +34,7 @@ executable coq2bpl
 test-Suite coq2bpl-testsuite
   type:                exitcode-stdio-1.0
   main-is:             Json.hs
-  other-modules:       Schema, Codegen, ModuleTest
+  other-modules:       Schema, Codegen, Utils, ModuleTest
   hs-source-dirs:      test, src
   default-language:    Haskell2010
   build-depends:       aeson >= 1.2.4 && < 1.3,
