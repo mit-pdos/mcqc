@@ -5,6 +5,7 @@ import System.Environment
 import System.IO (hPutStrLn)
 import Data.ByteString.Lazy.Char8 (ByteString, unpack, pack, writeFile, concat, readFile)
 import Codegen
+import Boogie.AST
 
 -- Calls codegen and prints errors
 boogieWriter :: String -> Either String ByteString -> IO ()

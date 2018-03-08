@@ -3,33 +3,80 @@
 name:                coq2bpl
 version:             0.1.0.0
 synopsis:            A codegen from Coq extracted JSON to Boogie
--- description:
+description:         Based on Boogaloo, Aeson, implements the boogie formal language.
 homepage:            https://www.github.com/elefthei/coq2bpl
-license:             MIT
+license:             BSD3
 license-file:        LICENSE
 author:              Lef Ioannidis
 maintainer:          elefthei@mit.edu
--- copyright:
-category:            Development
+category:            Compiler, Verification
 build-type:          Simple
 extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
+source-repository head
+  type:     git
+  location: https://github.mit.edu/elefthei/coq2bpl
+
+library
+  exposed-modules:
+      Boogie.Z3.Eval,
+      Boogie.Z3.GenMonad,
+      Boogie.Z3.Solver,
+      Boogie.Z3.Solution,
+      Boogie.Solver,
+      Boogie.Generator,
+      Boogie.Util,
+      Boogie.TypeChecker,
+      Boogie.Tokens,
+      Boogie.Pretty,
+      Boogie.PrettyAST,
+      Boogie.Position,
+      Boogie.Parser,
+      Boogie.NormalForm,
+      Boogie.Interpreter,
+      Boogie.ErrorAccum,
+      Boogie.Environment,
+      Boogie.BasicBlocks,
+      Boogie.AST
+  other-modules:
+      Boogie.Z3.Minimize
+  hs-source-dirs:      lib
+  default-language:    Haskell2010
+  build-depends:
+      ansi-wl-pprint >= 0.6.8 && < 0.7,
+      containers >= 0.5.10 && < 0.6,
+      html >= 1.0.1 && < 1.1,
+      lens >= 4.15.4 && < 4.16,
+      transformers >= 0.5.2 && < 0.6,
+      mtl >= 2.2.1 && < 2.3,
+      logict >= 0.6.0 && < 0.7,
+      parsec >= 3.1.11 && < 3.2,
+      random >= 1.1 && < 1.2,
+      stream-monad >= 0.3 && < 0.4,
+      syb >= 0.7 && < 0.8,
+      z3 >= 4.2.0 && < 4.3
+
 executable coq2bpl
   main-is:             Main.hs
-  other-modules:       Schema, Codegen, Utils
+  other-modules:
+      Schema,
+      Codegen,
+      Utils
   -- other-extensions:
-  build-depends:       aeson >= 1.2.4 && < 1.3,
-                       base  >= 4.10.1 && < 4.11,
-                       bytestring >= 0.10.8 && < 0.11,
-                       text >= 1.2.2 && < 1.3,
-                       directory >= 1.3.0 && < 1.4,
-                       stringsearch >= 0.3.6 && < 0.4
+  build-depends:
+      aeson >= 1.2.4 && < 1.3,
+      base  >= 4.10.1 && < 4.11,
+      bytestring >= 0.10.8 && < 0.11,
+      text >= 1.2.2 && < 1.3,
+      directory >= 1.3.0 && < 1.4,
+      stringsearch >= 0.3.6 && < 0.4
   hs-source-dirs:      src
   default-language:    Haskell2010
-  default-extensions:  DuplicateRecordFields,
-                       OverloadedStrings,
-                       TemplateHaskell
+  default-extensions:
+      DuplicateRecordFields,
+      OverloadedStrings,
+      TemplateHaskell
 
 test-Suite coq2bpl-testsuite
   type:                exitcode-stdio-1.0
