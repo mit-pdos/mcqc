@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DuplicateRecordFields, TemplateHaskell #-}
 module Schema where
 import Data.Aeson
 import Data.Aeson.TH

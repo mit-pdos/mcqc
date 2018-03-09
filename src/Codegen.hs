@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields, OverloadedStrings, TemplateHaskell #-}
 module Codegen where
 import Data.Aeson
 import Prelude hiding (concat)
@@ -5,27 +6,7 @@ import Schema
 import Utils
 import Data.ByteString.Lazy.Char8 (ByteString, unpack, pack, concat)
 
----- From casting with Module schema
--- Module {what = "module", name = "bt", need_magic = False, need_dummy = False,
---   used_modules = ["Datatypes"],
---   declarations = [
---     Declaration {what = "decl:ind", name = "tree", argnames = Just ["T"], typ = Nothing,
---       constructors =
---          Just [Constructor {what = Nothing, name = "Leaf", argtypes = Just [], argnames = Nothing},
---                Constructor {what = Nothing, name = "Node",
--- 					argtypes =
--- 						Just [Argtype {what = "type:glob", name = "tree", args = Just [Arg {what = "type:var", name = String "T"}]},
---                            Argtype {what = "type:var", name = "T", args = Nothing},
---                            Argtype {what = "type:glob", name = "tree", args = Just [Arg {what = "type:var", name = String "T"}]}],
---                  argnames = Nothing}]},
---
---     Declaration {what = "decl:term", name = "get_left", argnames = Nothing, typ = Just (Typ {what = "type:arrow", left = Argtype {what = "type:glob", name = "tree", args = Just [Arg {what = "type:varidx", name = Number 1.0}]}, right = Argtype {what = "type:glob", name = "tree", args = Just [Arg {what = "type:varidx", name = Number 1.0}]}}), constructors = Nothing},Declaration {what = "decl:term", name = "get_val", argnames = Nothing, typ = Just (Typ {what = "type:arrow", left = Argtype {what = "type:glob", name = "tree", args = Just [Arg {what = "type:varidx", name = Number 1.0}]}, right = Argtype {what = "type:glob", name = "Datatypes.option", args = Just [Arg {what = "type:varidx", name = Number 1.0}]}}), constructors = Nothing}]}
--- Pure makeModule function to be used as Functor
-
--- Boogie 2 grammar
--- Decl ::= TypeDecl | ConstantDecl | FunctionDecl |AxiomDecl | VarDecl | ProcedureDecl | ImplementationDecl
--- TypeDecl ::= TypeConstructor | TypeSynonym
--- Coq to boogie Modules
+-- Module high level function
 makeModule :: Module -> Either String ByteString
 makeModule Module { what = "module", used_modules = Nothing, declarations = decls } = mconcat <$> mapM makeDecl decls
 makeModule Module { what = "module", used_modules = Just ml, declarations = decls } = mconcat <$> mapM makeDecl decls -- TODO: Implement linking

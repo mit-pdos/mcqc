@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields, OverloadedStrings, TemplateHaskell #-}
 module Main where
 import Prelude hiding (readFile, writeFile)
 import System.IO hiding (readFile, writeFile)

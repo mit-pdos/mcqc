@@ -1,0 +1,50 @@
+name: coq2bpl
+version: 0.1.0
+synopsis: A codegen from Coq extracted JSON to Boogie
+description: Based on Boogaloo, Aeson, implements the boogie formal language
+maintainer: Simon Hengel <sol@typeful.net>
+license: MIT
+github: elefthei/coq2bpl
+category: Development
+
+# ghc-options: -Wall
+
+dependencies:
+  - base >= 4.9 && < 5
+  - bytestring
+  - deepseq
+  - directory
+  - aeson
+  - filepath
+  - ansi-wl-pprint
+  - containers
+  - html
+  - lens
+  - transformers
+  - mtl
+  - logict
+  - parsec
+  - random
+  - stream-monad
+  - syb
+  - z3
+  - text
+  - aeson
+  - stringsearch
+
+executable:
+  main: Main.hs
+  source-dirs:
+    - lib
+    - src
+
+tests:
+  spec:
+    cpp-options: -DTEST
+    main: Json.hs
+    source-dirs:
+      - test
+      - src
+    dependencies:
+      - hspec
+
