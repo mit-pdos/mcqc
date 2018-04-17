@@ -24,32 +24,11 @@ source-repository head
 executable coq2bpl
   main-is: Main.hs
   other-modules:
-      Boogie.AST
-      Boogie.BasicBlocks
-      Boogie.Environment
-      Boogie.ErrorAccum
-      Boogie.Generator
-      Boogie.Interpreter
-      Boogie.NormalForm
-      Boogie.Parser
-      Boogie.Position
-      Boogie.Pretty
-      Boogie.PrettyAST
-      Boogie.Solver
-      Boogie.Tokens
-      Boogie.TypeChecker
-      Boogie.Util
-      Boogie.Z3.Eval
-      Boogie.Z3.GenMonad
-      Boogie.Z3.Minimize
-      Boogie.Z3.Solution
-      Boogie.Z3.Solver
       Codegen
       Schema
       Utils
       Paths_coq2bpl
   hs-source-dirs:
-      lib
       src
   build-depends:
       aeson
@@ -57,21 +36,11 @@ executable coq2bpl
     , base >=4.9 && <5
     , bytestring
     , containers
-    , deepseq
     , directory
     , filepath
-    , html
-    , lens
     , logict
     , mtl
-    , parsec
-    , random
-    , stream-monad
-    , stringsearch
-    , syb
     , text
-    , transformers
-    , z3
   default-language: Haskell2010
 
 test-suite spec
@@ -94,20 +63,8 @@ test-suite spec
     , base >=4.9 && <5
     , bytestring
     , containers
-    , deepseq
     , directory
     , filepath
     , hspec
-    , html
-    , lens
-    , logict
-    , mtl
-    , parsec
-    , random
-    , stream-monad
-    , stringsearch
-    , syb
     , text
-    , transformers
-    , z3
   default-language: Haskell2010
