@@ -1,0 +1,3 @@
+[submodule "Mach7"]
+	path = Mach7
+	url = https://github.com/solodon4/Mach7.git

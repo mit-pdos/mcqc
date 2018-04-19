@@ -1,13 +1,13 @@
 name: coq2bpl
 version: 0.1.0
-synopsis: A codegen from Coq extracted JSON to Boogie
-description: Based on Boogaloo, Aeson, implements the boogie formal language
-maintainer: Simon Hengel <sol@typeful.net>
+synopsis: A codegen from Coq extracted JSON to C++17
+description: Based on Mach7, soon in C++17
+maintainer: Eleftherios Ioannidis <elefthei@mit.edu>
 license: MIT
 github: elefthei/coq2bpl
 category: Development
 
-# ghc-options: -Wall
+ghc-options: -Wntabs
 
 dependencies:
   - base >= 4.9 && < 5

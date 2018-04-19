@@ -12,27 +12,33 @@ makeModule Module { what = "module", used_modules = Nothing, declarations = decl
 makeModule Module { what = "module", used_modules = Just ml, declarations = decls } = mconcat <$> mapM makeDecl decls -- TODO: Implement linking
 makeModule Module { what = s } = Left $ "Bad module 'what' key " ++ s
 
--- Coq to boogie declarations
+-- Coq to C++ declarations
 -- TODO: Initialize constructors
 makeDecl :: Declaration -> Either String ByteString
-makeDecl Declaration { what = dt, name = dn, argnames = Just al, typ = Just tl, constructors = Just lc } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Just al, typ = Just tl, constructors = Just lc } =
     mconcat <$> mapM (makeCtor dn) lc
-makeDecl Declaration { what = dt, name = dn, argnames = Just al, typ = Nothing, constructors = Just lc } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Just al, typ = Nothing, constructors = Just lc } =
     mconcat <$> mapM (makeCtor dn) lc
-makeDecl Declaration { what = dt, name = dn, argnames = Nothing, typ = Just t1, constructors = Just lc } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Nothing, typ = Just t1, constructors = Just lc } =
     mconcat <$> mapM (makeCtor dn) lc
-makeDecl Declaration { what = dt, name = dn, argnames = Nothing, typ = Nothing, constructors = Just lc } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Nothing, typ = Nothing, constructors = Just lc } =
     mconcat <$> mapM (makeCtor dn) lc
-makeDecl Declaration { what = dt, name = dn, argnames = Just al, typ = Just tl, constructors = Nothing } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Just al, typ = Just tl, constructors = Nothing } =
     Right $ concat ["Declaration ", (pack dn), " of type ", pack $ dt, " argnames: ", " types: ", "\n"]
-makeDecl Declaration { what = dt, name = dn, argnames = Just al, typ = Nothing, constructors = Nothing } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Just al, typ = Nothing, constructors = Nothing } =
     Right $ concat ["Declaration ", (pack dn), " of type ", pack $ dt, " argnames: ", "\n"]
-makeDecl Declaration { what = dt, name = dn, argnames = Nothing, typ = Just t1, constructors = Nothing } =
+makeDecl Declaration { what = dt, name = Just dn, argnames = Nothing, typ = Just t1, constructors = Nothing } =
     Right $ concat ["Declaration ", (pack dn), " of type ", pack $ dt, " types: ", "\n"]
-makeDecl Declaration { what = dt, name = dn, argnames = Nothing, typ = Nothing, constructors = Nothing } =
-    Right $ "" -- No constructors, arguments or types, nothing to return
+makeDecl Declaration { what = dt, name = odn, argnames = Just al, typ = Just tl, constructors = Nothing } =
+    Right $ concat ["Declaration of type ", pack $ dt, " argnames: ", " types: ", "\n"]
+makeDecl Declaration { what = dt, name = odn, argnames = Just al, typ = Nothing, constructors = Nothing } =
+    Right $ concat ["Declaration of type ", pack $ dt, " argnames: ", "\n"]
+makeDecl Declaration { what = dt, name = odn, argnames = Nothing, typ = Just t1, constructors = Nothing } =
+    Right $ concat ["Declaration of type ", pack $ dt, " types: ", "\n"]
+makeDecl Declaration { what = dt, name = odn, argnames = Nothing, typ = Nothing, constructors = Nothing } =
+    Right $ concat ["Declaration of type ", pack $ dt, "\n"]
 
--- Coq to boogie constructors
+-- Coq to C++ constructors
 makeCtor :: String -> Constructor -> Either String ByteString
 makeCtor pname Constructor { what = Just ct, name = cn, argtypes = Just at, argnames = Just an } =
     Right $ concat [" +++ ", (pack cn), " of type ", (pack ct), " argnames: ", concat $ map pack an, " argtypes: ", concat $ map (debugToBytestring . makeArgtype) at,"\n"]
@@ -59,8 +65,7 @@ debugToBytestring (Left s) = concat $ ["! ", pack s, " !"]
 makeArgtype :: Argtype -> Either String ByteString
 makeArgtype Argtype { what = at, name = an, args = Just al } =
 -- function {:constructor} node`3(value:TT, left: Tree, right: Tree) : Tree;
-
-	Right $ concat $ [" name: ", pack $ an, " "] ++ map (debugToBytestring . makeArg) al
+    Right $ concat $ [" name: ", pack $ an, " "] ++ map (debugToBytestring . makeArg) al
 makeArgtype Argtype { what = at, name = an, args = Nothing } = --value:TT
     Right $ concat $ map pack [an, ":", at]
 

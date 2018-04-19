@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields, TemplateHaskell #-}
 module ModuleTest where
 import Test.Hspec
 import Schema
