@@ -1,12 +1,13 @@
-{-# LANGUAGE DuplicateRecordFields, TemplateHaskell #-}
+{-# LANGUAGE DuplicateRecordFields, DeriveGeneric, DeriveAnyClass, OverloadedStrings  #-}
 module Codegen.Mod where
-import Codegen.Decl (makeDecl)
-import Codegen.Schema
+import GHC.Generics
+import Codegen.Decl
 import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.Aeson
 
--- Module high level function
-makeModule :: Module -> Either String ByteString
-makeModule Module { what = "module", used_modules = Nothing, declarations = decls } = mconcat <$> mapM makeDecl decls
-makeModule Module { what = "module", used_modules = Just ml, declarations = decls } = mconcat <$> mapM makeDecl decls -- TODO: Implement linking
-makeModule Module { what = s } = Left $ "Bad module 'what' key " ++ s
+---- For casting JSON to Module
+data Module = Module { what :: String, name :: String, need_magic :: Bool, need_dummy :: Bool,
+                       used_modules :: Maybe [String], declarations :: [Declaration] }
+    deriving (Show, Eq, Generic, FromJSON)
+
 

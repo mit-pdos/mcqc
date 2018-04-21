@@ -6,12 +6,12 @@
 
 name:           coq2bpl
 version:        0.1.0
-synopsis:       A codegen from Coq extracted JSON to Boogie
-description:    Based on Boogaloo, Aeson, implements the boogie formal language
+synopsis:       A codegen from Coq extracted JSON to C++
+description:    Based on Aeson, Mach7
 category:       Development
 homepage:       https://github.com/elefthei/coq2bpl#readme
 bug-reports:    https://github.com/elefthei/coq2bpl/issues
-maintainer:     Simon Hengel <sol@typeful.net>
+maintainer:     Lef Ioannidis <elefthei@mit.edu>
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -26,9 +26,8 @@ executable coq2bpl
   other-modules:
       Codegen.Mod
       Codegen.Decl
-      Codegen.Args
-      Codegen.Ctor
-      Codegen.Schema
+      Codegen.Expr
+      Codegen.Fix
       Utils
       Paths_coq2bpl
   hs-source-dirs:
@@ -39,10 +38,12 @@ executable coq2bpl
       base >=4.9 && <5,
       bytestring,
       containers,
+      unordered-containers,
       directory,
       filepath,
       logict,
       mtl,
+      generic-deriving,
       text
   default-language: Haskell2010
 
@@ -52,7 +53,6 @@ test-suite spec
   other-modules:
       ModuleTest
       Codegen.Mod
-      Codegen.Schema
       Main
       Utils
       Paths_coq2bpl
@@ -69,5 +69,6 @@ test-suite spec
       directory,
       filepath,
       hspec,
+      generic-deriving,
       text
   default-language: Haskell2010
