@@ -1,22 +1,27 @@
-{-# LANGUAGE DuplicateRecordFields, OverloadedStrings, TemplateHaskell #-}
 module Main where
+import Data.Aeson
 import Prelude hiding (readFile, writeFile)
 import System.IO hiding (readFile, writeFile)
 import System.Environment
 import System.IO (hPutStrLn)
-import Data.ByteString.Lazy.Char8 (ByteString, unpack, pack, writeFile, concat, readFile)
-import Codegen
+import Data.ByteString.Lazy.Char8 (ByteString, writeFile, readFile)
+import Codegen.Schema (Module)
+import Codegen.Mod (makeModule)
 
 -- Calls codegen and prints errors
-boogieWriter :: String -> Either String ByteString -> IO ()
-boogieWriter fn (Right bpl) = writeFile fn bpl
-boogieWriter _ (Left s) = hPutStrLn stderr s
+cppWritter :: String -> Either String ByteString -> IO ()
+cppWritter fn (Right cpp) = writeFile fn cpp
+cppWritter _ (Left s) = hPutStrLn stderr s
+
+-- Parse JSON file into a Module
+parse :: ByteString -> Either String Module
+parse buffer = eitherDecode buffer :: Either String Module
 
 main :: IO ()
 main = do
   argv <- getArgs
   mapM_ (\arg -> do
-    coq_json <- readFile arg
-    let boogie_out= (parse coq_json >>= makeModule)
-    boogieWriter "foo.bpl" boogie_out) argv
+    json <- readFile arg
+    let cpp = (parse json >>= makeModule)
+    cppWritter "foo.cpp" cpp) argv
 
