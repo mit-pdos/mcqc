@@ -3,7 +3,7 @@ import Prelude hiding (readFile)
 import Test.Hspec
 import Data.ByteString.Lazy.Char8 (readFile)
 import ModuleTest (testModuleWhat)
-import Codegen
+import Parser
 
 main :: IO ()
 main = hspec $ do

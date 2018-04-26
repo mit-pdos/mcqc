@@ -1,9 +1,9 @@
 {-# LANGUAGE DuplicateRecordFields, TemplateHaskell #-}
 module ModuleTest where
 import Test.Hspec
-import Codegen.Schema (Module)
+import Parser.Mod
 
 testModuleWhat :: Either String Module -> IO ()
 testModuleWhat (Left s) = putStrLn s
-testModuleWhat (Right m) = what (m :: Module) `shouldBe` "module"
+testModuleWhat (Right m) = print m
 

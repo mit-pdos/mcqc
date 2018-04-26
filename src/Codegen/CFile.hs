@@ -1,7 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields, DeriveGeneric, DeriveAnyClass, OverloadedStrings  #-}
-module Codegen.Mod where
+module Parser.Mod where
 import GHC.Generics
-import Codegen.Decl
+import Parser.Decl
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Aeson
 

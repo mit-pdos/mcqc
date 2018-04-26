@@ -4,13 +4,12 @@
 --
 -- hash: 4e7af62ea4c3df50faa28dcdc4308d1899a3b0e20b481847b58773d037aeda00
 
-name:           coq2bpl
+name:           machcoq
 version:        0.1.0
 synopsis:       A codegen from Coq extracted JSON to C++
-description:    Based on Aeson, Mach7
+description:    Based on Aeson, Mach7 C++
 category:       Development
-homepage:       https://github.com/elefthei/coq2bpl#readme
-bug-reports:    https://github.com/elefthei/coq2bpl/issues
+homepage:       https://github.mit.edu/elefthei/machcoq
 maintainer:     Lef Ioannidis <elefthei@mit.edu>
 license:        MIT
 license-file:   LICENSE
@@ -19,17 +18,17 @@ cabal-version:  >= 1.10
 
 source-repository head
   type: git
-  location: https://github.com/elefthei/coq2bpl
+  location: https://github.com/elefthei/machcoq
 
-executable coq2bpl
+executable machcoq
   main-is: Main.hs
   other-modules:
-      Codegen.Mod
-      Codegen.Decl
-      Codegen.Expr
-      Codegen.Fix
+      Parser.Mod
+      Parser.Decl
+      Parser.Expr
+      Parser.Fix
       Utils
-      Paths_coq2bpl
+      Paths_machcoq
   hs-source-dirs:
       src
   build-depends:
@@ -52,10 +51,13 @@ test-suite spec
   main-is: Json.hs
   other-modules:
       ModuleTest
-      Codegen.Mod
+      Parser.Mod
+      Parser.Decl
+      Parser.Expr
+      Parser.Fix
       Main
       Utils
-      Paths_coq2bpl
+      Paths_machcoq
   hs-source-dirs:
       test
       src
@@ -66,6 +68,7 @@ test-suite spec
       base >=4.9 && <5,
       bytestring,
       containers,
+      unordered-containers,
       directory,
       filepath,
       hspec,

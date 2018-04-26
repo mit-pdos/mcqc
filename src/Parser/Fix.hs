@@ -1,7 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields, OverloadedStrings  #-}
-module Codegen.Fix where
+module Parser.Fix where
 import GHC.Generics
-import Codegen.Expr
+import Parser.Expr
 import Data.Aeson
 import Data.HashMap.Strict
 

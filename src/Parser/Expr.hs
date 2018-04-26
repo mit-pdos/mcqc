@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, DuplicateRecordFields, OverloadedStrings  #-}
-module Codegen.Expr where
+module Parser.Expr where
 import GHC.Generics hiding (Constructor)
 import Data.Aeson
 import Data.HashMap.Strict

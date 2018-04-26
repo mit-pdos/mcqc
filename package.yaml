@@ -1,13 +1,13 @@
-name: coq2bpl
+name: machcoq
 version: 0.1.0
 synopsis: A codegen from Coq extracted JSON to C++17
 description: Based on Mach7, soon in C++17
 maintainer: Eleftherios Ioannidis <elefthei@mit.edu>
 license: MIT
-github: elefthei/coq2bpl
+github: elefthei/machcoq
 category: Development
 
-ghc-options: -Wntabs
+ghc-options: -Wall
 
 dependencies:
   - base >= 4.9 && < 5

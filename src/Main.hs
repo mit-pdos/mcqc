@@ -4,7 +4,7 @@ import Prelude hiding (readFile, writeFile)
 import System.Environment
 import System.IO hiding (readFile, writeFile)
 import Data.ByteString.Lazy.Char8 (ByteString, writeFile, readFile)
-import Codegen.Mod
+import Parser.Mod
 
 -- Calls codegen and prints errors
 cppWritter :: String -> Either String ByteString -> IO ()
@@ -16,7 +16,7 @@ parse :: ByteString -> Either String Module
 parse buffer = eitherDecode buffer :: Either String Module
 
 dbgModule :: Module -> Either String ByteString
-dbgModule mod = Left $ "I finished parsing: " ++ (show mod)
+dbgModule mod = Left $ show mod
 
 main :: IO ()
 main = do
