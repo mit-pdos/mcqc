@@ -6,8 +6,7 @@ import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Aeson
 
 ---- For casting JSON to Module
-data Module = Module { what :: String, name :: String, need_magic :: Bool, need_dummy :: Bool,
+data Module = Module { name :: String, need_magic :: Bool, need_dummy :: Bool,
                        used_modules :: Maybe [String], declarations :: [Declaration] }
     deriving (Show, Eq, Generic, FromJSON)
-
 

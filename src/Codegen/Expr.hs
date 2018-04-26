@@ -5,15 +5,15 @@ import Data.Aeson
 import Data.HashMap.Strict
 
 -- Constuctor
-data Constructor = Constructor { what :: Maybe String, name :: String, argtypes :: Maybe [Typ], argnames :: Maybe [String] }
+data Constructor = Constructor { name :: String, argtypes :: Maybe [Typ], argnames :: Maybe [String] }
     deriving (Show, Eq, Generic, FromJSON)
 
 -- Argtypes
-data Argtype = Argtype { what :: String, name :: String, args :: Maybe [Expr] }
+data Argtype = Argtype { name :: String, args :: Maybe [Expr] }
     deriving (Show, Eq, Generic, FromJSON)
 
 -- Cases
-data Case = Case { what :: String, pat :: [Constructor], body :: [Expr]}
+data Case = Case { pat :: Constructor , body :: Expr}
     deriving (Show, Eq, Generic, FromJSON)
 
 -- Types TODO: Varidx
@@ -34,9 +34,12 @@ instance FromJSON Typ where
         _ -> fail ("unknown kind: " ++ (show v))
 
 -- Expressions
-data Expr = ExprLambda { argnames :: Maybe [String], body :: [Expr] }
+data Expr = ExprLambda { argnames :: Maybe [String], body :: Expr }
           | ExprCase { expr :: Expr, cases :: [Case] }
           | ExprConstructor { name :: String, args :: [Expr] }
+          | ExprApply { func :: Expr }
+          | ExprRel { name :: String }
+          | ExprGlobal { name :: String }
     deriving (Show, Eq)
 
 instance FromJSON Expr where
@@ -48,6 +51,9 @@ instance FromJSON Expr where
                                               <*> v .: "cases"
         "expr:constructor" -> ExprConstructor <$> v .: "name"
                                               <*> v .: "args"
-        _               -> fail ("Unknown declaration type: " ++ (show v))
+        "expr:apply"       -> ExprApply       <$> v .: "func"
+        "expr:rel"         -> ExprRel         <$> v .: "name"
+        "expr:global"      -> ExprGlobal      <$> v .: "name"
+        s                  -> fail ("Unknown declaration type: " ++ (show v) ++ " because " ++ (show s))
 
 

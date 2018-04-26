@@ -16,7 +16,7 @@ parse :: ByteString -> Either String Module
 parse buffer = eitherDecode buffer :: Either String Module
 
 dbgModule :: Module -> Either String ByteString
-dbgModule mod = Left $ show mod
+dbgModule mod = Left $ "I finished parsing: " ++ (show mod)
 
 main :: IO ()
 main = do
