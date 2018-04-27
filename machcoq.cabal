@@ -30,6 +30,9 @@ executable machcoq
       Codegen.File
       Codegen.Decl
       Codegen.Func
+      Codegen.Defs
+      Codegen.Expr
+      Codegen.Rewrite
       Utils
       Paths_machcoq
   hs-source-dirs:
