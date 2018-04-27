@@ -34,7 +34,7 @@ instance FromJSON Typ where
         _ -> fail ("unknown kind: " ++ (show v))
 
 -- Expressions
-data Expr = ExprLambda { argnames :: Maybe [String], body :: Expr }
+data Expr = ExprLambda { argnames :: [String], body :: Expr }
           | ExprCase { expr :: Expr, cases :: [Case] }
           | ExprConstructor { name :: String, args :: [Expr] }
           | ExprApply { func :: Expr }
@@ -45,7 +45,7 @@ data Expr = ExprLambda { argnames :: Maybe [String], body :: Expr }
 instance FromJSON Expr where
   parseJSON (Object v) =
       case (v ! "what") of
-        "expr:lambda"      -> ExprLambda      <$> v .:? "argnames"
+        "expr:lambda"      -> ExprLambda      <$> v .: "argnames"
                                               <*> v .: "body"
         "expr:case"        -> ExprCase        <$> v .: "expr"
                                               <*> v .: "cases"

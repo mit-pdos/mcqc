@@ -27,6 +27,9 @@ executable machcoq
       Parser.Decl
       Parser.Expr
       Parser.Fix
+      Codegen.File
+      Codegen.Decl
+      Codegen.Func
       Utils
       Paths_machcoq
   hs-source-dirs:
