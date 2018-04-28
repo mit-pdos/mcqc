@@ -26,12 +26,14 @@ executable machcoq
       Parser.Mod
       Parser.Decl
       Parser.Expr
+      Parser.Pattern
       Parser.Fix
       Codegen.File
       Codegen.Decl
       Codegen.Func
       Codegen.Defs
       Codegen.Expr
+      Codegen.Pattern
       Codegen.Rewrite
       Utils
       Paths_machcoq
@@ -42,6 +44,7 @@ executable machcoq
       ansi-wl-pprint,
       base >=4.9 && <5,
       bytestring,
+      wl-pprint,
       containers,
       unordered-containers,
       directory,

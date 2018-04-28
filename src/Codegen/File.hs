@@ -14,6 +14,6 @@ instance Show CFile where
 toCFile :: Module -> CFile
 toCFile Module { name = n, used_modules = Nothing, declarations = decls } = CFile ["#include<iostream>"] (n ++ ".cpp") cfuncs
     where cfuncs = map toCDecl decls
-toCFile Module { name = n, used_modules = Just ml, declarations = decls } = CFile [] (n ++ ".cpp") cfuncs
+toCFile Module { name = n, used_modules = Just ml, declarations = decls } = CFile [] (n ++ ".cpp") cfuncs -- TODO: implement linking
     where cfuncs = map toCDecl decls
 
