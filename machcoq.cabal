@@ -36,6 +36,7 @@ executable machcoq
       Codegen.Pattern
       Codegen.Rewrite
       Codegen.Utils
+      Optimizations.Flatten
       Utils
       Paths_machcoq
   hs-source-dirs:
