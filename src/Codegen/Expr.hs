@@ -7,6 +7,7 @@ import Codegen.Utils
 import Parser.Decl
 import Parser.Expr
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 
@@ -40,20 +41,25 @@ toCExpr ExprGlobal      { .. } = CExprGlobal (toCName name)
 caseToCExpr :: Case -> CExpr
 caseToCExpr Case        { .. } = CExprMatch (toCPattern pat) (toCExpr body)
 
+nth :: Int -> [a] -> Maybe a
+nth _ []       = Nothing
+nth 1 (x : _)  = Just x
+nth n (_ : xs) = nth (n - 1) xs
 
 instance Pretty CExpr where
   pretty CExprLambda  { .. } = "<PLACEHOLDER FOR LAMBDA>" :: Doc ann
-  pretty CExprCase    { .. } = line <> "Match" <+> (maybeParens . pretty) cexpr <+> "{"
+  pretty e@CExprCase  { .. } = line
+                             <> "Match" <+> (maybeParens . pretty) cexpr <+> "{"
                              <> hardline
                              <> (tab . vcat) (map pretty cases)
                              <> "}"
                              <> hardline
                              <> "EndMatch"
-  pretty CExprMatch   { .. } = hcat $ ["case", (maybeParens . pretty) mpat, "\t",
+  pretty CExprMatch   { .. } = hcat $ ["When", (maybeParens . pretty) mpat, "\t",
                                              "return ", pretty mbody, ";", hardline]
   -- Binary function, check if infix operator exists and print as infix
   pretty CExprCall    { isinfix = True, .. } = (pretty a) <+> (pretty . toInfix)  cfunc <+> (pretty b)
-    where (a,b) = (cparams !! 0, cparams !! 1)
+    where (a,b) = (nth 1 cparams, nth 2 cparams)
   pretty CExprCall    { isinfix = False, .. } = mkFuncSig cfunc (map pretty cparams)
   pretty CExprRel     { .. } = pretty . toCName $ rname
   pretty CExprGlobal  { .. } = pretty . toCName $ gname

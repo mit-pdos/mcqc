@@ -3,7 +3,7 @@ module Codegen.Rewrite where
 import Data.Text
 
 toCType :: Text -> Text
-toCType "Datatypes.nat" = "unsigned int"
+toCType "Datatypes.nat" = "int"
 toCType "Datatypes.bool" = "bool"
 toCType s = s
 
@@ -15,15 +15,15 @@ toInfix "Nat.div" = "/"
 toInfix s = s
 
 toCNamePat :: Text -> Text
-toCNamePat "Datatypes.O" = "C<O>()"
-toCNamePat "Datatypes.S" = "C<S>"
+toCNamePat "Datatypes.O" = "0"
+toCNamePat "Datatypes.S" = "1+"
 toCNamePat "Datatypes.True" = "true"
 toCNamePat "Datatypes.False" = "false"
 toCNamePat s = s
 
 toCName :: Text -> Text
-toCName "Datatypes.O" = "new O()"
-toCName "Datatypes.S" = "new S"
+toCName "Datatypes.O" = "0"
+toCName "Datatypes.S" = "1+"
 toCName "Datatypes.True" = "true"
 toCName "Datatypes.False" = "false"
 toCName s = s

@@ -18,16 +18,18 @@ instance Pretty CFile where
            <> vcat (map pretty (funcs f))
            <> line
 
-std_imports = [ "#include <iostream>",
-                "#include <mach7/type_switchN-patterns.hpp> // Support for N-ary Match statement on patterns",
-                "#include <mach7/patterns/address.hpp>      // Address and dereference combinators",
-                "#include <mach7/patterns/bindings.hpp>     // Mach7 support for bindings on arbitrary UDT",
-                "#include <mach7/patterns/constructor.hpp>  // Support for constructor patterns",
-                "#include <mach7/patterns/primitive.hpp>    // Wildcard, variable and value patterns",
-                "#include <xtl/adapters/std/memory.hpp>     // XTL subtyping adapters for standard smart pointers" ]
+std_imports = [ "#define XTL_DEFAULT_SYNTAX 'S'",
+
+                "#include <mach7/match.hpp>",
+                "#include <mach7/patterns/n+k.hpp>",
+                "#include <mach7/patterns/constructor.hpp>",
+
+                "#include <iostream>",
+                "using namespace mch;" ]
+
 
 toCFile :: Module -> CFile
-toCFile Module { name = n, used_modules = Nothing, declarations = decls } = CFile (["#include<iostream>"] ++ std_imports) (append ".cpp" n) cfuncs
+toCFile Module { name = n, used_modules = Nothing, declarations = decls } = CFile std_imports (append ".cpp" n) cfuncs
     where cfuncs = map toCDecl decls
 toCFile Module { name = n, used_modules = Just ml, declarations = decls } = CFile std_imports (append ".cpp" n) cfuncs -- TODO: implement linking
     where cfuncs = map toCDecl decls

@@ -22,14 +22,16 @@ parse buffer = eitherDecode buffer :: Either String Module
 dbgModule :: Module -> Either String ByteString
 -- dbgModule mod = Left . show . pretty . toCFile $ mod
 
-dbgModule mod = Left $ (unpack . renderStrict . layoutPretty layoutOptions . pretty . toCFile) mod
+printModule mod = Left $ (unpack . renderStrict . layoutPretty layoutOptions . pretty . toCFile) mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
+
+dbgModule mod = Left $ show mod
 
 main :: IO ()
 main = do
   argv <- getArgs
   mapM_ (\arg -> do
     json <- readFile arg
-    let cpp = parse json >>= dbgModule
+    let cpp = parse json >>= printModule
     cppWritter "foo.cpp" cpp) argv
 

@@ -55,6 +55,7 @@ int evl(const Nat& n)
 
 //------------------------------------------------------------------------------
 
+/*
 // Add two inductively defined Nat
 NatPtr plus(const Nat& n, const Nat& m)
 {
@@ -74,7 +75,6 @@ NatPtr plus(const Nat& n, const Nat& m)
     XTL_UNREACHABLE; // To avoid warning that control may reach end of a non-void function
 }
 
-/*
 // Fibonacci of Nat
 Nat* fib(Nat* n)
 {

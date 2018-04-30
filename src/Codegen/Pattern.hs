@@ -2,6 +2,7 @@
 module Codegen.Pattern where
 import Parser.Pattern
 import Codegen.Rewrite
+import Codegen.Utils
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
 
@@ -20,7 +21,7 @@ toCPattern PatRel     { .. } = CPatRel (toCName name)
 toCPattern PatWild    {}     = CPatWild
 
 instance Pretty CPattern where
-  pretty CPatCtor  { .. } = "C" <> (parens . pretty $ name)
+  pretty CPatCtor  { .. } = mkFuncSig name $ map pretty argnames
   pretty CPatTuple { .. } = "C" <> (parens . hsep $ map pretty items)
   pretty CPatRel   { .. } = "C" <> (parens . pretty $ name)
   pretty CPatWild  { } = "Otherwise"
