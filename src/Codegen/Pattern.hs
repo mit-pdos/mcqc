@@ -2,11 +2,13 @@
 module Codegen.Pattern where
 import Parser.Pattern
 import Codegen.Rewrite
+import Data.Text.Prettyprint.Doc
+import Data.Text (Text)
 
 -- Patterns
-data CPattern = CPatCtor { name :: String,  argnames :: [String] }
+data CPattern = CPatCtor { name :: Text,  argnames :: [Text] }
              | CPatTuple { items :: [CPattern] }
-             | CPatRel  { name :: String }
+             | CPatRel  { name :: Text }
              | CPatWild {}
     deriving (Eq)
 
@@ -17,9 +19,9 @@ toCPattern PatTuple   { .. } = CPatTuple (map toCPattern items)
 toCPattern PatRel     { .. } = CPatRel (toCName name)
 toCPattern PatWild    {}     = CPatWild
 
-instance Show CPattern where
-  show CPatCtor  { .. } = "Pat Ctor: " ++ name
-  show CPatTuple { .. } = "Pat Tuple: " ++ (show items)
-  show CPatRel   { .. } = "Pat Rel: " ++ name
-  show CPatWild  { } = "Pat Wild"
+instance Pretty CPattern where
+  pretty CPatCtor  { .. } = "C" <> (parens . pretty $ name)
+  pretty CPatTuple { .. } = "C" <> (parens . hsep $ map pretty items)
+  pretty CPatRel   { .. } = "C" <> (parens . pretty $ name)
+  pretty CPatWild  { } = "Otherwise"
 

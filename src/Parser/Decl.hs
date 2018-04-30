@@ -4,14 +4,15 @@ import GHC.Generics
 import Parser.Expr
 import Parser.Fix
 import Data.Aeson
+import Data.Text (Text)
 import Data.HashMap.Strict
 
 -- Declarations
 data Declaration =
-    IndDecl { name :: String, argnames :: [String], constructors :: [Expr] }
-  | TypeDecl { name :: String, argnames :: [String], value :: Expr }
+    IndDecl { name :: Text, argnames :: [Text], constructors :: [Expr] }
+  | TypeDecl { name :: Text, argnames :: [Text], value :: Expr }
   | FixDecl { fixlist :: [Fix] }
-  | TermDecl { name :: String, typ :: Typ, value :: Expr }
+  | TermDecl { name :: Text, typ :: Typ, value :: Expr }
     deriving (Show, Eq)
 
 instance FromJSON Declaration where

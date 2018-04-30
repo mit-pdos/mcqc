@@ -2,12 +2,13 @@
 module Parser.Pattern where
 import GHC.Generics
 import Data.Aeson
+import Data.Text
 import Data.HashMap.Strict
 
 -- Patterns
-data Pattern = PatCtor { name :: String,  argnames :: [String] }
+data Pattern = PatCtor { name :: Text,  argnames :: [Text] }
              | PatTuple { items :: [Pattern] }
-             | PatRel  { name :: String }
+             | PatRel  { name :: Text }
              | PatWild {}
     deriving (Show, Eq)
 

@@ -6,4 +6,5 @@ import Parser.Decl
 -- Fixpoint declaration to C Function
 toCDecl :: Declaration -> CFunc
 toCDecl FixDecl { fixlist = [fl] } = toCFunc fl
+toCDecl FixDecl { fixlist = f:fl } = toCFunc f
 

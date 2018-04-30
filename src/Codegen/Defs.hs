@@ -1,34 +1,30 @@
 {-# LANGUAGE OverloadedStrings, DuplicateRecordFields, TypeSynonymInstances, RecordWildCards, FlexibleInstances  #-}
 module Codegen.Defs where
+import Data.Text (Text, unpack, pack)
+import Data.Text.Prettyprint.Doc
 
 -- C typed definition, ie: "int foo"
-data CDef = CDef { cname :: String, ctype :: String }
+data CDef = CDef { cname :: Text, ctype :: Text }
   deriving (Eq)
 
 -- Pretty print C++ from these types
-instance Show CDef where
-  show d = (ctype d) ++ " " ++ (cname d)
-
--- Overlaps with Show [a]
-instance {-# OVERLAPPING #-} Show [CDef] where
-  show [] = ""
-  show [d] = show d
-  show (d:dl) = (show d) ++ ", " ++ (show dl)
+instance Pretty CDef where
+  pretty d = hsep [(pretty . ctype) d, (pretty . cname) d]
 
 -- Utility function
 -- Get the next string lexicographically
-incrementString :: String -> String
-incrementString []          = ['a']
-incrementString ('z':xs)    = 'a' : incrementString xs
-incrementString (x:xs)      = succ x : xs
+incrementText :: String -> String
+incrementText []          = ['a']
+incrementText ('z':xs)    = 'a' : incrementText xs
+incrementText (x:xs)      = succ x : xs
 
--- Define a succ for Strings
-instance Enum [Char] where
-  succ = reverse . incrementString . reverse
+-- Define a succ for Texts
+instance Enum Text where
+  succ = pack . reverse . incrementText . reverse . unpack
 
 -- If there are less named arguments that positional arguments in the type signature, extrapolate
 -- and if clang gives an "Unused argument warning" then ok
-getCDefExtrap :: [String] -> [String] -> [CDef]
+getCDefExtrap :: [Text] -> [Text] -> [CDef]
 getCDefExtrap [] [] = []
 getCDefExtrap [x] [y] = [CDef x y]
 getCDefExtrap [x] (y:ys) = (CDef x y):(getCDefExtrap [succ x] ys)

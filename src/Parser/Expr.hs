@@ -3,6 +3,7 @@ module Parser.Expr where
 import GHC.Generics hiding (Constructor)
 import Parser.Pattern
 import Data.Aeson
+import Data.Text
 import Data.HashMap.Strict
 
 -- Cases
@@ -12,8 +13,8 @@ data Case = Case { pat :: Pattern, body :: Expr}
 -- Types TODO: Varidx
 data Typ =
     TypArrow { left :: Typ, right :: Typ }
-    | TypVar { name :: String, args :: [Expr] }
-    | TypGlob { name :: String }
+    | TypVar { name :: Text, args :: [Expr] }
+    | TypGlob { name :: Text }
     deriving (Show, Eq)
 
 instance FromJSON Typ where
@@ -27,12 +28,12 @@ instance FromJSON Typ where
         _ -> fail ("unknown kind: " ++ (show v))
 
 -- Expressions
-data Expr = ExprLambda { argnames :: [String], body :: Expr }
+data Expr = ExprLambda { argnames :: [Text], body :: Expr }
           | ExprCase { expr :: Expr, cases :: [Case] }
-          | ExprConstructor { name :: String, args :: [Expr] }
+          | ExprConstructor { name :: Text, args :: [Expr] }
           | ExprApply { func :: Expr , args :: [Expr]}
-          | ExprRel { name :: String }
-          | ExprGlobal { name :: String }
+          | ExprRel { name :: Text }
+          | ExprGlobal { name :: Text }
     deriving (Show, Eq)
 
 instance FromJSON Expr where

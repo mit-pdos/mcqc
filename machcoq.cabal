@@ -35,6 +35,7 @@ executable machcoq
       Codegen.Expr
       Codegen.Pattern
       Codegen.Rewrite
+      Codegen.Utils
       Utils
       Paths_machcoq
   hs-source-dirs:
@@ -44,7 +45,7 @@ executable machcoq
       ansi-wl-pprint,
       base >=4.9 && <5,
       bytestring,
-      wl-pprint,
+      prettyprinter,
       containers,
       unordered-containers,
       directory,

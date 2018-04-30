@@ -3,29 +3,33 @@ module Codegen.Func (CFunc, toCFunc) where
 import Codegen.Rewrite (toCType, toCName)
 import Codegen.Expr
 import Codegen.Defs
+import Codegen.Utils
 import Parser.Decl
 import Parser.Fix
 import Parser.Expr
+import Data.Text (Text)
+import Data.Text.Prettyprint.Doc
 
 -- C function definition, ie: int main(int argc, char **argv)
-data CFunc = CFunc { fname :: String, ftype :: String, fargs :: [CDef], fbody :: CExpr } -- TODO: String as a PLACEHOLDER
+data CFunc = CFunc { fname :: Text, ftype :: Text, fargs :: [CDef], fbody :: CExpr } -- TODO: Text as a PLACEHOLDER
   deriving (Eq)
 
-instance Show CFunc where
-  show f = concat [ftype f, " ", fname f," (", show (fargs f), ") ", "{\n", "\t" ++ (show $ fbody f) ++ "\n",  "}\n"]
+instance Pretty CFunc where
+  pretty f = (pretty . ftype) f <+> mkFuncSig (fname f) (map pretty $ fargs f)
+                    <> vcat ["{", (tab . pretty . fbody) f, "}"] <> line
 
 -- Nat -> Nat -> Bool ==> [Nat, Nat, Bool]
-getCTypeList :: Typ -> [String]
+getCTypeList :: Typ -> [Text]
 getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCTypeList rt)
 getCTypeList TypVar { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
 getCTypeList TypGlob { name = n } = [toCType n]
 
 -- Nat -> Nat -> Bool ==> Bool
-getCRetType :: Typ -> String
+getCRetType :: Typ -> Text
 getCRetType = last . getCTypeList
 
 -- Get the argument names from lamda definition
-getCNames :: Expr -> [String]
+getCNames :: Expr -> [Text]
 getCNames ExprLambda { argnames = al } = map toCName al
 getCNames ExprRel {..} = [toCName name]
 getCNames ExprGlobal {..} = [toCName name]
