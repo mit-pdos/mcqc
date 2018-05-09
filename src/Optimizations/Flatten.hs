@@ -8,12 +8,13 @@ import Parser.Expr
 import Data.Text (Text)
 
 -- WIP: Define a substitution function
-subst :: Text -> CExpr -> CExpr
-subst var CExprLambda { .. } = CExprLambda largs (subst var lbody)
-subst var CExprCase   { .. } = CExprCase (subst var cexpr) (map (subst var) cases)
-subst var CExprMatch  { .. } = CExprMatch mpat (subst var mbody)
-subst var CExprCall   { .. } = CExprCall cfunc (map (subst var) cparams) isinfix
-subst var s = s
+subst :: CExpr -> Text -> CExpr -> CExpr
+subst s var CExprLambda { .. } = CExprLambda largs (subst s var lbody)
+subst s var CExprCase   { .. } = CExprCase (subst s var cexpr) (map (subst s var) cases)
+subst s var CExprMatch  { .. } = CExprMatch mpat (subst s var mbody)
+subst s var CExprCall   { .. } = CExprCall cfunc (map (subst s var) cparams)
+subst s var CExprInfix  { .. } = CExprInfix op (subst s var left) (subst s var right)
+subst s var s' = s
 
 --flattenPatterns :: CExpr -> CExpr
 --flattenPatterns CExprLambda { .. } = CExprLambda largs (flattenPatterns lbody)

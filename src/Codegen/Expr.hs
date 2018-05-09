@@ -16,7 +16,8 @@ data CExpr =
             CExprLambda { largs :: [CDef], lbody :: CExpr }
           | CExprCase { cexpr :: CExpr, cases :: [CExpr] }
           | CExprMatch { mpat :: CPattern, mbody :: CExpr } -- Matched to Case
-          | CExprCall { cfunc :: Text, cparams :: [CExpr], isinfix :: Bool } -- Use this for function calls and constructors
+          | CExprCall { cfunc :: Text, cparams :: [CExpr] } -- Use this for function calls and constructors
+          | CExprInfix { op :: Text, left :: CExpr, right :: CExpr }
           | CExprRel    { rname :: Text }
           | CExprGlobal { gname :: Text }
           | CExprCtor { cname :: Text, cargs :: [CDef] }
@@ -26,29 +27,23 @@ data CExpr =
 toCExpr :: Expr -> CExpr
 toCExpr ExprLambda      { .. } = CExprGlobal "<PLACEHOLDER FOR LAMBDA>" -- CExprLambda (getCDefExtrap argtypes argnames) (toCExpr body)
 toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseToCExpr cases)
-toCExpr ExprConstructor { .. } = CExprCall (toCName name) (map toCExpr args) False
--- Global symbol. Mark infix operations for rewritting
-toCExpr ExprApply       { func = ExprGlobal { .. }, args = al } = if (toInfix name == name)
-                                                then CExprCall (toCName name) (map toCExpr al) False
-                                                else CExprCall (toCName name) (map toCExpr al) True
--- Relative symbol. Mark infix operations for rewritting
-toCExpr ExprApply       { func = ExprRel    { .. }, args = al } = if (toInfix name == name)
-                                                then CExprCall (toCName name) (map toCExpr al) False
-                                                else CExprCall (toCName name) (map toCExpr al) True
+toCExpr ExprConstructor { .. } = CExprCall (toCName name) (map toCExpr args)
+toCExpr ExprApply       { func = ExprGlobal { .. }, args = al@[l, r]} = if (toInfix name == name)
+                                                then CExprCall (toCName name) (map toCExpr al)
+                                                else CExprInfix ((toInfix . toCName) name) (toCExpr l) (toCExpr r)
+toCExpr ExprApply       { func = ExprRel    { .. }, args = al@[l, r]} = if (toInfix name == name)
+                                                then CExprCall (toCName name) (map toCExpr al)
+                                                else CExprInfix ((toInfix . toCName) name) (toCExpr l) (toCExpr r)
+toCExpr ExprApply       { func = ExprGlobal { .. }, args = al } = CExprCall (toCName name) (map toCExpr al)
 toCExpr ExprRel         { .. } = CExprRel (toCName name)
 toCExpr ExprGlobal      { .. } = CExprGlobal (toCName name)
 -- Cases
 caseToCExpr :: Case -> CExpr
 caseToCExpr Case        { .. } = CExprMatch (toCPattern pat) (toCExpr body)
 
-nth :: Int -> [a] -> Maybe a
-nth _ []       = Nothing
-nth 1 (x : _)  = Just x
-nth n (_ : xs) = nth (n - 1) xs
-
 instance Pretty CExpr where
   pretty CExprLambda  { .. } = "<PLACEHOLDER FOR LAMBDA>" :: Doc ann
-  pretty e@CExprCase  { .. } = line
+  pretty CExprCase    { .. } = line
                              <> "Match" <+> (maybeParens . pretty) cexpr <+> "{"
                              <> hardline
                              <> (tab . vcat) (map pretty cases)
@@ -58,9 +53,8 @@ instance Pretty CExpr where
   pretty CExprMatch   { .. } = hcat $ ["When", (maybeParens . pretty) mpat, "\t",
                                              "return ", pretty mbody, ";", hardline]
   -- Binary function, check if infix operator exists and print as infix
-  pretty CExprCall    { isinfix = True, .. } = (pretty a) <+> (pretty . toInfix)  cfunc <+> (pretty b)
-    where (a,b) = (nth 1 cparams, nth 2 cparams)
-  pretty CExprCall    { isinfix = False, .. } = mkFuncSig cfunc (map pretty cparams)
+  pretty CExprInfix   { .. } = (pretty left) <+> (pretty  op) <+> (pretty right)
+  pretty CExprCall    { .. } = mkFuncSig cfunc (map pretty cparams)
   pretty CExprRel     { .. } = pretty . toCName $ rname
   pretty CExprGlobal  { .. } = pretty . toCName $ gname
   pretty CExprCtor    { .. } = hcat $ ["C", (maybeParens . pretty) cname, "\t", "return "] ++ (map pretty cargs)

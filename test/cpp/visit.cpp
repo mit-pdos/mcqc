@@ -1,51 +1,50 @@
-// visit.cpp
-
+#include <iomanip>
 #include <iostream>
-#include <vector>
-#include <typeinfo>
+#include <string>
 #include <type_traits>
-
 #include <variant>
+#include <vector>
 
 
-int main(){
+template<class T> struct always_false : std::false_type {};
 
-  std::cout << std::endl;
+using var_t = std::variant<int, long, double, std::string>;
 
-  std::vector<std::variant<char, long, float, int, double, long long>>      // 1
-             vecVariant = {5, '2', 5.4, 100ll, 2011l, 3.5f, 2017};
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-  // display each value
-  for (auto& v: vecVariant){
-    std::visit([](auto&& arg){std::cout << arg << " ";}, v);                // 2
-  }
+int main() {
+    std::vector<var_t> vec = {10, 15l, 1.5, "hello"};
+    for(auto& v: vec) {
+        // void visitor, only called for side-effects
+        std::visit([](auto&& arg){std::cout << arg;}, v);
 
-  std::cout << std::endl;
+        // value-returning visitor. A common idiom is to return another variant
+        var_t w = std::visit([](auto&& arg) -> var_t {return arg + arg;}, v);
 
-  // display each type
-  for (auto& v: vecVariant){
-    std::visit([](auto&& arg){std::cout << typeid(arg).name() << " ";}, v); // 3
-  }
+        std::cout << ". After doubling, variant holds ";
+        // type-matching visitor: can also be a class with 4 overloaded operator()'s
+        std::visit([](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, int>)
+                std::cout << "int with value " << arg << '\n';
+            else if constexpr (std::is_same_v<T, long>)
+                std::cout << "long with value " << arg << '\n';
+            else if constexpr (std::is_same_v<T, double>)
+                std::cout << "double with value " << arg << '\n';
+            else if constexpr (std::is_same_v<T, std::string>)
+                std::cout << "std::string with value " << std::quoted(arg) << '\n';
+            else
+                static_assert(always_false<T>::value, "non-exhaustive visitor!");
+        }, w);
+    }
 
-  std::cout << std::endl;
-
-  // get the sum
-  std::common_type<char, long, float, int, double, long long>::type res{};  // 4
-
-  std::cout << "typeid(res).name(): "  << typeid(res).name() << std::endl;
-
-  for (auto& v: vecVariant){
-    std::visit([&res](auto&& arg){res+= arg;}, v);                          // 5
-  }
-  std::cout << "res: " << res << std::endl;
-
-  // double each value
-  for (auto& v: vecVariant){
-    std::visit([&res](auto&& arg){arg *= 2;}, v);                           // 6
-    std::visit([](auto&& arg){std::cout << arg << " ";}, v);
-  }
-
-  std::cout << std::endl;
-
+    for (auto& v: vec) {
+        std::visit(overloaded {
+            [](auto arg) { std::cout << arg << ' '; },
+            [](double arg) { std::cout << std::fixed << arg << ' '; },
+            [](const std::string& arg) { std::cout << std::quoted(arg) << ' '; },
+        }, v);
+    }
+	std::cout << std::endl;
 }
-

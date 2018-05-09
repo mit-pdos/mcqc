@@ -17,16 +17,15 @@ struct Nat
     virtual ~Nat() {}
 };
 
-typedef std::unique_ptr<Nat> NatPtr;
-
 struct O : Nat
 {
 };
 
 struct S : Nat
 {
-    S(Nat* n) : e(n) {}
-    NatPtr e;
+    S(const Nat* n) : e(n) {}
+   ~S() { if (e) delete e; }
+    const Nat* e;
 };
 
 //------------------------------------------------------------------------------
@@ -55,20 +54,19 @@ int evl(const Nat& n)
 
 //------------------------------------------------------------------------------
 
-/*
 // Add two inductively defined Nat
-NatPtr plus(const Nat& n, const Nat& m)
+const Nat* plus(const Nat* n, const Nat* m)
 {
-	var<NatPtr> a;
-	var<NatPtr> b;
+	var<const Nat*> a;
+	var<const Nat*> b;
 
     Match(n, m)
     {
 
-      Case(a, C<O>())        return a; // m + 0 = m
-      Case(C<O>(), a)        return a; // 0 + m = m
+      Case(_, C<O>())        return n; // m + 0 = m
+      Case(C<O>(), _)        return m; // 0 + m = m
       Case(C<S>(a), C<S>(b)) return new S(new S(plus(a, b))); // S n + S m = S (S (n + m))
-      Otherwise()            std::cerr << "Error: unreachable case"; return nullptr;
+      Otherwise()            return nullptr;
     }
     EndMatch
 
@@ -78,32 +76,30 @@ NatPtr plus(const Nat& n, const Nat& m)
 // Fibonacci of Nat
 Nat* fib(Nat* n)
 {
-    var<const Nat&> m;
+    var<const Nat*> m;
 
     Match(*n)
     {
-      Case(ZERO)         return C<S>(C<O>()); // S 0 = 1
-      Case(ONE)          return C<S>(C<O>()); // S 0 = 1
-      Case(C<S>(m))      return plus(fib(m), fib(new S(m)));
-      Otherwise() 		 cerr << "error"; return nullptr ;
+      Case(C<O>())         return new S(new O()); // S 0 = 1
+      Case(C<S>(C<O>()))   return new S(new O()); // S 0 = 1
+      Case(C<S>(C<S>(m)))  return plus(fib(m), fib(new S(m)));
+      Otherwise() 		   std::cerr << "error"; return nullptr ;
     }
     EndMatch
 
     XTL_UNREACHABLE; // To avoid warning that control may reach end of a non-void function
 }
-*/
 
-//------------------------------------------------------------------------------
 int main()
 {
-    NatPtr a(new S(new S(new O))); // =2
-    NatPtr b(new S(new O));        // =1
+    Nat* a = new S(new S(new O));
+    Nat* b = new S(new O);
 
     std::cout << evl(*a) << std::endl;
     std::cout << evl(*b) << std::endl;
 
-    // NatPtr c(plus(a.release(),b.release()));
+    const Nat* c = plus(a,b);
 
-    // std::cout << evl(*c) << std::endl;
+    std::cout << evl(*c) << std::endl;
 }
 
