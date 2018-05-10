@@ -46,6 +46,7 @@ executable machcoq
       ansi-wl-pprint,
       base >=4.9 && <5,
       bytestring,
+      bytestring-show,
       prettyprinter,
       containers,
       unordered-containers,
@@ -53,6 +54,7 @@ executable machcoq
       filepath,
       logict,
       mtl,
+      lens,
       generic-deriving,
       text
   default-language: Haskell2010

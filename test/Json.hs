@@ -1,9 +1,14 @@
 module Main where
 import Prelude hiding (readFile)
 import Test.Hspec
-import Data.ByteString.Lazy.Char8 (readFile)
+import Data.Aeson
+import Data.ByteString.Lazy.Char8
 import ModuleTest (testModuleWhat)
-import Parser
+import Parser.Mod
+
+-- Parse JSON file into a Module
+parse :: ByteString -> Either String Module
+parse buffer = eitherDecode buffer :: Either String Module
 
 main :: IO ()
 main = hspec $ do
