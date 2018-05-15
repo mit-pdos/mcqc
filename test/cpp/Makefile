@@ -14,6 +14,10 @@ curry: curry.cpp
 test: test.cpp terms.hpp proc.hpp
 	${CPP} ${CCFLAGS} $< -o $@
 
+variadic: variadic.cpp
+	${CPP} ${CCFLAGS} $^ -o $@
+
+
 clean:
 	rm -f *.o *.gch visit variadic test curry
 

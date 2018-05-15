@@ -5,7 +5,6 @@
 using namespace func;
 
 struct Proc {
-
     // print function
     const Term<unit, int> print = Term<unit, int>(
         [](int a) {
