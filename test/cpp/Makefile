@@ -1,23 +1,38 @@
 .PHONY=all
 
 CPP=clang++-6.0
-CCFLAGS?=-Wall -O3 -DNDEBUG -std=gnu++17
+CCFLAGS?=-g -Wall -DNDEBUG -std=c++17
 
-all: visit test curry
+OPT=opt-6.0
+OPTFLAGS?=-O3 -always-inline -dot-callgraph
 
-visit: visit.cpp
-	${CPP} ${CCFLAGS} $< -o $@
+all: curry visit test
+pdf: curry.pdf visit.pdf test.pdf
 
 curry: curry.cpp
 	${CPP} ${CCFLAGS} $< -o $@
+curry.pdf: curry.cpp
+	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
+	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
+	dot -Tpdf callgraph.dot -o $@
+	rm callgraph.dot $<.bc $<.opt.bc
 
-test: test.cpp terms.hpp proc.hpp
+visit: curry.cpp
 	${CPP} ${CCFLAGS} $< -o $@
+visit.pdf: visit.cpp
+	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
+	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
+	dot -Tpdf callgraph.dot -o $@
+	rm callgraph.dot $<.bc $<.opt.bc
 
-variadic: variadic.cpp
-	${CPP} ${CCFLAGS} $^ -o $@
-
+test: test.cpp
+	${CPP} ${CCFLAGS} $< -o $@
+test.pdf: test.cpp
+	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
+	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
+	dot -Tpdf callgraph.dot -o $@
+	rm callgraph.dot $<.bc $<.opt.bc
 
 clean:
-	rm -f *.o *.gch visit variadic test curry
-
+	rm -f *.o *.gch *.pdf *.dot *.bc *.ll visit variadic test curry
+	rm -rf *.dSYM
