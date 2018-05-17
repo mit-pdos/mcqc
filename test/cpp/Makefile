@@ -17,7 +17,7 @@ curry.pdf: curry.cpp
 	dot -Tpdf callgraph.dot -o $@
 	rm callgraph.dot $<.bc $<.opt.bc
 
-visit: curry.cpp
+visit: visit.cpp
 	${CPP} ${CCFLAGS} $< -o $@
 visit.pdf: visit.cpp
 	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
