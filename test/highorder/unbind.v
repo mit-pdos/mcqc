@@ -14,9 +14,29 @@ Ltac sigT_eq :=
 Ltac inv H := inversion H; subst; clear H; repeat sigT_eq.
 
 
+Require Extraction.
+Extraction Language Haskell.
+Extract Inductive nat => "Prelude.Integer" [ "0" "Prelude.succ" ].
+Extract Inductive bool => "Prelude.Bool" [ "true" "false" ].
+Extract Inductive unit => "()" [ "()" ].
+
+Parameter filename : Type.
+Parameter fd : Type.
+Parameter data : Type.
+Definition pathname := list filename.
+
 Inductive opT : Type -> Type :=
 | print : nat -> opT unit
-| getline : opT nat.
+| getline : opT nat
+(** pseudomail Proc *)
+| open : pathname -> opT fd
+| write : fd -> data -> opT unit
+| close : fd -> opT unit
+| pidfn : opT filename
+| random : opT  filename
+| link : pathname -> pathname -> opT bool
+| unlink : pathname -> opT unit
+| whilefalse : opT bool -> opT unit.
 
 Inductive proc: Type -> Type :=
 | ret: forall T, T -> proc T
@@ -25,7 +45,18 @@ Inductive proc: Type -> Type :=
 | prim: forall T, opT T -> proc T.
 Definition event := sigT (fun T => opT T).
 
-(*Definition event := {T & opT T}. *)
+Definition Print a := prim (print a).
+Definition Getline := prim (getline).
+Definition Random := prim (random).
+Definition Close a := prim (close a).
+Definition Pidfn := prim (pidfn).
+Definition Link s d := prim (link s d).
+Definition Unlink f := prim (unlink f).
+Definition Whilefalse b := prim (whilefalse b).
+
+Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
+  (at level 60, right associativity).
+
 Definition ev T (op:opT T) : event :=
   existT _ _ op.
 
@@ -34,6 +65,22 @@ Inductive step : forall T, opT T -> T -> Prop :=
     step (print n) tt
 | step_getline : forall n,
     step getline n
+| step_open: forall p f,
+    step (open p) f
+| step_write: forall f d,
+    step (write f d) tt
+| step_close: forall f,
+    step (close f) tt
+| step_pidfn: forall f,
+    step pidfn f
+| step_random: forall n,
+    step random n
+| step_link: forall s d,
+    step (link s d) true
+| step_unlink: forall p,
+    step (unlink p) tt
+| step_whilefalse: forall b,
+    step (whilefalse b) tt
 .
 
 Definition trace := list event.
@@ -67,8 +114,6 @@ Hint Constructors exec.
 Definition equiv T (p p':proc T) : Prop :=
   forall r tr, exec p r tr <-> exec p' r tr.
 
-Definition Print a := prim (print a).
-
 Hint Constructors step_list.
 
 Theorem ret_getlist : forall T,
@@ -85,6 +130,15 @@ Qed.
 Theorem bind_getlist : forall T (op:opT T) l,
     equiv (bind (prim op) (fun _ => runlist l))
           (runlist (op::l)).
+Proof.
+  intros.
+  induction l.
+  constructor.
+  destruct r.
+  constructor.
+  inv H.
+  inv H6.
+  inv H7.
 Admitted.
 
 Theorem bind_congruence : forall T (p p': proc T) T' (rx rx': T -> proc T'),
@@ -104,11 +158,10 @@ intuition auto.
 Defined.
 
 (** Small example *)
-Definition foo := bind (Print 2)
-                       (fun _ => bind (Print 1)
-                                   (fun _ => ret tt)).
-
-Definition foo' := runlist [print 2; print 1].
+Definition foo :=
+  _ <- Print 1;
+  _ <- Print 2;
+  ret tt.
 
 Definition foo_opt : {foo_opt | equiv foo foo_opt}.
   unfold foo, Print.
@@ -123,7 +176,7 @@ Definition foo_opt : {foo_opt | equiv foo foo_opt}.
   reflexivity.
   eapply ret_getlist.
 
-  repeat match goal with
+  match goal with
   | |- equiv (bind (prim ?op) ?rx) _ =>
     match eval simpl in (rx tt) with
     | runlist ?l => eapply (bind_getlist op l)
@@ -142,5 +195,117 @@ Definition foo_p := ltac:(let x := eval simpl in (proj1_sig foo_opt) in
                               match x with
                               | runlist ?l => exact l
                               end).
+Separate Extraction foo_p.
 
-Print foo_p.
+(**
+(** Another example *)
+Definition bar :=
+  _ <- Print 1;
+  n <- Getline;
+  _ <- Print n;
+  ret tt.
+
+(** equiv (runlist []) (?rx' x3) *)
+Definition bar_opt : {bar_opt | equiv bar bar_opt}.
+  unfold bar, Print.
+  eexists.
+
+  etransitivity.
+  eapply bind_congruence; intros.
+  reflexivity.
+
+  etransitivity.
+  eapply bind_congruence; intros.
+  reflexivity.
+
+  etransitivity.
+  eapply bind_congruence; intros.
+  reflexivity.
+
+  eapply ret_getlist.
+
+  etransitivity.
+  eapply bind_congruence; intros.
+  reflexivity.
+
+  etransitivity.
+  constructor.
+
+  intro.
+  apply H.
+  intro.
+  apply H.
+  constructor.
+  intro.
+  apply H.
+  intros.
+  apply H.
+  constructor.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intro.
+  apply H.
+  intro. apply H.
+  intros.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+  eapply bind_congruence; intros.
+  reflexivity.
+  constructor.
+  intros. apply H0.
+  intros. apply H0.
+Admitted.
+
+Definition bar_p := ltac:(let x := eval simpl in (proj1_sig bar_opt) in
+                              match x with
+                              | runlist ?l => exact l
+                              end).
+
+Print bar_p.
+
+
+
+Definition mail_deliver (msg : data) (tmpdir : pathname) (mboxdir : pathname) :=
+  tmpfn <- pidfn;
+  fd <- open (tmpdir ++ [tmpfn]);
+  _ <- write fd msg;
+  _ <- close fd;
+  whilefalse
+    ( mailfn <- random;
+      ok <- link (tmpdir ++ [tmpfn]) (mboxdir ++ [mailfn]);
+      if ok then
+        _ <- unlink (tmpdir ++ [tmpfn]);
+        ret true
+      else
+        ret false ).
+
+*)
