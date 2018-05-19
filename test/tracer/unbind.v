@@ -13,7 +13,6 @@ Ltac sigT_eq :=
 
 Ltac inv H := inversion H; subst; clear H; repeat sigT_eq.
 
-
 Require Extraction.
 Extraction Language Haskell.
 Extract Inductive nat => "Prelude.Integer" [ "0" "Prelude.succ" ].
@@ -291,7 +290,6 @@ Definition bar_p := ltac:(let x := eval simpl in (proj1_sig bar_opt) in
                               end).
 
 Print bar_p.
-
 
 
 Definition mail_deliver (msg : data) (tmpdir : pathname) (mboxdir : pathname) :=
