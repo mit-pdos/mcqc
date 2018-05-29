@@ -18,10 +18,19 @@ highorder.pdf: highorder.cpp
 	dot -Tpdf callgraph.dot -o $@
 	rm callgraph.dot $<.bc $<.opt.bc
 
+cont: continuations.cpp
+	${CPP} ${CCFLAGS} $< -o $@
+cont.pdf: continuations.cpp
+	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
+	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
+	dot -Tpdf callgraph.dot -o $@
+	rm callgraph.dot $<.bc $<.opt.bc
+
+
 Bind.json: Bind.v
 	coqc $^
 
 clean:
-	rm -f Top.hs Datatypes.hs *.hi *.glob *.vo *.json *.o highorder
+	rm -f cont Top.hs Datatypes.hs *.pdf *.hi *.glob *.vo *.json *.o highorder
 	rm -rf *.dSYM
 

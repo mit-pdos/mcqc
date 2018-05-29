@@ -13,5 +13,5 @@ main: comp
 	${CPP} ${CCFLAGS} main.cpp -o $@
 
 clean:
-	-rm -f main comp Unbind.hs Top.hs Datatypes.hs *.hi *.glob *.vo *.json *.o
+	-rm -f main comp Unbind.hs Top.hs Datatypes.hs main.cpp *.hi *.glob *.vo *.json *.o
 	-rm -rf *.dSYM
