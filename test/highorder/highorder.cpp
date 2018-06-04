@@ -48,17 +48,24 @@ void visit_ind(Proc<T1, T2>& s) noexcept {
     }, s);
 }
 
+// boost
+struct foo {
+	struct bar {
+		int a;
+	};
+};
+
 // --------------- Main ---------------
 int main() {
   	Proc<int> foo = Ret(42);
   	Proc<int> bar = Print(666);
-	Proc<int, char> foobind = Bind(bar, [](auto &a) {
-		std::cout << a << std::endl;
-		return Ret('a');
-	});
+//	Proc<int, char> foobind = Bind(bar, [](auto &a) {
+//		std::cout << a << std::endl;
+//		return Ret('a');
+//	});
 
 	visit_ind(foo);
 	visit_ind(bar);
-	visit_ind(foobind);
+//	visit_ind(foobind);
 	return 0;
 }

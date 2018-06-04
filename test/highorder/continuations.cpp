@@ -1,7 +1,7 @@
 #include <iostream>
 #include <functional>
 
-__attribute__((always_inline)) static void inline compose(const char* s, const std::function<void(const char *)> f) {
+void inline compose(const char* s, const std::function<void(const char *)> f) {
 	std::cout << s << std::endl;
 	f(s);
 }
