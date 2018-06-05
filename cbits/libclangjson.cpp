@@ -1,6 +1,7 @@
 #include <iostream>
 #include <clang-c/Index.h>
 #include <sstream>      // std::stringstream
+#include <cstring>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ void print_func_bundle(CXCursor cursor, stringstream& os) {
         }
         auto arg_data_type = Convert(clang_getTypeSpelling(clang_getArgType(type, i)));
 		// append function arguments
-		os << "[\"" << arg_data_type << "\", \"" << arg_name << "\"]";
+		os << "\"" << arg_data_type << "\"";
 		if (i < num_args - 1) {
 			os << ", ";
 		}
@@ -40,8 +41,8 @@ void print_func_bundle(CXCursor cursor, stringstream& os) {
 	os << " ]}, " << endl;
 }
 
-int main()
-{
+// Run for all Hpp files
+extern char* clangToJSON() {
   CXIndex index = clang_createIndex(0, 0);
 
   // Set clang arguments
@@ -89,9 +90,13 @@ int main()
   // Erase last comma
   os.seekp(-3, os.cur);
   os << endl << "]}";
-  cout << os.str() << endl;
 
   clang_disposeTranslationUnit(unit);
   clang_disposeIndex(index);
+
+  // Heap allocate
+  char* cstr = new char [os.str().length()+1];
+  std::strcpy(cstr, os.str().c_str());
+  return cstr;
 }
 

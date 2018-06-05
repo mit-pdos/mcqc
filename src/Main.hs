@@ -10,6 +10,7 @@ import Data.Aeson
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Parser.Mod
+import Clang.CParser
 import Codegen.File
 
 -- Calls codegen and prints errors
@@ -28,13 +29,15 @@ transModule :: Module -> Either String ByteString
 transModule mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . toCFile) mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
-
 main :: IO ()
-main = do
-  argv <- getArgs
-  mapM_ (\arg -> do
-    json <- B.readFile arg
-    let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
-        cpp = parse json >>= transModule
-    cppWritter newfilename cpp) argv
+main = print hppTree
+
+--main :: IO ()
+--main = do
+--  argv <- getArgs
+--  mapM_ (\arg -> do
+--    json <- B.readFile arg
+--    let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
+--        cpp = parse json >>= transModule
+--    cppWritter newfilename cpp) argv
 

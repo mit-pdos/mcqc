@@ -22,6 +22,11 @@ source-repository head
 
 executable machcoq
   main-is: Main.hs
+  c-sources: cbits/libclangjson.cpp
+  include-dirs: cbits /usr/local/lib/llvm-3.8/include
+  extra-libraries: stdc++ clang
+  extra-lib-dirs: /usr/local/lib/llvm-3.8/lib
+  cc-options: -std=c++0x
   other-modules:
       Parser.Mod
       Parser.Decl
@@ -36,6 +41,7 @@ executable machcoq
       Codegen.Pattern
       Codegen.Rewrite
       Codegen.Utils
+      Clang.CParser
       Optimizations.Flatten
       Utils
       Paths_machcoq
