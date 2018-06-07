@@ -22,11 +22,12 @@ namespace list {
 		case false: return {Cons, l.front(), l.pop_front()};
 		}
 	}
+
 	// Constructive match, l is considered immutable and will be copied safely
 	template<typename T>
 	constexpr const ListTuple<T> match(List<T> l) {
 		switch(l.empty()) {
-		case true:  return {Nil, List<T>()};
+		case true:  return {Nil, T(), List<T>()};
 		case false: {
             auto head = l.begin();
 			return {Cons, *head, List<T>(head++, l.end())};
@@ -36,10 +37,10 @@ namespace list {
 
     // Constructive cons, copies l so l can be referenced again
 	template<typename T>
-	constexpr inline static List<T> cons(List<T>& l);
+	constexpr inline static List<T> cons(List<T>& l, T t);
     // Destructive cons, reuses l so it can not be referenced again
 	template<typename T>
-	constexpr inline static List<T> dcons(List<T>& l);
+	constexpr inline static List<T> dcons(List<T>& l, T t);
 
 	// Utility functions
     // List

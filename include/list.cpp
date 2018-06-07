@@ -6,13 +6,14 @@ namespace list {
 
     // Constructive cons, copies l so l can be referenced again
 	template<typename T>
-	constexpr inline static List<T> cons(T t, List<T>& l) {
+	constexpr inline static List<T> cons(List<T>& l, T t) {
 		return List<T>(l).push_front(t);
     }
     // Destructive cons, reuses l so it can not be referenced again
 	template<typename T>
-	constexpr inline static List<T> dcons(T t, List<T>& l) {
-		return l.push_front(t);
+	constexpr inline static List<T> dcons(List<T>& l, T t) {
+		l.push_front(t);
+		return l;
     }
 
 	// Utility functions
@@ -31,7 +32,8 @@ namespace list {
     // Destructive tail, l is considered mutable and should not be referenced again as l
     template<typename T>
     constexpr inline static List<T> dtail(List<T> l) {
-		return l.pop_front();
+		l.pop_front();
+		return l;
     }
 
     // Destructive app, both l1, l2 are mutable, l1 will be expanded, l2 will be deallocated. Neither should be referenced again.
@@ -67,7 +69,7 @@ namespace list {
 		return l.empty();
 	}
     template<typename T>
-    constexpr inline static bool in(T t, List<T> l) {
+    constexpr inline static bool in(List<T> l, T t) {
 		for (auto it = l.begin(); it != l.end(); it++) {
 			if(*it == t)
 				return true;
