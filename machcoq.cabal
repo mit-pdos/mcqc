@@ -22,11 +22,11 @@ source-repository head
 
 executable machcoq
   main-is: Main.hs
-  c-sources: cbits/libclangjson.cpp
-  include-dirs: cbits /usr/local/lib/llvm-3.8/include
-  extra-libraries: stdc++ clang
-  extra-lib-dirs: /usr/local/lib/llvm-3.8/lib
-  cc-options: -std=c++0x
+  c-sources: cbits/clangjson.cpp
+  cc-options: -shared -fPIC -o dist/build/machcoq/machcoq-tmp/cbits/clangjson.so
+  include-dirs: /usr/local/lib/llvm-6.0/include
+  extra-libraries: stdc++ clang clangjson
+  extra-lib-dirs: /usr/local/lib/llvm-6.0/lib dist/build/machcoq/machcoq-tmp/cbits
   other-modules:
       Parser.Mod
       Parser.Decl

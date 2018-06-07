@@ -1,8 +1,7 @@
 #include <climits>
 #include <cstdlib>
+#include <cassert>
 #include "nat.hpp"
-
-using namespace std;
 
 namespace nat {
 
@@ -29,8 +28,8 @@ namespace nat {
 	}
     // Arithmetic
     constexpr inline static Nat add(Nat a, Nat b) {
-		assert(UINT_MAX - a > b && "Out of UINT_MAX limit");
-		assert(UINT_MAX - b > a && "Out of UINT_MAX limit");
+		assert(UINT_MAX - a > b && "add: Out of UINT_MAX limit");
+		assert(UINT_MAX - b > a && "add: Out of UINT_MAX limit");
 		return a + b;
 	}
     constexpr inline static Nat sub(Nat a, Nat b) {
@@ -41,7 +40,11 @@ namespace nat {
 		return a - b;
 	}
     constexpr inline static Nat mul(Nat a, Nat b) {
-		// TODO: Make safe while still constexpr friendly
+        if (a == 0 || b == 0) {
+			return 0;
+		}
+		assert(UINT_MAX/a > b && "mul: Out of UINT_MAX limit");
+		assert(UINT_MAX/b > a && "mul: Out of UINT_MAX limit");
 		return a * b;
 	}
 
