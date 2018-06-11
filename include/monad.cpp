@@ -10,7 +10,7 @@ static int count(const char* s) {
 }
 
 static void printnum(int a) {
-	std::cout << a << std::endl;
+	std::cout << "A number: " << a << std::endl;
 }
 
 template<typename Func, typename Func1>
@@ -21,11 +21,17 @@ static void inline compose_void(Func1 vf, Func f) {
 
 template<typename Func, typename Func1>
 static void inline compose(Func1 g, Func f) {
-    auto r = g(); // returns void
-    f(r); // takes in void
+    auto r = g(); // returns auto
+    f(r); // takes in auto
 }
 
-
+template<typename Func>
+static void inline forever(Func f) {
+	auto r = f();
+	while(r) {
+		r = f();
+	}
+}
 // --------------- Main ---------------
 int main() {
     // Nest three things
@@ -37,15 +43,20 @@ int main() {
         });
     });
 
-    // Nest three things that return
+    // Nest three things (two return)
     compose([]() { return count("hello world"); }, [](int c) {
-        compose([=]() { return count("hello again"); }, [](int b) {
+        compose([]() { return count("hello again"); }, [](int b) {
             compose_void([=]() { printnum(b); }, []() {
                 return;
             });
         });
     });
 
+	// Forever loop
+	forever([]() {
+		std:: cout << "I print once!" << std::endl;
+		return false;
+	});
 
     return 0;
 }
