@@ -1,29 +1,26 @@
-(** Matches include/Nat.hpp *)
-Require Coq.Init.Nat.
+(** Matches include/List.hpp *)
+Require Coq.Lists.List.
 
-Class NativeNat A: Type :=
+Class NativeList (A : Type) :=
   {
-    succ: A -> A;
-    pred: A -> A;
-    even: A -> bool;
-    odd: A -> bool;
-    add: A -> A -> A;
-    sub: A -> A -> A;
-    mul: A -> A -> A;
-    div: A -> A -> A;
-    mod: A -> A -> A;
+    cons:   list A -> A -> list A;
+    dcons:  list A -> A -> list A;
+    head:   list A -> A;
+    tail:   list A -> list A;
+    dtail:  list A -> list A;
+    dappd:  list A -> list A -> list A;
+    dapp:   list A -> list A -> list A;
+    appd:   list A -> list A -> list A;
+    app:    list A -> list A -> list A;
+    empty:  list A -> bool;
+    has:    list A -> bool;
+    length: list A -> nat;
   }.
 
-Instance nativeNat: NativeNat nat :=
+Instance nativeListNat: NativeList nat :=
   {
-    succ := S;
-    pred := Nat.pred;
-    even := Nat.even;
-    odd := Nat.odd;
-    add := Nat.add;
-    sub := Nat.sub;
-    mul := Nat.mul;
-    div := Nat.div;
-    mod := Nat.modulo;
+    cons  := (fun l n => List.cons n l);
+    dcons := (fun l n => List.cons n l);
+    (** WIP *)
   }.
 
