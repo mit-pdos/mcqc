@@ -23,10 +23,9 @@ source-repository head
 executable machcoq
   main-is: Main.hs
   c-sources: cbits/clangjson.cpp
-  cc-options: -shared -fPIC -o dist/build/machcoq/machcoq-tmp/cbits/clangjson.dylib
   include-dirs: /usr/local/lib/llvm-6.0/include
   extra-libraries: stdc++ clang clangjson
-  extra-lib-dirs: /usr/local/lib/llvm-6.0/lib dist/build/machcoq/machcoq-tmp/cbits
+  extra-lib-dirs: /usr/local/lib/llvm-6.0/lib .
   other-modules:
       Parser.Mod
       Parser.Decl

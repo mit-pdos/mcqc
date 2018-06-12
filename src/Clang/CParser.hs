@@ -12,7 +12,7 @@ import qualified Data.ByteString.Lazy.Char8 as B
 import System.IO.Unsafe
 
 -- FFI libclang
-foreign import ccall "clangToJSON" c_clangToJSON :: CString
+foreign import ccall "clangToJSON" c_clangToJSON :: CString -> CString
 
 -- Top level namespace
 data Namespace = Namespace { namespace :: Text, functions :: [ FuncSig ] }
@@ -22,8 +22,10 @@ data Namespace = Namespace { namespace :: Text, functions :: [ FuncSig ] }
 data FuncSig = FuncSig { name :: Text, typ :: Text, args :: [ Text ] }
     deriving (Show, Eq, Generic, FromJSON)
 
-parseHpp :: CString -> Maybe Namespace
-parseHpp = decode . B.pack . unsafePerformIO . peekCAString
+parseHpp :: String -> Either String Namespace
+parseHpp fn =
+    let inputStr = unsafePerformIO $ newCAString fn in
+        let jsonStr = c_clangToJSON inputStr in
+            parseJson jsonStr
+                where parseJson = eitherDecode . B.pack . unsafePerformIO . peekCAString
 
-hppTree :: Maybe Namespace
-hppTree = parseHpp c_clangToJSON

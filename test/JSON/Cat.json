@@ -1,0 +1,411 @@
+{
+  "what": "module", "name": "Main", "need_magic": false, "need_dummy": true,
+  "used_modules": [
+
+  ],
+  "declarations": [
+    {
+      "what": "decl:ind", "name": "nat", "argnames": [
+
+      ],
+      "constructors": [
+        {
+          "name": "O", "argtypes": [
+
+          ]
+        },
+        {
+          "name": "S", "argtypes": [
+            {
+              "what": "type:glob", "name": "nat", "args": [
+
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "what": "decl:ind", "name": "list", "argnames": [
+        "A"
+      ],
+      "constructors": [
+        {
+          "name": "Nil", "argtypes": [
+
+          ]
+        },
+        {
+          "name": "Cons",
+          "argtypes": [
+            {
+              "what": "type:var", "name": "A"
+            },
+            {
+              "what": "type:glob", "name": "list",
+              "args": [
+                {
+                  "what": "type:var", "name": "A"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "what": "decl:fixgroup",
+      "fixlist": [
+        {
+          "what": "fixgroup:item", "name": "app",
+          "type": {
+            "what": "type:arrow",
+            "left": {
+              "what": "type:glob", "name": "list",
+              "args": [
+                {
+                  "what": "type:varidx", "name": 1
+                }
+              ]
+            },
+            "right": {
+              "what": "type:arrow",
+              "left": {
+                "what": "type:glob", "name": "list",
+                "args": [
+                  {
+                    "what": "type:varidx", "name": 1
+                  }
+                ]
+              },
+              "right": {
+                "what": "type:glob", "name": "list",
+                "args": [
+                  {
+                    "what": "type:varidx", "name": 1
+                  }
+                ]
+              }
+            }
+          },
+          "value": {
+            "what": "expr:lambda", "argnames": [
+              "l", "m"
+            ],
+            "body": {
+              "what": "expr:case", "expr": {
+                "what": "expr:rel", "name": "l"
+              },
+              "cases": [
+                {
+                  "what": "case",
+                  "pat": {
+                    "what": "pat:constructor", "name": "Nil", "argnames": [
+
+                    ]
+                  }, "body": {
+                    "what": "expr:rel", "name": "m"
+                  }
+                },
+                {
+                  "what": "case",
+                  "pat": {
+                    "what": "pat:constructor", "name": "Cons", "argnames": [
+                      "a", "l1"
+                    ]
+                  },
+                  "body": {
+                    "what": "expr:constructor", "name": "Cons",
+                    "args": [
+                      {
+                        "what": "expr:rel", "name": "a"
+                      },
+                      {
+                        "what": "expr:apply", "func": {
+                          "what": "expr:global", "name": "app"
+                        },
+                        "args": [
+                          {
+                            "what": "expr:rel", "name": "l1"
+                          }, {
+                            "what": "expr:rel", "name": "m"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "what": "decl:type", "name": "filename", "argnames": [
+
+      ], "value": {
+        "what": "type:axiom"
+      }
+    },
+    {
+      "what": "decl:type", "name": "fd", "argnames": [
+
+      ], "value": {
+        "what": "type:axiom"
+      }
+    },
+    {
+      "what": "decl:type", "name": "data", "argnames": [
+
+      ], "value": {
+        "what": "type:axiom"
+      }
+    },
+    {
+      "what": "decl:type", "name": "pathname", "argnames": [
+
+      ],
+      "value": {
+        "what": "type:glob", "name": "list",
+        "args": [
+          {
+            "what": "type:glob", "name": "filename", "args": [
+
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "what": "decl:ind", "name": "proc", "argnames": [
+        "x"
+      ],
+      "constructors": [
+        {
+          "name": "Open",
+          "argtypes": [
+            {
+              "what": "type:glob", "name": "pathname", "args": [
+
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Print",
+          "argtypes": [
+            {
+              "what": "type:glob", "name": "data", "args": [
+
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Read",
+          "argtypes": [
+            {
+              "what": "type:glob", "name": "fd", "args": [
+
+              ]
+            }, {
+              "what": "type:glob", "name": "nat", "args": [
+
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Close", "argtypes": [
+            {
+              "what": "type:glob", "name": "fd", "args": [
+
+              ]
+            }
+          ]
+        }, {
+          "name": "Ret", "argtypes": [
+            {
+              "what": "type:var", "name": "x"
+            }
+          ]
+        },
+        {
+          "name": "Bind",
+          "argtypes": [
+            {
+              "what": "type:glob", "name": "proc", "args": [
+                {
+                  "what": "type:unknown"
+                }
+              ]
+            },
+            {
+              "what": "type:arrow", "left": {
+                "what": "type:unknown"
+              },
+              "right": {
+                "what": "type:glob", "name": "proc",
+                "args": [
+                  {
+                    "what": "type:var", "name": "x"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "what": "decl:term", "name": "cat",
+      "type": {
+        "what": "type:arrow",
+        "left": {
+          "what": "type:glob", "name": "pathname", "args": [
+
+          ]
+        },
+        "right": {
+          "what": "type:arrow",
+          "left": {
+            "what": "type:glob", "name": "filename", "args": [
+
+            ]
+          },
+          "right": {
+            "what": "type:glob", "name": "proc", "args": [
+              {
+                "what": "type:dummy"
+              }
+            ]
+          }
+        }
+      },
+      "value": {
+        "what": "expr:lambda", "argnames": [
+          "path", "fn"
+        ],
+        "body": {
+          "what": "expr:constructor", "name": "Bind",
+          "args": [
+            {
+              "what": "expr:constructor", "name": "Open",
+              "args": [
+                {
+                  "what": "expr:apply", "func": {
+                    "what": "expr:global", "name": "app"
+                  },
+                  "args": [
+                    {
+                      "what": "expr:rel", "name": "path"
+                    },
+                    {
+                      "what": "expr:constructor", "name": "Cons",
+                      "args": [
+                        {
+                          "what": "expr:rel", "name": "fn"
+                        }, {
+                          "what": "expr:constructor", "name": "Nil", "args": [
+
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "what": "expr:lambda", "argnames": [
+                "fd0"
+              ],
+              "body": {
+                "what": "expr:constructor", "name": "Bind",
+                "args": [
+                  {
+                    "what": "expr:constructor", "name": "Read",
+                    "args": [
+                      {
+                        "what": "expr:coerce", "value": {
+                          "what": "expr:rel", "name": "fd0"
+                        }
+                      },
+                      {
+                        "what": "expr:constructor", "name": "S",
+                        "args": [
+                          {
+                            "what": "expr:constructor", "name": "O", "args": [
+
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "what": "expr:lambda", "argnames": [
+                      "contents"
+                    ],
+                    "body": {
+                      "what": "expr:constructor", "name": "Bind",
+                      "args": [
+                        {
+                          "what": "expr:constructor", "name": "Close",
+                          "args": [
+                            {
+                              "what": "expr:coerce",
+                              "value": {
+                                "what": "expr:rel", "name": "fd0"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "what": "expr:lambda", "argnames": [
+                            "_"
+                          ],
+                          "body": {
+                            "what": "expr:constructor", "name": "Bind",
+                            "args": [
+                              {
+                                "what": "expr:constructor", "name": "Print",
+                                "args": [
+                                  {
+                                    "what": "expr:coerce",
+                                    "value": {
+                                      "what": "expr:rel", "name": "contents"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "what": "expr:lambda", "argnames": [
+                                  "_"
+                                ],
+                                "body": {
+                                  "what": "expr:constructor", "name": "Ret",
+                                  "args": [
+                                    {
+                                      "what": "expr:dummy"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+

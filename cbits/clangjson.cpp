@@ -23,7 +23,7 @@ void print_func_bundle(CXCursor cursor, stringstream& os) {
     int num_args = clang_Cursor_getNumArguments(cursor);
 
 	// begin function JSON record
-	os << "{ \"name\": \"" << function_name << "\", \"type\" : \"" << return_type << "\", \"args\" : [ ";
+	os << "{ \"name\": \"" << function_name << "\", \"typ\" : \"" << return_type << "\", \"args\" : [ ";
     for (int i = 0; i < num_args; ++i)
     {
         auto arg_cursor = clang_Cursor_getArgument(cursor, i);
@@ -41,8 +41,8 @@ void print_func_bundle(CXCursor cursor, stringstream& os) {
 	os << " ]}, " << endl;
 }
 
-// Run for all Hpp files
-extern char* clangToJSON() {
+// Run for one Hpp file
+extern "C" char* clangToJSON(const char *fn) {
   CXIndex index = clang_createIndex(0, 0);
 
   // Set clang arguments
@@ -53,7 +53,7 @@ extern char* clangToJSON() {
 
   // translate
   CXTranslationUnit unit = clang_parseTranslationUnit( index,
-                                              "nat.hpp",
+                                              fn,
                                               defaultArguments,
                                               std::extent<decltype(defaultArguments)>::value,
                                               0,

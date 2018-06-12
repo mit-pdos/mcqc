@@ -30,8 +30,9 @@ transModule mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layou
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
 main :: IO ()
-main = print hppTree
-
+main = do
+  argv <- getArgs
+  mapM_ (\arg -> print $ parseHpp arg) argv
 --main :: IO ()
 --main = do
 --  argv <- getArgs
