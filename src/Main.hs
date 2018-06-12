@@ -5,13 +5,15 @@ import System.Environment
 import System.FilePath.Posix
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as B
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Aeson
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
+import Codegen.File
 import Parser.Mod
 import Clang.CParser
-import Codegen.File
+import System.Directory
 
 -- Calls codegen and prints errors
 cppWritter :: String -> Either String ByteString -> IO ()
@@ -29,16 +31,18 @@ transModule :: Module -> Either String ByteString
 transModule mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . toCFile) mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
+isLib :: FilePath -> Bool
+isLib s = T.takeEnd 4 (T.pack s) == ".hpp" || T.takeEnd 2 (T.pack s) == ".h"
+
 main :: IO ()
 main = do
   argv <- getArgs
-  mapM_ (\arg -> print $ parseHpp arg) argv
---main :: IO ()
---main = do
---  argv <- getArgs
---  mapM_ (\arg -> do
---    json <- B.readFile arg
---    let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
---        cpp = parse json >>= transModule
---    cppWritter newfilename cpp) argv
+  files <- listDirectory "include"
+  let clibs = filter isLib $ map (\s -> "include/" ++ s) files
+  mapM_ (\file -> parseHpp file >>= print . pretty) clibs
+  mapM_ (\arg -> do
+    json <- B.readFile arg;
+    let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
+        cpp = parse json >>= transModule
+    cppWritter newfilename cpp) argv
 
