@@ -113,6 +113,10 @@ extern "C" char* clangToJSON(const char *fn) {
 	  if (clang_getCursorKind(c) == CXCursor_FunctionDecl) {
         print_func_bundle(c, os);
       }
+      // Match template functions
+      if (clang_getCursorKind(c) == CXCursor_FunctionTemplate) {
+		print_func_bundle(c, os);
+      }
 
       return CXChildVisit_Recurse;
     },
