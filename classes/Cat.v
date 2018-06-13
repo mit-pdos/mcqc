@@ -11,7 +11,7 @@ Definition pathname := list filename.
 Inductive proc: Type -> Type :=
 | open : pathname -> proc fd
 | print : data -> proc unit
-| read: fd -> nat -> proc data
+| read: fd -> proc data
 | close : fd -> proc unit
 | ret: forall T, T -> proc T
 | bind: forall T T', proc T -> (T -> proc T') -> proc T'.
@@ -20,9 +20,9 @@ Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
   (at level 60, right associativity).
 
 Definition cat (path: pathname) (fn : filename) :=
-  fd <- open (path ++ [fn]);
-  contents <- read fd 1;
-  _ <- close fd;
+  f <- open (path ++ [fn]);
+  contents <- read f;
+  _ <- close f;
   _ <- print contents;
   ret unit.
 

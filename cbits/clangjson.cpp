@@ -1,14 +1,23 @@
 #include <iostream>
 #include <clang-c/Index.h>
 #include <sstream>      // std::stringstream
+#include <vector>
 #include <cstring>
 #include <sys/stat.h>
 #include <libgen.h>
 
 using namespace std;
 
+// global file pointer, workaround for non-binding lambda in visitChildren
+char *currentFilename = NULL;
 // Global state, capturing changes the visitor signature
 stringstream os;
+
+inline bool file_exists(const char *name) {
+  struct stat buffer;
+  return (stat (name, &buffer) == 0);
+}
+
 
 static inline string Convert(const CXString& s)
 {
@@ -17,39 +26,54 @@ static inline string Convert(const CXString& s)
     return result;
 }
 
-void print_func_bundle(CXCursor cursor, stringstream& os) {
-    auto type = clang_getCursorType(cursor);
-    auto function_name = Convert(clang_getCursorSpelling(cursor));
-    auto return_type   = Convert(clang_getTypeSpelling(clang_getResultType(type)));
+vector<string> split(string str, string token){
+    vector<string>result;
+    while(str.size()){
+        int index = str.find(token);
+        if(index!=string::npos){
+            result.push_back(str.substr(0,index));
+            str = str.substr(index+token.size());
+            if(str.size()==0)result.push_back(str);
+        } else{
+            result.push_back(str);
+            str = "";
+        }
+    }
+    return result;
+}
 
-    int num_args = clang_Cursor_getNumArguments(cursor);
+string argsToJSON(string s) {
+    unsigned int diff = s.find(')') - s.find('(') - 1;
+    s = s.substr(s.find('(')+1, diff);
+    stringstream sss;
+    sss << "\"";
+    vector<string> v = split(s, ", ");
+    for(int i = 0; i < v.size(); ++i){
+        if(i)
+            sss << "\", \"";
+        sss << v[i];
+    }
+    sss << "\"";
+    return sss.str();
+}
+
+int funcToJSON(CXCursor C) {
+	// Catch only function declarations
+	if (!clang_isDeclaration(C.kind))
+    	return -1;
+
+	// cout << clang_getCString(clang_Cursor_getArgument(C, 0)) << endl;
+    auto type = clang_getCursorType(C);
+    auto function_name = Convert(clang_getCursorSpelling(C));
+    auto return_type   = Convert(clang_getTypeSpelling(clang_getResultType(type)));
+	auto signature = Convert(clang_getCursorDisplayName(C));
 
 	// begin function JSON record
 	os << "{ \"name\": \"" << function_name << "\", \"typ\" : \"" << return_type << "\", \"args\" : [ ";
-    for (int i = 0; i < num_args; ++i)
-    {
-        auto arg_cursor = clang_Cursor_getArgument(cursor, i);
-        auto arg_name = Convert(clang_getCursorSpelling(arg_cursor));
-        if (arg_name.empty()) {
-            arg_name = "_";
-        }
-        auto arg_data_type = Convert(clang_getTypeSpelling(clang_getArgType(type, i)));
-		// append function arguments
-		os << "\"" << arg_data_type << "\"";
-		if (i < num_args - 1) {
-			os << ", ";
-		}
-    }
+	os << argsToJSON(signature);
 	os << " ]}, " << endl;
+	return 0;
 }
-
-inline bool file_exists(const char *name) {
-  struct stat buffer;
-  return (stat (name, &buffer) == 0);
-}
-
-// global file pointer, workaround for non-binding lambda in visitChildren
-char *currentFilename = NULL;
 
 // Run for one Hpp file
 extern "C" char* clangToJSON(const char *fn) {
@@ -111,11 +135,11 @@ extern "C" char* clangToJSON(const char *fn) {
 
 	  // Write it to file with all its functions
 	  if (clang_getCursorKind(c) == CXCursor_FunctionDecl) {
-        print_func_bundle(c, os);
+        funcToJSON(c);
       }
       // Match template functions
       if (clang_getCursorKind(c) == CXCursor_FunctionTemplate) {
-		print_func_bundle(c, os);
+		funcToJSON(c);
       }
 
       return CXChildVisit_Recurse;

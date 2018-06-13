@@ -34,10 +34,13 @@ instance Pretty FuncSig where
     pretty FuncSig { .. } = pretty typ
                             <+> pretty name
                             <+> "("
-                            <> vcat (map (\s -> pretty s <> ", ") (init args))
-                            <> pretty (last args)
+                            <> vcat (map (\s -> pretty s <> ", ") (safeinit args))
+                            <> pretty (safelast args)
                             <> ")"
-
+                                where safeinit [] = []
+                                      safeinit l = init l
+                                      safelast [] = ""
+                                      safelast l = last l
 -- Calls into cbits/clangjson.cpp
 parseHpp :: String -> IO Namespace
 parseHpp fn = do

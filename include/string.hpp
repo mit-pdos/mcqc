@@ -7,49 +7,49 @@
 
 // TODO: Make everything constexpr
 namespace string {
-	// String definition
-	enum StringAtom { Nil, Cons };
+    // String definition
+    enum StringAtom { Nil, Cons };
 
-	using Char = char;
-	using String = std::string;
+    using Char = char;
+    using String = std::string;
 
-	using StringTuple = const std::tuple<StringAtom, Char, String>; // Succ, head, tail
+    using StringTuple = const std::tuple<StringAtom, Char, String>; // Succ, head, tail
 
-	// Destructive match, l is considered mutable and should not be referenced again as l
-	const StringTuple dmatch(String l){
-		switch(l.empty()) {
-		case true:  return {Nil, 0, String()};
-		case false: {
-			Char head = l[0];
-			l.erase(l.begin());
-			return {Cons, head, l};
-		}
-		}
-		std::cerr << "Match fell through on: " << __FILE__ << ":" << __LINE__ << std::endl;
-		// Silence warning
-		return {Nil, 0, String() };
-	}
+    // Destructive match, l is considered mutable and should not be referenced again as l
+    const StringTuple dmatch(String l){
+        switch(l.empty()) {
+        case true:  return {Nil, 0, String()};
+        case false: {
+            Char head = l[0];
+            l.erase(l.begin());
+            return {Cons, head, l};
+        }
+        }
+        std::cerr << "Match fell through on: " << __FILE__ << ":" << __LINE__ << std::endl;
+        // Silence warning
+        return {Nil, 0, String() };
+    }
 
-	// Constructive match, l is considered immutable and will be copied safely
-	const StringTuple match(String l) {
-		switch(l.empty()) {
-		case true:  return {Nil, 0, String()};
-		case false: {
+    // Constructive match, l is considered immutable and will be copied safely
+    const StringTuple match(String l) {
+        switch(l.empty()) {
+        case true:  return {Nil, 0, String()};
+        case false: {
             auto head = l.begin();
-			return {Cons, *head, String(head++, l.end())};
-		}
-		}
-		std::cerr << "Match fell through on: " << __FILE__ << ":" << __LINE__ << std::endl;
-		// Silence warning
-		return {Nil, 0, String() };
-	}
+            return {Cons, *head, String(head++, l.end())};
+        }
+        }
+        std::cerr << "Match fell through on: " << __FILE__ << ":" << __LINE__ << std::endl;
+        // Silence warning
+        return {Nil, 0, String() };
+    }
 
     // Constructive cons, copies l so l can be referenced again
-	inline static String cons(String& l, Char h);
+    inline static String cons(String& l, Char h);
     // Destructive cons, reuses l so it can not be referenced again
-	inline static String dcons(String& l, Char h);
+    inline static String dcons(String& l, Char h);
 
-	// Utility functions
+    // Utility functions
     // List
     inline static Char head(String l);
 
@@ -70,6 +70,6 @@ namespace string {
     inline static bool in(String l, Char t);
 
     /// Arithmetic
-	inline static nat::Nat length(String l);
+    inline static nat::Nat length(String l);
 }
 #endif

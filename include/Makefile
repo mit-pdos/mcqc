@@ -1,7 +1,29 @@
-all: main
+.PHONY=all
+
+CPP=clang++
+CCFLAGS?=-g -DNDEBUG -std=c++17 -Wno-switch-bool -lc++experimental -lclang -I/usr/local/lib/llvm-6.0/include -L/usr/local/lib/llvm-6.0/lib
+
+OPT=opt-6.0
+OPTFLAGS?=-O3 -always-inline -dot-callgraph
+
+all: main cat
+pdf: cat.pdf
 
 main: main.cpp
-	clang++ -std=c++17 -Wno-switch-bool $< -o $@
+	${CPP} ${CCFLAGS} $< -o $@
+main.pdf: main.cpp
+	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
+	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
+	dot -Tpdf callgraph.dot -o $@
+	rm callgraph.dot $<.bc $<.opt.bc
+
+cat: cat.cpp
+	${CPP} ${CCFLAGS} $< -o $@
+cat.pdf: cat.cpp
+	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
+	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
+	dot -Tpdf callgraph.dot -o $@
+	rm callgraph.dot $<.bc $<.opt.bc
 
 clean:
-	- rm main *.gch
+	- rm -rf main cat *.pdf *.gch *.dSYM

@@ -5,44 +5,44 @@
 #include "nat.hpp"
 
 namespace list {
-	// Nat definition
-	enum ListAtom { Nil, Cons };
+    // Nat definition
+    enum ListAtom { Nil, Cons };
 
     template<typename T>
-	using List = std::list<T>;
+    using List = std::list<T>;
 
     template<typename T>
-	using ListTuple = const std::tuple<ListAtom, T, List<T>>; // Succ, head, tail
+    using ListTuple = const std::tuple<ListAtom, T, List<T>>; // Succ, head, tail
 
-	// Destructive match, l is considered mutable and should not be referenced again as l
-	template<typename T>
-	const ListTuple<T> dmatch(List<T> l){
-		switch(l.empty()) {
-		case true:  return {Nil, T(), List<T>()};
-		case false: return {Cons, l.front(), l.pop_front()};
-		}
-	}
+    // Destructive match, l is considered mutable and should not be referenced again as l
+    template<typename T>
+    const ListTuple<T> dmatch(List<T> l){
+        switch(l.empty()) {
+        case true:  return {Nil, T(), List<T>()};
+        case false: return {Cons, l.front(), l.pop_front()};
+        }
+    }
 
-	// Constructive match, l is considered immutable and will be copied safely
-	template<typename T>
-	const ListTuple<T> match(List<T> l) {
-		switch(l.empty()) {
-		case true:  return {Nil, T(), List<T>()};
-		case false: {
+    // Constructive match, l is considered immutable and will be copied safely
+    template<typename T>
+    const ListTuple<T> match(List<T> l) {
+        switch(l.empty()) {
+        case true:  return {Nil, T(), List<T>()};
+        case false: {
             auto head = l.begin();
-			return {Cons, *head, List<T>(head++, l.end())};
-		}
-		}
-	}
+            return {Cons, *head, List<T>(head++, l.end())};
+        }
+        }
+    }
 
     // Constructive cons, copies l so l can be referenced again
-	template<typename T>
-	inline static List<T> cons(List<T>& l, T t);
+    template<typename T>
+    inline static List<T> cons(List<T>& l, T t);
     // Destructive cons, reuses l so it can not be referenced again
-	template<typename T>
-	inline static List<T> dcons(List<T>& l, T t);
+    template<typename T>
+    inline static List<T> dcons(List<T>& l, T t);
 
-	// Utility functions
+    // Utility functions
     // List
     template<typename T>
     inline static T head(List<T> l);
@@ -68,13 +68,13 @@ namespace list {
     inline static List<T> app(List<T> l1, List<T> l2);
 
     // Boolean
-	template<typename T>
+    template<typename T>
     inline static bool empty(List<T> l);
     template<typename T>
     inline static bool in(List<T> l);
 
     /// Arithmetic
-	template<typename T>
-	inline static nat::Nat length(List<T> l);
+    template<typename T>
+    inline static nat::Nat length(List<T> l);
 }
 #endif
