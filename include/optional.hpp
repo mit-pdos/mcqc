@@ -1,26 +1,25 @@
 #ifndef OPTIONAL_H
 #define OPTIONAL_H
-#include <tuple>
 #include <optional>
+#include "type_checks.hpp"
 
 namespace optional {
-    // Nat definition
-    enum OptionalAtom { None, Some };
 
     template<typename T>
     using Optional = std::optional<T>;
 
-    template<typename T>
-    using OptionalTuple = const std::tuple<OptionalAtom, T>;
+    template<typename T, typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+    constexpr const auto match(Optional<T>& o, Func f, Func2 g) {
+        static_assert(CallableWith<Func>, "1st argument not callable with void");
+        static_assert(CallableWith<Func2, T>, "2nd argument not callable with T");
+        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, T>>::value, "Arg function return types must match");
 
-    template<typename T>
-    constexpr const OptionalTuple<T> match(Optional<T>& o) {
-        switch(o.has_value()) {
-        case true:  return {Some, o.value()};
-        case false: return {None, T()};
+		switch(o.has_value()) {
+        case false: return f();
+        case true:  return g(o.value());
         }
         // Silence warnings
-        return {None, T()};
+        return f();
     }
 
     // None

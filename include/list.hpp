@@ -3,34 +3,37 @@
 #include <tuple>
 #include <list>
 #include "nat.hpp"
+#include "type_checks.hpp"
 
 namespace list {
-    // Nat definition
-    enum ListAtom { Nil, Cons };
-
     template<typename T>
     using List = std::list<T>;
 
-    template<typename T>
-    using ListTuple = const std::tuple<ListAtom, T, List<T>>; // Succ, head, tail
-
     // Destructive match, l is considered mutable and should not be referenced again as l
-    template<typename T>
-    const ListTuple<T> dmatch(List<T> l){
-        switch(l.empty()) {
-        case true:  return {Nil, T(), List<T>()};
-        case false: return {Cons, l.front(), l.pop_front()};
+    template<typename T, typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+    inline static const Ret dmatch(List<T> l, Func f, Func2 g){
+        static_assert(CallableWith<Func>, "1st argument not callable with void");
+        static_assert(CallableWith<Func2, T, List<T>>, "2nd argument not callable with (T, List<T>");
+        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, T, List<T>>>::value, "Arg function return types must match");
+
+		switch(l.empty()) {
+        case true:  return f();
+        case false: return g(l.front(), l.pop_front());
         }
     }
 
     // Constructive match, l is considered immutable and will be copied safely
-    template<typename T>
-    const ListTuple<T> match(List<T> l) {
+    template<typename T, typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+    inline static const Ret match(List<T> l, Func f, Func g) {
+        static_assert(CallableWith<Func>, "1st argument not callable with void");
+        static_assert(CallableWith<Func2, T, List<T>>, "2nd argument not callable with (T, List<T>)");
+        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, T, List<T>>>::value, "Arg function return types must match");
+
         switch(l.empty()) {
-        case true:  return {Nil, T(), List<T>()};
+        case true:  return f();
         case false: {
             auto head = l.begin();
-            return {Cons, *head, List<T>(head++, l.end())};
+            return g(*head, List<T>(head++, l.end()));
         }
         }
     }

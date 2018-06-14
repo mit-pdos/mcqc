@@ -13,7 +13,6 @@ subst s var CExprLambda { .. } = CExprLambda largs (subst s var lbody)
 subst s var CExprCase   { .. } = CExprCase (subst s var cexpr) (map (subst s var) cases)
 subst s var CExprMatch  { .. } = CExprMatch mpat (subst s var mbody)
 subst s var CExprCall   { .. } = CExprCall cfunc (map (subst s var) cparams)
-subst s var CExprInfix  { .. } = CExprInfix op (subst s var left) (subst s var right)
 subst s var s' = s
 
 --flattenPatterns :: CExpr -> CExpr

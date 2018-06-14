@@ -1,19 +1,21 @@
 #ifndef NAT_H
 #define NAT_H
-#include <tuple>
+#include <type_traits>
+#include "type_checks.hpp"
 
 namespace nat {
     // Nat definition
-    enum NatAtom { O, S };
     using Nat = const unsigned int;
-    using MatchTuple = const std::tuple<NatAtom, Nat>;
-
 
     // Matching unsigned int -> Nat
-    constexpr const MatchTuple match(Nat a){
+	template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+    constexpr inline static const Ret match(Nat a, Func f, Func2 g){
+        static_assert(CallableWith<Func>, "1st argument not callable with void");
+        static_assert(CallableWith<Func2, Nat>, "2nd argument not callable with Nat");
+        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, Nat>>::value, "Arg function return types must match");
         switch(a) {
-        case 0: return {O, 0};
-        default: return {S, a-1};
+        case 0:  return f();     // Call function with no argument
+        default: return g(a-1);  // Call function with m, where S m = a
         }
     }
 

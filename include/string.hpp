@@ -3,6 +3,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include "type_checks.hpp"
 #include "nat.hpp"
 
 // TODO: Make everything constexpr
@@ -13,35 +14,37 @@ namespace string {
     using Char = char;
     using String = std::string;
 
-    using StringTuple = const std::tuple<StringAtom, Char, String>; // Succ, head, tail
-
     // Destructive match, l is considered mutable and should not be referenced again as l
-    const StringTuple dmatch(String l){
-        switch(l.empty()) {
-        case true:  return {Nil, 0, String()};
+    template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+	inline static const Ret dmatch(String l, Func f, Func2 g){
+        static_assert(CallableWith<Func>, "1st argument not callable with void");
+        static_assert(CallableWith<Func2, Char, String>, "2nd argument not callable with (Char, String)");
+        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, Char, String>>::value, "Arg function return types must match");
+
+		switch(l.empty()) {
+        case true:  return f();
         case false: {
             Char head = l[0];
             l.erase(l.begin());
-            return {Cons, head, l};
+            return g(head, l);
         }
         }
-        std::cerr << "Match fell through on: " << __FILE__ << ":" << __LINE__ << std::endl;
-        // Silence warning
-        return {Nil, 0, String() };
     }
 
     // Constructive match, l is considered immutable and will be copied safely
-    const StringTuple match(String l) {
+    template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+	inline static const Ret match(String l, Func f, Func2 g) {
+        static_assert(CallableWith<Func>, "1st argument not callable with void");
+        static_assert(CallableWith<Func2, Char, String>, "2nd argument not callable with (Char, String)");
+        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, Char, String>>::value, "Arg function return types must match");
+
         switch(l.empty()) {
-        case true:  return {Nil, 0, String()};
+        case true:  return f();
         case false: {
             auto head = l.begin();
-            return {Cons, *head, String(head++, l.end())};
+            return g(*head, String(head++, l.end()));
         }
         }
-        std::cerr << "Match fell through on: " << __FILE__ << ":" << __LINE__ << std::endl;
-        // Silence warning
-        return {Nil, 0, String() };
     }
 
     // Constructive cons, copies l so l can be referenced again

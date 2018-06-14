@@ -9,7 +9,7 @@ OPTFLAGS?=-O3 -always-inline -dot-callgraph
 all: main cat
 pdf: cat.pdf
 
-main: main.cpp
+main: main.cpp *.hpp
 	${CPP} ${CCFLAGS} $< -o $@
 main.pdf: main.cpp
 	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
