@@ -1,23 +1,20 @@
 #include <iostream>
+#include <ctime>
 #include "optional.cpp"
 #include "nat.cpp"
+#include "list.hpp"
+#include "list.cpp"
+#include "proc.hpp"
+#include "benchmark.h"
+
+#define BMAX 1000
 
 using namespace optional;
 using namespace nat;
-
-static inline constexpr Nat fib2(Nat a) {
-	switch(a) {
-    case 0:  return (Nat)1;     // Call function with no argument
-    default: switch(a-1) {    // Call function with m, where S m = a
-		case 0:  return (Nat)1;
-	    default: return add(fib2(a-1), fib2(a-2));
-		}
-    }
-}
-
+using namespace list;
 
 // Functional fibonacci
-static inline constexpr Nat fib(Nat a) {
+static inline constexpr Nat fib(Nat &a) {
 	return match(a,
 		[]()	  { return (Nat)1; },
 	    [](Nat sm) {
@@ -27,9 +24,20 @@ static inline constexpr Nat fib(Nat a) {
 		});
 }
 
+// Reverse a list
+template<typename T>
+static inline List<T> rev(List<T> &l) {
+	return dmatch(l,
+		[]()	{ return List<T>(); },
+		[](T h, List<T> ls) { return dapp(rev(ls), List<T>(1, h)); });
+}
 
 int main() {
 
+	// For benchmarks
+	time_t tstart, tend;
+
+	// Optionals
     Optional<int> o = Optional<int>(42);
 	// Switch 1
 	match(o,
@@ -42,7 +50,23 @@ int main() {
 		[]()	  { std::cout << "Empty" << std::endl; },
 		[](int m) { std::cout << "Some " << m << std::endl; });
 
-	std::cout << fib(42) << std::endl;
+	// Lists
+	int myints[] = {16,2,77,29, 32, 18, 23, 232, 23, 23, 54, 12, 1};
+	List<int> foo (myints, myints + sizeof(myints) / sizeof(int) );
+	proc::print(foo);
+	proc::print(rev(foo));
+
+	// Lists benchmark
+	List<int> bar;
+	for(int i = 0; i < BMAX; ++i)
+		bar.push_back(i);
+	proc::print(bar);
+	tic();
+	proc::print(rev(bar));
+	toc();
+
+	// Nats
+	std::cout << fib(20) << std::endl;
     return 0;
 }
 

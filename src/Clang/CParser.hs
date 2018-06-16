@@ -50,3 +50,5 @@ parseHpp fn = do
         where unwrapEither (Right s) = s
               unwrapEither (Left err) = error err
 
+isLib :: FilePath -> Bool
+isLib s = T.takeEnd 4 (T.pack s) == ".hpp"

@@ -6,8 +6,8 @@ CCFLAGS?=-g -DNDEBUG -std=c++17 -Wno-switch-bool -lc++experimental -lclang -I/us
 OPT=opt-6.0
 OPTFLAGS?=-O3 -always-inline -dot-callgraph
 
-all: main cat
-pdf: cat.pdf
+all: main
+pdf: main.pdf
 
 main: main.cpp *.hpp
 	${CPP} ${CCFLAGS} $< -o $@
@@ -17,13 +17,5 @@ main.pdf: main.cpp
 	dot -Tpdf callgraph.dot -o $@
 	rm callgraph.dot $<.bc $<.opt.bc
 
-cat: cat.cpp
-	${CPP} ${CCFLAGS} $< -o $@
-cat.pdf: cat.cpp
-	${CPP} ${CCFLAGS} -emit-llvm -c $< -o $<.bc
-	${OPT} ${OPTFLAGS} $<.bc -o $<.opt.bc
-	dot -Tpdf callgraph.dot -o $@
-	rm callgraph.dot $<.bc $<.opt.bc
-
 clean:
-	- rm -rf main cat *.pdf *.gch *.dSYM
+	- rm -rf main *.pdf *.gch *.dSYM

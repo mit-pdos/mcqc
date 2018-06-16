@@ -1,4 +1,5 @@
 #include "string.hpp"
+#include "list.hpp"
 #include <iostream>
 
 namespace proc {
@@ -6,12 +7,12 @@ namespace proc {
 	using Fd=FILE *;
 
 	// open file
-	Fd open(string::String s) {
+	static inline Fd open(string::String s) {
 		return fopen(s.c_str(), "r");
 	}
 
 	// read file
-	string::String read(Fd f) {
+	static inline string::String read(Fd f) {
 		fseek(f, 0, SEEK_END);
 		long fsize = ftell(f);
 		fseek(f, 0, SEEK_SET);  //same as rewind(f);
@@ -21,23 +22,34 @@ namespace proc {
 	}
 
 	// write file
-	void write(Fd f, string::String& s) {
-        fwrite(&s[0], sizeof(char), s.size(), file);
+	static inline void write(Fd f, string::String& s) {
+        fwrite(&s[0], sizeof(char), s.size(), f);
 	}
 
 	// close file
-	void close(Fd f) {
+	static inline void close(Fd f) {
 		fclose(f);
 	}
 
 	// print to standard output
-	void print(string::String& s) {
+	static inline void print(string::String& s) {
 		std::cout << s << std::endl;
+	}
+
+	template<typename T>
+	static inline void print(const list::List<T>& s) {
+		std::cout << "{ ";
+		for(typename list::List<T>::const_iterator i = s.begin(); i != s.end(); ++i) {
+			if (i != s.begin())
+				std::cout << ", ";
+			std::cout << *i;
+		}
+		std::cout << "}" << std::endl;
 	}
 
     // forever: infinite loop
 	template<typename Func>
-    void forever(Func inner) {
+    static inline void forever(Func inner) {
 		static_assert(std::is_function<typename std::remove_pointer<Func>::type>::value, "Argument needs to be a lambda");
         bool retval = inner();
         while(retval) {

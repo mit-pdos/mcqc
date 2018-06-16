@@ -3,7 +3,7 @@
 #include <tuple>
 #include <list>
 #include "nat.hpp"
-#include "type_checks.hpp"
+#include "type_checks.h"
 
 namespace list {
     template<typename T>
@@ -18,13 +18,19 @@ namespace list {
 
 		switch(l.empty()) {
         case true:  return f();
-        case false: return g(l.front(), l.pop_front());
+        case false: {
+			auto head = l.begin();
+			l.pop_front();
+			return g(*head, l);
+		}
         }
+		// Should never happen
+		return f();
     }
 
     // Constructive match, l is considered immutable and will be copied safely
     template<typename T, typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
-    inline static const Ret match(List<T> l, Func f, Func g) {
+    inline static const Ret match(List<T> l, Func f, Func2 g) {
         static_assert(CallableWith<Func>, "1st argument not callable with void");
         static_assert(CallableWith<Func2, T, List<T>>, "2nd argument not callable with (T, List<T>)");
         static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, T, List<T>>>::value, "Arg function return types must match");
@@ -33,9 +39,11 @@ namespace list {
         case true:  return f();
         case false: {
             auto head = l.begin();
-            return g(*head, List<T>(head++, l.end()));
+            return g(*head, List<T>(++head, l.end()));
         }
         }
+		// Should never happen
+		return f();
     }
 
     // Constructive cons, copies l so l can be referenced again

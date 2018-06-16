@@ -3,7 +3,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
-#include "type_checks.hpp"
+#include "type_checks.h"
 #include "nat.hpp"
 
 // TODO: Make everything constexpr

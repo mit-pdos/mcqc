@@ -1,7 +1,7 @@
 #ifndef NAT_H
 #define NAT_H
 #include <type_traits>
-#include "type_checks.hpp"
+#include "type_checks.h"
 
 namespace nat {
     // Nat definition

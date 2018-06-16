@@ -31,9 +31,6 @@ transModule :: Module -> Either String ByteString
 transModule mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . toCFile) mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
-isLib :: FilePath -> Bool
-isLib s = T.takeEnd 4 (T.pack s) == ".hpp" || T.takeEnd 2 (T.pack s) == ".h"
-
 main :: IO ()
 main = do
   argv <- getArgs

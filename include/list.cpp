@@ -29,7 +29,7 @@ namespace list {
     template<typename T>
     inline static List<T> tail(List<T> l) {
         auto head = l.begin();
-        return List<T>(head++, l.end());
+        return List<T>(++head, l.end());
     }
     // Destructive tail, l is considered mutable and should not be referenced again as l
     template<typename T>

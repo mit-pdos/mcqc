@@ -1,7 +1,7 @@
 #ifndef OPTIONAL_H
 #define OPTIONAL_H
 #include <optional>
-#include "type_checks.hpp"
+#include "type_checks.h"
 
 namespace optional {
 
