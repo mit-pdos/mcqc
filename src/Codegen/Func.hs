@@ -1,28 +1,31 @@
-{-# LANGUAGE OverloadedStrings, DuplicateRecordFields, TypeSynonymInstances, RecordWildCards, FlexibleInstances  #-}
+{-# LANGUAGE DeriveAnyClass, DeriveGeneric, OverloadedStrings, DuplicateRecordFields, TypeSynonymInstances, RecordWildCards, FlexibleInstances  #-}
 module Codegen.Func (CFunc, toCFunc) where
+import GHC.Generics
 import Codegen.Rewrite (toCType, toCName)
 import Codegen.Expr
 import Codegen.Defs
 import Codegen.Pattern
 import Codegen.Utils
 import Parser.Decl
+import Sema.Pipeline
 import Parser.Fix
 import Parser.Expr
+import Data.Aeson
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 
 -- C function definition, ie: int main(int argc, char **argv)
 data CFunc = CFunc { fname :: Text, ftype :: Text, fargs :: [CDef], fvars :: [Text], fbody :: CExpr }
-  deriving (Eq)
+  deriving (Eq, Generic, ToJSON)
 
 instance Pretty CFunc where
   pretty CFunc { .. } = pretty ftype <+> mkFuncSig fname (map pretty fargs)
                     <> vcat ["{", tab mainbody, "}"]
                     <> line
     where mainbody = "var<int>" <+> concatWith (surround ", ") (map pretty fvars) <> ";"
-                 <> line
-                 <> line
-                 <> pretty fbody
+                      <> line
+                      <> "return" <+> (pretty . semantics) fbody
 
 -- Nat -> Nat -> Bool ==> [Nat, Nat, Bool]
 getCTypeList :: Typ -> [Text]
@@ -48,10 +51,12 @@ getCaseMatchVars CPatTuple { .. } = concat $ map getCaseMatchVars items
 getCaseVars :: CExpr -> [Text]
 getCaseVars e@CExprCase { cases = [], .. } = []
 getCaseVars e@CExprCase { cases = m:ms, .. } = getCaseVars m ++ getCaseVars smaller
-    where smaller = CExprCase (CExprRel "foo") ms
-getCaseVars e@CExprMatch{ .. } = getCaseMatchVars mpat ++ getCaseVars mbody
-getCaseVars CExprRel    { .. } = [rname]
-getCaseVars CExprGlobal { .. } = [gname]
+    where smaller = CExprCase (CExprStr "foobar") ms
+getCaseVars e@CExprMatch { .. } = getCaseMatchVars mpat ++ getCaseVars mbody
+getCaseVars CExprStr     { .. } = [str]
+getCaseVars CExprNat     { .. } = [T.pack . show $ nat]
+getCaseVars CExprListNat { .. } = map (T.pack . show) nats
+getCaseVars CExprListStr { .. } = strs
 getCaseVars _ = []
 
 

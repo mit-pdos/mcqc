@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings, DuplicateRecordFields, TypeSynonymInstances, RecordWildCards, FlexibleInstances  #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass  #-}
 module Codegen.Defs where
+import GHC.Generics
+import Data.Aeson
 import Data.Text (Text, unpack, pack)
 import Data.Text.Prettyprint.Doc
 
 -- C typed definition, ie: "int foo"
 data CDef = CDef { cname :: Text, ctype :: Text }
-  deriving (Eq)
+  deriving (Eq, Generic, ToJSON)
 
 -- Pretty print C++ from these types
 instance Pretty CDef where

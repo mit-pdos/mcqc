@@ -40,14 +40,18 @@ executable machcoq
       Codegen.Pattern
       Codegen.Rewrite
       Codegen.Utils
+      Clang.FuncSig
       Clang.CParser
-      Optimizations.Flatten
+      Clang.Linker
+      Sema.Nat
+      Sema.Pipeline
       Utils
       Paths_machcoq
   hs-source-dirs:
       src
   build-depends:
       aeson,
+      aeson-pretty,
       ansi-wl-pprint,
       base >=4.9 && <5,
       bytestring,

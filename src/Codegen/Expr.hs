@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings, FlexibleContexts, RecordWildCards #-}
+{-# LANGUAGE DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
 module Codegen.Expr where
+import GHC.Generics
 import Codegen.Rewrite
 import Codegen.Defs
 import Codegen.Pattern
 import Codegen.Utils
 import Parser.Decl
 import Parser.Expr
+import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
@@ -17,36 +19,56 @@ data CExpr =
           | CExprCase { cexpr :: CExpr, cases :: [CExpr] }
           | CExprMatch { mpat :: CPattern, mbody :: CExpr } -- Matched to Case
           | CExprCall { cfunc :: Text, cparams :: [CExpr] } -- Use this for function calls and constructors
-          | CExprRel    { rname :: Text }
-          | CExprGlobal { gname :: Text }
           | CExprCtor { cname :: Text, cargs :: [CDef] }
-    deriving (Eq)
+          -- Reduced forms
+          -- TODO: Add optional and nested types
+          | CExprStr { str :: Text }
+          | CExprNat { nat :: Int }
+          | CExprListNat { nats :: [Int] }
+          | CExprListStr { strs :: [Text] }
+    deriving (Eq, Generic, ToJSON)
 
--- Expression rewritting
 toCExpr :: Expr -> CExpr
-toCExpr ExprLambda      { .. } = CExprGlobal "<PLACEHOLDER FOR LAMBDA>" -- CExprLambda (getCDefExtrap argtypes argnames) (toCExpr body)
-toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseToCExpr cases)
+toCExpr ExprLambda      { .. } = CExprStr "<PLACEHOLDER FOR LAMBDA>" -- CExprLambda (getCDefExtrap argtypes argnames) (toCExpr body)
+toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseCExpr cases)
 toCExpr ExprConstructor { .. } = CExprCall (toCName name) (map toCExpr args)
-toCExpr ExprApply       { func = ExprGlobal { .. }, args = al@[l, r]} = CExprCall (toCName name) (map toCExpr al)
-toCExpr ExprApply       { func = ExprRel    { .. }, args = al@[l, r]} = CExprCall (toCName name) (map toCExpr al)
-toCExpr ExprApply       { func = ExprGlobal { .. }, args = al } = CExprCall (toCName name) (map toCExpr al)
-toCExpr ExprRel         { .. } = CExprRel (toCName name)
-toCExpr ExprGlobal      { .. } = CExprGlobal (toCName name)
--- Cases
-caseToCExpr :: Case -> CExpr
-caseToCExpr Case        { .. } = CExprMatch (toCPattern pat) (toCExpr body)
+toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (toCName name) (map toCExpr args)
+toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (toCName name) (map toCExpr args)
+toCExpr ExprRel         { .. } = CExprStr (toCName name) -- TODO: Distinguish between Rel and Global
+toCExpr ExprGlobal      { .. } = CExprStr (toCName name)
 
+-- Case to CExpr
+caseCExpr :: Case -> CExpr
+caseCExpr Case { .. } = CExprMatch (toCPattern pat) (toCExpr body)
+
+-- // Functional fibonacci
+-- static inline constexpr Nat fib(Nat &a) {
+--     return match(a,
+--         []()      { return (Nat)1; },
+--         [](Nat sm) {
+--           return match(sm,
+--             []()       { return (Nat)1; },
+--             [sm](Nat m) { return add(fib(m), fib(sm)); });
+--         });
+-- }
 instance Pretty CExpr where
   pretty CExprLambda  { .. } = "<PLACEHOLDER FOR LAMBDA>" :: Doc ann
-  pretty CExprCase    { .. } = line
-                             <> "Match" <+> (maybeParens . pretty) cexpr <+> "{"
+  pretty CExprCase    { .. } = "match(" <> pretty cexpr <> ","
                              <> hardline
-                             <> (tab . vcat) (map pretty cases)
-                             <> "}"
+                             <> (tab . vcat . (map (\p -> p <> "," <> hardline)) . (map pretty) . init) cases  -- add a comma in intermediate cases
+                             <> (pretty . last) cases                                                    -- not on the last one though
+                             <> ");"
                              <> hardline
-  pretty CExprMatch   { .. } = hcat $ ["When", (maybeParens . pretty) mpat, "\t", "return ", pretty mbody, ";", hardline]
+  pretty CExprMatch   { .. } = "[](" <> pretty mpat
+                             <+> "){ return"
+                             <+> pretty mbody
   pretty CExprCall    { .. } = mkFuncSig cfunc (map pretty cparams)
-  pretty CExprRel     { .. } = pretty . toCName $ rname
-  pretty CExprGlobal  { .. } = pretty . toCName $ gname
-  pretty CExprCtor    { .. } = hcat $ ["C", (maybeParens . pretty) cname, "\t", "return "] ++ (map pretty cargs)
+  pretty CExprStr     { .. } = pretty . toCName $ str
+  pretty CExprNat     { .. } = pretty nat
+  pretty CExprStr     { .. } = pretty . toCName $ str
+  pretty CExprListNat { .. } = "PLACEHOLDER FOR INLINE List<int>(" <+> concatWith (surround ", ") (map pretty nats) <> ");"
+  pretty CExprListStr { .. } = "PLACEHOLDER FOR INLINE List<String>(" <+> concatWith (surround ", ") (map pretty strs) <> ");"
+  pretty CExprCtor    { .. } = "Constructor" <> pretty cname
+                             <+> "return"
+                             <+> hcat (map pretty cargs)
 

@@ -18,6 +18,15 @@ data Typ =
     | TypGlob { name :: Text }
     deriving (Show, Eq)
 
+-- Expressions
+data Expr = ExprLambda { argnames :: [Text], body :: Expr }
+          | ExprCase { expr :: Expr, cases :: [Case] }
+          | ExprConstructor { name :: Text, args :: [Expr] }
+          | ExprApply { func :: Expr , args :: [Expr]}
+          | ExprRel { name :: Text }
+          | ExprGlobal { name :: Text }
+    deriving (Show, Eq)
+
 instance FromJSON Typ where
   parseJSON (Object v) =
       case (lookup "what" v) of
@@ -28,15 +37,6 @@ instance FromJSON Typ where
         Just "type:glob"        -> TypGlob   <$> v .:  "name"
         Just s                  -> fail ("unknown kind: " ++ (show v) ++ " because " ++ (show s))
         Nothing                 -> fail ("No 'what' quantifier for: " ++ (show v))
-
--- Expressions
-data Expr = ExprLambda { argnames :: [Text], body :: Expr }
-          | ExprCase { expr :: Expr, cases :: [Case] }
-          | ExprConstructor { name :: Text, args :: [Expr] }
-          | ExprApply { func :: Expr , args :: [Expr]}
-          | ExprRel { name :: Text }
-          | ExprGlobal { name :: Text }
-    deriving (Show, Eq)
 
 instance FromJSON Expr where
   parseJSON (Object v) =

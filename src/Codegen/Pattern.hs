@@ -1,8 +1,10 @@
-{-# LANGUAGE RecordWildCards, DuplicateRecordFields, OverloadedStrings  #-}
+{-# LANGUAGE RecordWildCards, DuplicateRecordFields, DeriveGeneric, DeriveAnyClass, OverloadedStrings  #-}
 module Codegen.Pattern where
+import GHC.Generics
 import Parser.Pattern
 import Codegen.Rewrite
 import Codegen.Utils
+import Data.Aeson
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
 
@@ -11,7 +13,7 @@ data CPattern = CPatCtor { name :: Text,  argnames :: [Text] }
              | CPatTuple { items :: [CPattern] }
              | CPatRel  { name :: Text }
              | CPatWild {}
-    deriving (Eq)
+    deriving (Eq, Generic, ToJSON)
 
 -- Expression rewritting
 toCPattern :: Pattern -> CPattern
