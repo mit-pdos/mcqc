@@ -37,7 +37,6 @@ executable machcoq
       Codegen.Func
       Codegen.Defs
       Codegen.Expr
-      Codegen.Pattern
       Codegen.Rewrite
       Codegen.Utils
       Clang.FuncSig
@@ -45,6 +44,10 @@ executable machcoq
       Clang.Linker
       Sema.Nat
       Sema.Pipeline
+      PrettyPrinter.Defs
+      PrettyPrinter.Expr
+      PrettyPrinter.File
+      PrettyPrinter.Func
       Utils
       Paths_machcoq
   hs-source-dirs:

@@ -1,74 +1,67 @@
-{-# LANGUAGE DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE TemplateHaskell, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
 module Codegen.Expr where
 import GHC.Generics
-import Codegen.Rewrite
 import Codegen.Defs
-import Codegen.Pattern
 import Codegen.Utils
+import Parser.Pattern
 import Parser.Decl
 import Parser.Expr
+import Control.Lens
 import Data.Aeson
+import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Text.Prettyprint.Doc
-import Data.Text.Prettyprint.Doc.Render.Text
 
 -- C++ Expressions
 data CExpr =
-            CExprLambda { largs :: [CDef], lbody :: CExpr }
-          | CExprCase { cexpr :: CExpr, cases :: [CExpr] }
-          | CExprMatch { mpat :: CPattern, mbody :: CExpr } -- Matched to Case
-          | CExprCall { cfunc :: Text, cparams :: [CExpr] } -- Use this for function calls and constructors
-          | CExprCtor { cname :: Text, cargs :: [CDef] }
+            CExprLambda { _largs :: [CDef], _lbody :: CExpr }
+          | CExprCase { _cexpr :: CExpr, _cases :: [CExpr] }
+          | CExprMatch { _mpat :: CExpr, _mbody :: CExpr }    -- Matched to Case
+          | CExprCall { _fname :: Text, _fparams :: [CExpr] } -- Use this for function calls and constructors
+          -- Patterns
+          | CExprCtor { _cname :: Text, _cargs :: [CDef] }
+          | CExprTuple { _items :: [CExpr] }
+          | CExprWild {}                                      -- Wildcard pattern, matches everything
           -- Reduced forms
           -- TODO: Add optional and nested types
-          | CExprStr { str :: Text }
-          | CExprNat { nat :: Int }
-          | CExprListNat { nats :: [Int] }
-          | CExprListStr { strs :: [Text] }
+          | CExprStr { _str :: Text }
+          | CExprNat { _nat :: Int }
+          | CExprListNat { _nats :: [Int] }
+          | CExprListStr { _strs :: [Text] }
     deriving (Eq, Generic, ToJSON)
 
+-- Generate lenses
+makeLenses ''CExpr
+
+-- Get type of name
+-- TODO: Complete me
+--getType :: CExpr -> Text -> Maybe Text
+--getType CExprLambda { .. } name = case filter (\def -> if cname def == name then True else False) (map getTypeDef largs) of
+--    [] -> Nothing
+--    [a] -> Just a
+--    [a:as] -> error $ "getType: One or more lambda args with the same name " ++ name
+--getType CExprCtor   { .. } name = case filter (\def -> if cname def == name then True else False) (map getTypeDef cargs) of
+--    [] -> Nothing
+--    [a] -> Just a
+--    [a:as] -> error $ "getType: One or more constructor args with the same name " ++ name
+
+-- Expression rewritting
 toCExpr :: Expr -> CExpr
 toCExpr ExprLambda      { .. } = CExprStr "<PLACEHOLDER FOR LAMBDA>" -- CExprLambda (getCDefExtrap argtypes argnames) (toCExpr body)
 toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseCExpr cases)
-toCExpr ExprConstructor { .. } = CExprCall (toCName name) (map toCExpr args)
-toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (toCName name) (map toCExpr args)
-toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (toCName name) (map toCExpr args)
-toCExpr ExprRel         { .. } = CExprStr (toCName name) -- TODO: Distinguish between Rel and Global
-toCExpr ExprGlobal      { .. } = CExprStr (toCName name)
+toCExpr ExprConstructor { .. } = CExprCall name (map toCExpr args)
+toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name (map toCExpr args)
+toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name (map toCExpr args)
+toCExpr ExprRel         { .. } = CExprStr name
+toCExpr ExprGlobal      { .. } = CExprStr name
 
--- Case to CExpr
+-- Pattern rewritting
+toCPattern :: Pattern -> CExpr
+toCPattern PatCtor      { .. } = CExprCtor name (map (\x -> CDef x Nothing) argnames) -- Make untyped Ctor, will be guilded with type later
+toCPattern PatTuple     { .. } = CExprTuple (map toCPattern items)
+toCPattern PatRel       { .. } = CExprStr name
+toCPattern PatWild      {}     = CExprWild
+
+-- Case rewrittting
 caseCExpr :: Case -> CExpr
-caseCExpr Case { .. } = CExprMatch (toCPattern pat) (toCExpr body)
-
--- // Functional fibonacci
--- static inline constexpr Nat fib(Nat &a) {
---     return match(a,
---         []()      { return (Nat)1; },
---         [](Nat sm) {
---           return match(sm,
---             []()       { return (Nat)1; },
---             [sm](Nat m) { return add(fib(m), fib(sm)); });
---         });
--- }
-instance Pretty CExpr where
-  pretty CExprLambda  { .. } = "<PLACEHOLDER FOR LAMBDA>" :: Doc ann
-  pretty CExprCase    { .. } = "match(" <> pretty cexpr <> ","
-                             <> hardline
-                             <> (tab . vcat . (map (\p -> p <> "," <> hardline)) . (map pretty) . init) cases  -- add a comma in intermediate cases
-                             <> (pretty . last) cases                                                    -- not on the last one though
-                             <> ");"
-                             <> hardline
-  pretty CExprMatch   { .. } = "[](" <> pretty mpat
-                             <+> "){ return"
-                             <+> pretty mbody
-  pretty CExprCall    { .. } = mkFuncSig cfunc (map pretty cparams)
-  pretty CExprStr     { .. } = pretty . toCName $ str
-  pretty CExprNat     { .. } = pretty nat
-  pretty CExprStr     { .. } = pretty . toCName $ str
-  pretty CExprListNat { .. } = "PLACEHOLDER FOR INLINE List<int>(" <+> concatWith (surround ", ") (map pretty nats) <> ");"
-  pretty CExprListStr { .. } = "PLACEHOLDER FOR INLINE List<String>(" <+> concatWith (surround ", ") (map pretty strs) <> ");"
-  pretty CExprCtor    { .. } = "Constructor" <> pretty cname
-                             <+> "return"
-                             <+> hcat (map pretty cargs)
+caseCExpr Case          { .. } = CExprMatch (toCPattern pat) (toCExpr body)
 

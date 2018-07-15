@@ -16,6 +16,7 @@ import Parser.Mod
 import Clang.FuncSig
 import Clang.CParser
 import Clang.Linker
+import PrettyPrinter.File
 import System.Directory
 
 -- Calls codegen and prints errors

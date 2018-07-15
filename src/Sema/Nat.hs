@@ -6,16 +6,15 @@ import Codegen.Utils
 
 natSemantics :: CExpr -> CExpr
 -- Semantics for O and S
-natSemantics CExprCall { cfunc = "Datatypes.O", cparams = [] } = CExprNat 0
-natSemantics CExprCall { cfunc = "Datatypes.O", cparams = [args] } = error "Datatypes.0 with args found!"
-natSemantics CExprCall { cfunc = "Datatypes.S", cparams = [a] } = CExprNat $ (nat . natSemantics $ a) + 1
-natSemantics CExprCall { cfunc = "Datatypes.S", cparams = a:arg } = error "Datatypes.S with more than one args found!"
+natSemantics CExprCall { _fname = "Datatypes.O", _fparams = [] } = CExprNat 0
+natSemantics CExprCall { _fname = "Datatypes.O", _fparams = [args] } = error "Datatypes.0 with args found!"
+natSemantics CExprCall { _fname = "Datatypes.S", _fparams = [a] } = CExprNat $ (_nat . natSemantics $ a) + 1
+natSemantics CExprCall { _fname = "Datatypes.S", _fparams = a:arg } = error "Datatypes.S with more than one args found!"
 -- Semantics for higher order expr
-natSemantics CExprLambda { .. } = CExprLambda largs (natSemantics lbody)
-natSemantics CExprCase   { .. } = CExprCase (natSemantics cexpr) (map natSemantics cases)
-natSemantics CExprMatch  { .. } = CExprMatch mpat (natSemantics mbody)      -- TODO: Unify CPattern and CExpr
-natSemantics CExprCtor   { .. } = CExprCtor cname cargs                     -- TODO: Why both this and CExprCall?
+natSemantics CExprLambda { .. } = CExprLambda _largs (natSemantics _lbody)
+natSemantics CExprCase   { .. } = CExprCase (natSemantics _cexpr) (map natSemantics _cases)
+natSemantics CExprMatch  { .. } = CExprMatch (natSemantics _mpat) (natSemantics _mbody)      -- TODO: Unify CPattern and CExpr
+natSemantics CExprCtor   { .. } = CExprCtor _cname _cargs                     -- TODO: Why both this and CExprCall?
 -- Reduced forms preserved
 natSemantics other = other
 
-pipeline = natSemantics
