@@ -15,5 +15,5 @@ instance Pretty CFunc where
                     <> line
     where mainbody = "var<int>" <+> concatWith (surround ", ") (map pretty fvars) <> ";"
                       <> line
-                      <> "return" <+> (pretty . semantics) fbody
+                      <> "return" <+> (pretty fbody)
 

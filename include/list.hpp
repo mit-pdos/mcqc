@@ -78,6 +78,29 @@ namespace list {
     template<typename T>
     inline static List<T> app(List<T> l1, List<T> l2);
 
+	// Higher order functions
+    // Destructive mpp,
+    template<typename T, typename Func>
+    inline static List<T> mapd(Func f, List<T> l);
+    // Constructive mpp,
+    template<typename T, typename Func>
+    inline static List<T> map(Func f, List<T> l);
+
+    // Fold right
+    template<typename T1, typename T2, typename Func>
+    inline static T2 foldr(Func f, T2 elem, List<T1> l);
+
+    // Fold left
+    template<typename T1, typename T2, typename Func>
+    inline static T2 foldl(Func f, T2 elem, List<T1> l);
+
+    // Destructive filter,
+    template<typename T, typename Func>
+    inline static List<T> dfilter(Func f, List<T> l);
+    // Constructive filter,
+    template<typename T, typename Func>
+    inline static List<T> filter(Func f, List<T> l);
+
     // Boolean
     template<typename T>
     inline static bool empty(List<T> l);

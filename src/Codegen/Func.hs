@@ -8,6 +8,7 @@ import Codegen.Utils
 import Parser.Decl
 import Parser.Fix
 import Parser.Expr
+import Sema.Pipeline
 import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -22,10 +23,6 @@ getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCType
 getCTypeList TypVar { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
 getCTypeList TypGlob { name = n } = [toCType n]
 
--- Nat -> Nat -> Bool ==> Bool
-getCRetType :: Typ -> Text
-getCRetType = last . getCTypeList
-
 -- Get the argument names from lamda definition
 getCNames :: Expr -> [Text]
 getCNames ExprLambda { argnames = al } = map toCName al
@@ -37,16 +34,10 @@ toCFunc :: Fix -> CFunc
 toCFunc Fix { name = Just n, typ = t, value = l@ExprLambda {..} } = CFunc n rettype defs varnames cbody
     where defs = getCDefExtrap args argtypes
           varnames = []
-          cbody = translateCNames $ toCExpr body
+          cbody = translateCNames $ semantics $ toCExpr body
           args = getCNames l
-          argtypes = (init . getCTypeList) t
-          rettype = getCRetType t
-toCFunc Fix { name = Nothing, typ = t, value = l@ExprLambda {..} } = CFunc "NoNamePlaceholder" rettype defs varnames cbody
-    where defs = getCDefExtrap args argtypes
-          varnames = []
-          cbody = translateCNames $ toCExpr body
-          args = getCNames l
-          argtypes = (init . getCTypeList) t
-          rettype = getCRetType t
+          argtypes = init . getCTypeList $ t
+          rettype = last . getCTypeList $ t
+toCFunc Fix { name = Nothing, .. } = error "Anonymous Fixpoints not supported"
 
 
