@@ -39,7 +39,7 @@ executable machcoq
       Codegen.Expr
       Codegen.Rewrite
       Codegen.Utils
-      Clang.FuncSig
+      Clang.Namespaces
       Clang.CParser
       Clang.Linker
       Sema.Nat

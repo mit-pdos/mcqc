@@ -6,6 +6,6 @@ import Data.Text.Prettyprint.Doc
 
 -- Pretty print C++
 instance Pretty CDef where
-  pretty CDef { _name = n, _typ = Just t  } = (pretty n) <+> (pretty t)
+  pretty CDef { _name = n, _typ = Just t  } = (pretty t) <+> (pretty n)
   pretty CDef { _name = n, _typ = Nothing } = (pretty n)
 

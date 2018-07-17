@@ -5,7 +5,7 @@ import Parser.Mod
 import Data.Aeson
 import Codegen.Func
 import Codegen.Decl
-import Clang.FuncSig
+import Clang.Namespaces
 import Data.Text (Text)
 import qualified Data.Text as T
 

@@ -6,13 +6,17 @@ import Control.Lens
 import Data.Text
 
 toCType :: Text -> Text
-toCType "Datatypes.nat" = "nat::Nat"
+toCType "Datatypes.nat" = "Nat"
 toCType "Datatypes.bool" = "bool"
 toCType s = s
 
 toCName :: Text -> Text
 toCName "Datatypes.True" = "true"
 toCName "Datatypes.False" = "false"
+toCName "Nat.add" = "add"
+toCName "Nat.sub" = "sub"
+toCName "Nat.mul" = "mul"
+toCName "Nat.div" = "div"
 toCName s = s
 
 -- Apply toCName to a CExpr

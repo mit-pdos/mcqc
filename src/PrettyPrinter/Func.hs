@@ -13,7 +13,5 @@ instance Pretty CFunc where
   pretty CFunc { .. } = pretty ftype <+> mkFuncSig fname (map pretty fargs)
                     <> vcat ["{", tab mainbody, "}"]
                     <> line
-    where mainbody = "var<int>" <+> concatWith (surround ", ") (map pretty fvars) <> ";"
-                      <> line
-                      <> "return" <+> (pretty fbody)
+    where mainbody = "return" <+> (pretty fbody) <> ";"
 

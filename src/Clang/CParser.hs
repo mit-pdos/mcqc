@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings  #-}
 module Clang.CParser where
-import Clang.FuncSig
+import Clang.Namespaces
 import Data.Aeson
 import Foreign.C
 import Foreign.C.String

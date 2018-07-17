@@ -13,7 +13,7 @@ import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.File
 import Parser.Mod
-import Clang.FuncSig
+import Clang.Namespaces
 import Clang.CParser
 import Clang.Linker
 import PrettyPrinter.File
@@ -32,8 +32,8 @@ dbgModule :: Module -> Either String ByteString
 dbgModule mod = Left $ show mod
 
 -- TODO: Use nss to link C functions in place of their coq counterparts
-transModule :: Module -> [ Namespace ] -> Either String ByteString
-transModule mod nss = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . (link nss) . compile) mod
+transpile :: Module -> [ Namespace ] -> Either String ByteString
+transpile mod nss = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . (link nss) . compile) mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
 debug :: Module -> [ Namespace ] -> Either String ByteString
@@ -48,6 +48,6 @@ main = do
   mapM_ (\arg -> do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
-        cpp = parse json >>= (\m -> debug m cnamespaces)
+        cpp = parse json >>= (\m -> transpile m cnamespaces)
     cppWritter newfilename cpp) argv
 
