@@ -20,11 +20,11 @@ instance Pretty CExpr where
                              <+> "){ return"
                              <+> pretty _mbody
                              <> "; }"
-  pretty CExprCall    { .. } = mkFuncSig _fname (map pretty _fparams)
+  pretty CExprCall    { .. } = pretty _fname <> "(" <> commatize _fparams <> ")"
   pretty CExprStr     { .. } = pretty _str
   pretty CExprNat     { .. } = "(Nat)" <> pretty _nat
-  pretty CExprListNat { .. } = "PLACEHOLDER FOR INLINE List<int>(" <+> concatWith (surround ", ") (map pretty _nats) <> ");"
-  pretty CExprListStr { .. } = "PLACEHOLDER FOR INLINE List<String>(" <+> concatWith (surround ", ") (map pretty _strs) <> ");"
-  pretty CExprCtor    { .. } = hcat $ map pretty  _cargs
+  pretty CExprBool    { .. } = pretty _bool
+  pretty CExprList    { .. } = "List<T>{" <+> concatWith (surround ", ") (map pretty _elems) <> "}"
+  pretty CExprCtor    { .. } = commatize _cargs
   pretty CExprTuple   { .. } = "PLACEHOLDER FOR TUPLE CTOR" <> (parens . hsep $ map pretty _items)
   pretty CExprWild     {}     = "Otherwise"

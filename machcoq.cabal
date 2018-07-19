@@ -40,7 +40,6 @@ executable machcoq
       Codegen.Utils
       Clang.Namespaces
       Clang.CParser
-      Sema.Nat
       Sema.Pipeline
       PrettyPrinter.Defs
       PrettyPrinter.Expr
@@ -79,7 +78,6 @@ test-suite spec
       Parser.Pattern
       Parser.Expr
       Parser.Fix
-      Main
       Utils
       Paths_machcoq
   hs-source-dirs:

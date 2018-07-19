@@ -31,7 +31,6 @@ translateCNames :: CExpr -> CExpr
 translateCNames = -- single step lenses
                   over fname toCName
                   . over str toCName
-                  . over (strs . traverse) toCName
                   . over cname toCName
                   -- nested definition lenses
                   . over (cargs . traverse . name) toCName
@@ -45,4 +44,5 @@ translateCNames = -- single step lenses
                   . over mbody translateCNames
                   . over (fparams . traverse) translateCNames
                   . over (items . traverse) translateCNames
+                  . over (elems . traverse) translateCNames
 

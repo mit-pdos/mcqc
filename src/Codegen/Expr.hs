@@ -25,8 +25,8 @@ data CExpr =
           -- TODO: Add optional and nested types
           | CExprStr { _str :: Text }
           | CExprNat { _nat :: Int }
-          | CExprListNat { _nats :: [Int] }
-          | CExprListStr { _strs :: [Text] }
+          | CExprBool { _bool :: Bool }
+          | CExprList { _elems :: [CExpr] }
     deriving (Eq, Generic, ToJSON)
 
 -- Generate lenses

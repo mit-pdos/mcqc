@@ -1,10 +1,8 @@
 {-# LANGUAGE TemplateHaskell, DeriveGeneric, DeriveAnyClass  #-}
 module Codegen.Defs where
 import GHC.Generics
-import Codegen.Utils
 import Control.Lens
 import Data.Aeson
-import Data.Maybe
 import Data.Text (Text)
 
 -- C typed definition
@@ -14,13 +12,4 @@ data CDef = CDef { _name :: Text, _typename :: Text }
 
 -- Generate lenses
 makeLenses ''CDef
-
--- If there are less named arguments that positional arguments in the type signature, extrapolate
--- and if clang gives an "Unused argument warning" then so be it
-getCDefExtrap :: [Text] -> [Text] -> [CDef]
-getCDefExtrap [] [] = []
-getCDefExtrap [x] [y] = [CDef x y]
-getCDefExtrap [x] (y:ys) = (CDef x y):(getCDefExtrap [succ x] ys)
-getCDefExtrap (x:xs) [y] = (CDef x y):(getCDefExtrap xs [succ y])
-getCDefExtrap (x:xs) (y:ys) = (CDef x y):(getCDefExtrap xs ys)
 
