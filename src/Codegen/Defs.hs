@@ -9,7 +9,7 @@ import Data.Text (Text)
 
 -- C typed definition
 -- If it is untyped ie: _typ = Nothing, we need to extrapolate the type before pp
-data CDef = CDef { _name :: Text, _typ :: Maybe Text }
+data CDef = CDef { _name :: Text, _typename :: Text }
   deriving (Eq, Generic, ToJSON)
 
 -- Generate lenses
@@ -19,8 +19,8 @@ makeLenses ''CDef
 -- and if clang gives an "Unused argument warning" then so be it
 getCDefExtrap :: [Text] -> [Text] -> [CDef]
 getCDefExtrap [] [] = []
-getCDefExtrap [x] [y] = [CDef x (Just y)]
-getCDefExtrap [x] (y:ys) = (CDef x (Just y)):(getCDefExtrap [succ x] ys)
-getCDefExtrap (x:xs) [y] = (CDef x (Just y)):(getCDefExtrap xs [succ y])
-getCDefExtrap (x:xs) (y:ys) = (CDef x (Just y)):(getCDefExtrap xs ys)
+getCDefExtrap [x] [y] = [CDef x y]
+getCDefExtrap [x] (y:ys) = (CDef x y):(getCDefExtrap [succ x] ys)
+getCDefExtrap (x:xs) [y] = (CDef x y):(getCDefExtrap xs [succ y])
+getCDefExtrap (x:xs) (y:ys) = (CDef x y):(getCDefExtrap xs ys)
 

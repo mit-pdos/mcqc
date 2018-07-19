@@ -21,6 +21,12 @@ incrementText []          = ['a']
 incrementText ('z':xs)    = 'a' : incrementText xs
 incrementText (x:xs)      = succ x : xs
 
+removeRef :: Text -> Text
+removeRef = T.replace "&" ""
+
+removeTemplate :: Text -> Text
+removeTemplate = T.replace "<T>" ""
+
 -- Define a succ for Texts
 instance Enum Text where
   succ = T.pack . reverse . incrementText . reverse . T.unpack

@@ -6,14 +6,14 @@ namespace list {
 
     // Constructive cons, copies l so l can be referenced again
     template<typename T>
-    inline static List<T> cons(List<T>& l, T t) {
+    inline static List<T> cons(T t, List<T>& l) {
         auto l2 = List<T>(l);
         l2.push_front(t);
         return l2;
     }
     // Destructive cons, reuses l so it can not be referenced again
     template<typename T>
-    inline static List<T> dcons(List<T>& l, T t) {
+    inline static List<T> dcons(T t, List<T>& l) {
         l.push_front(t);
         return l;
     }

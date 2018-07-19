@@ -13,9 +13,7 @@ import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.File
 import Parser.Mod
-import Clang.Namespaces
 import Clang.CParser
-import Clang.Linker
 import PrettyPrinter.File
 import System.Directory
 
@@ -31,13 +29,13 @@ parse buffer = eitherDecode buffer :: Either String Module
 dbgModule :: Module -> Either String ByteString
 dbgModule mod = Left $ show mod
 
--- TODO: Use nss to link C functions in place of their coq counterparts
-transpile :: Module -> [ Namespace ] -> Either String ByteString
-transpile mod nss = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . (link nss) . compile) mod
+-- TODO: Use namespaces to verify link of C++17 functions in place of their coq counterparts
+transpile :: Module -> Either String ByteString
+transpile mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . compile) mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
-debug :: Module -> [ Namespace ] -> Either String ByteString
-debug mod nss = Left $ (B.unpack . encodePretty . (link nss) . compile) mod
+debug :: Module -> Either String ByteString
+debug mod = Left $ B.unpack . encodePretty . compile $ mod
 
 main :: IO ()
 main = do
@@ -48,6 +46,6 @@ main = do
   mapM_ (\arg -> do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
-        cpp = parse json >>= (\m -> transpile m cnamespaces)
+        cpp = parse json >>= transpile
     cppWritter newfilename cpp) argv
 

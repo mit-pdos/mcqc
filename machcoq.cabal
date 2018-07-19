@@ -40,7 +40,6 @@ executable machcoq
       Codegen.Utils
       Clang.Namespaces
       Clang.CParser
-      Clang.Linker
       Sema.Nat
       Sema.Pipeline
       PrettyPrinter.Defs

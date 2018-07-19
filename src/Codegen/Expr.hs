@@ -32,18 +32,6 @@ data CExpr =
 -- Generate lenses
 makeLenses ''CExpr
 
--- Get type of name
--- TODO: Complete me
---getType :: CExpr -> Text -> Maybe Text
---getType CExprLambda { .. } name = case filter (\def -> if cname def == name then True else False) (map getTypeDef largs) of
---    [] -> Nothing
---    [a] -> Just a
---    [a:as] -> error $ "getType: One or more lambda args with the same name " ++ name
---getType CExprCtor   { .. } name = case filter (\def -> if cname def == name then True else False) (map getTypeDef cargs) of
---    [] -> Nothing
---    [a] -> Just a
---    [a:as] -> error $ "getType: One or more constructor args with the same name " ++ name
-
 -- Expression rewritting
 toCExpr :: Expr -> CExpr
 toCExpr ExprLambda      { .. } = CExprStr "<PLACEHOLDER FOR LAMBDA>" -- CExprLambda (getCDefExtrap argtypes argnames) (toCExpr body)
@@ -56,7 +44,7 @@ toCExpr ExprGlobal      { .. } = CExprStr name
 
 -- Pattern rewritting
 toCPattern :: Pattern -> CExpr
-toCPattern PatCtor      { .. } = CExprCtor name (map (\x -> CDef x Nothing) argnames) -- Make untyped Ctor, will be guilded with type later
+toCPattern PatCtor      { .. } = CExprCtor name (map (\x -> CDef x "auto") argnames) -- Make untyped Ctor use auto type, it works I guess
 toCPattern PatTuple     { .. } = CExprTuple (map toCPattern items)
 toCPattern PatRel       { .. } = CExprStr name
 toCPattern PatWild      {}     = CExprWild

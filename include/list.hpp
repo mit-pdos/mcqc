@@ -48,10 +48,10 @@ namespace list {
 
     // Constructive cons, copies l so l can be referenced again
     template<typename T>
-    inline static List<T> cons(List<T>& l, T t);
+    inline static List<T> cons(T t, List<T>& l);
     // Destructive cons, reuses l so it can not be referenced again
     template<typename T>
-    inline static List<T> dcons(List<T>& l, T t);
+    inline static List<T> dcons(T t, List<T>& l);
 
     // Utility functions
     // List

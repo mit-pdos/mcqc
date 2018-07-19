@@ -8,15 +8,22 @@ import Data.Text
 toCType :: Text -> Text
 toCType "Datatypes.nat" = "Nat"
 toCType "Datatypes.bool" = "bool"
+toCType "Datatypes.list" = "List<T>"
 toCType s = s
 
 toCName :: Text -> Text
 toCName "Datatypes.True" = "true"
 toCName "Datatypes.False" = "false"
+toCName "Datatypes.Coq_nil" = "List<T>()"
+toCName "Datatypes.Coq_cons" = "cons"
 toCName "Nat.add" = "add"
 toCName "Nat.sub" = "sub"
 toCName "Nat.mul" = "mul"
 toCName "Nat.div" = "div"
+toCName "Nat.modulo" = "mod"
+toCName "Nat.even" = "even"
+toCName "Nat.odd" = "odd"
+toCName "Datatypes.app" = "app"
 toCName s = s
 
 -- Apply toCName to a CExpr
