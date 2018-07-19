@@ -1,4 +1,4 @@
-Coq to Mach7 C++ extractor
+Coq to functional C++17 extractor
 --------------------------
 
 # Introduction
