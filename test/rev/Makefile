@@ -3,21 +3,21 @@
 CXX=clang++
 CXXFLAGS?=-g -O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I../../include
 
-all: fib
+all: rev
 
-Fib.json: Fib.v
+Rev.json: Rev.v
 	coqc $<
 
-Fib.cpp: Fib.json
-	cd ../../ && ./dist/build/machcoq/machcoq test/fib/$<
-	mv ../../Fib.cpp $@
+Rev.cpp: Rev.json
+	cd ../../ && ./dist/build/machcoq/machcoq test/rev/$<
+	mv ../../Rev.cpp $@
 
-fib: main.cpp Fib.cpp
+rev: main.cpp Rev.cpp
 	@echo --------------------------------------------------------------------------------
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@
 
 
 clean:
-	-rm -rf fib Fib.cpp *.dSYM *.glob *.vo *.json *.o
+	-rm -rf rev Rev.cpp *.dSYM *.glob *.vo *.json *.o
 

@@ -7,7 +7,7 @@
 name:           machcoq
 version:        0.1.0
 synopsis:       A codegen from Coq extracted JSON to C++
-description:    Based on Aeson, Mach7 C++
+description:    Based on Aeson, linear types
 category:       Development
 homepage:       https://github.mit.edu/elefthei/machcoq
 maintainer:     Lef Ioannidis <elefthei@mit.edu>
@@ -33,7 +33,6 @@ executable machcoq
       Parser.Pattern
       Parser.Fix
       Codegen.File
-      Codegen.Decl
       Codegen.Func
       Codegen.Defs
       Codegen.Expr
@@ -78,6 +77,7 @@ test-suite spec
       ModuleTest
       Parser.Mod
       Parser.Decl
+      Parser.Pattern
       Parser.Expr
       Parser.Fix
       Main

@@ -1,6 +1,12 @@
+(**
+  RUN: coqc %s
+  RUN: machcoq Fib.json
+*)
+
 Require Extraction.
 
 Fixpoint fib(n: nat) :=
+(** CHECK: match *)
   match n with
     | 0 => 1
     | 1 => 1

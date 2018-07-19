@@ -31,11 +31,12 @@ namespace proc {
 		fclose(f);
 	}
 
-	// print to standard output
+	// print string to standard output
 	static inline void print(string::String& s) {
 		std::cout << s << std::endl;
 	}
 
+	// print list to standard output
 	template<typename T>
 	static inline void print(const list::List<T>& s) {
 		std::cout << "{ ";

@@ -6,8 +6,6 @@ Inductive proc: Type -> Type :=
 | bind: forall T T', proc T -> (T -> proc T') -> proc T'
 | print: nat -> proc unit.
 
-
-
 Fixpoint f(a: nat) :=
   match a with
     | 0 => ret tt

@@ -17,6 +17,11 @@ import qualified Data.Text as T
 data CFunc = CFunc { fname :: Text, ftype :: Text, fargs :: [CDef], fvars :: [Text], fbody :: CExpr }
   deriving (Eq, Generic, ToJSON)
 
+-- Fixpoint declaration to C Function
+toCDecl :: Declaration -> CFunc
+toCDecl FixDecl { fixlist = [fl] } = toCFunc fl
+toCDecl FixDecl { fixlist = f:fl } = toCFunc f
+
 -- Nat -> Nat -> Bool ==> [Nat, Nat, Bool]
 getCTypeList :: Typ -> [Text]
 getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCTypeList rt)

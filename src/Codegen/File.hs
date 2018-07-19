@@ -4,7 +4,6 @@ import GHC.Generics
 import Parser.Mod
 import Data.Aeson
 import Codegen.Func
-import Codegen.Decl
 import Clang.Namespaces
 import Data.Text (Text)
 import qualified Data.Text as T
