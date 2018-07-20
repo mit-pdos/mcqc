@@ -1,13 +1,13 @@
 Require Import List.
+Require Import String.
 Import ListNotations.
+Open Scope string_scope.
 
 Set Implicit Arguments.
 
-Parameter filename : Type.
-Parameter fd : Type.
-Parameter data : Type.
-Definition pathname := list filename.
-
+Definition pathname := string.
+Definition data := string.
+Definition fd := nat.
 Inductive proc: Type -> Type :=
 | open : pathname -> proc fd
 | print : data -> proc unit
@@ -19,13 +19,24 @@ Inductive proc: Type -> Type :=
 Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
   (at level 60, right associativity).
 
-Definition cat (path: pathname) (fn : filename) :=
-  f <- open (path ++ [fn]);
+Definition cat (path: pathname) (fn : string) :=
+  f <- open (path ++ fn);
   contents <- read f;
   _ <- close f;
   _ <- print contents;
   ret unit.
 
+Definition Free {T} (t: T) := t.
+
+Fixpoint feven (b : nat) : bool :=
+  match Free(b) with
+    | 0 => true
+    | S 0 => false
+    | S (S sm) => andb true (feven sm)
+  end.
+
+Check feven.
+
 Require Extraction.
 Extraction Language JSON.
-Recursive Extraction cat.
+Separate Extraction feven.

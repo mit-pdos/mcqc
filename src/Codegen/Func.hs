@@ -10,20 +10,31 @@ import Parser.Fix
 import Parser.Expr
 import Sema.Pipeline
 import Control.Lens
+import Data.Monoid
 import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 
 -- C function definition, ie: int main(int argc, char **argv)
-data CFunc = CFunc { _fname :: Text, _templtypes :: [Text], _ftype :: Text, _fargs :: [CDef], _fbody :: CExpr }
-  deriving (Eq, Generic, ToJSON)
+data CFunc =
+    CFunc { _fname :: Text, _templtypes :: [Text], _ftype :: Text, _fargs :: [CDef], _fbody :: CExpr }
+    | CFuncEmpty {}
+  deriving (Eq, Generic, Semigroup, ToJSON)
+
+instance Monoid CFunc where
+  mempty = CFuncEmpty {}
+  -- XXX: Implement fusion here with mappend
+  mappend a b = a
 
 makeLenses ''CFunc
 
--- Fixpoint declaration to C Function
+-- Declarations to C Function
 toCDecl :: Declaration -> CFunc
-toCDecl FixDecl { fixlist = [fl] } = toCFunc fl
-toCDecl FixDecl { fixlist = f:fl } = toCFunc f
+toCDecl FixDecl  { .. } = toCFunc (head fixlist)
+-- XXX: Implement other declarations
+toCDecl IndDecl  { .. } = mempty
+toCDecl TypeDecl { .. } = mempty
+toCDecl TermDecl { .. } = mempty
 
 -- Nat -> Nat -> Bool ==> [Nat, Nat, Bool]
 getCTypeList :: Typ -> [Text]

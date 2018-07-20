@@ -21,6 +21,20 @@ natSemantics CExprTuple  { .. } = CExprTuple (map natSemantics _items)
 -- Transparent to the rest of expressions
 natSemantics other = other
 
+boolSemantics :: CExpr -> CExpr
+-- Semantics for True and False
+boolSemantics CExprCall { _fname = "Datatypes.Coq_true", _fparams = [] } = CExprBool True
+boolSemantics CExprCall { _fname = "Datatypes.Coq_false", _fparams = [] } = CExprBool False
+-- Propagate to children expr
+boolSemantics CExprLambda { .. } = CExprLambda _largs (boolSemantics _lbody)
+boolSemantics CExprCase   { .. } = CExprCase (boolSemantics _cexpr) (map boolSemantics _cases)
+boolSemantics CExprMatch  { .. } = CExprMatch (boolSemantics _mpat) (boolSemantics _mbody)
+boolSemantics CExprCall   { .. } = CExprCall _fname (map boolSemantics _fparams)
+boolSemantics CExprTuple  { .. } = CExprTuple (map boolSemantics _items)
+-- Transparent to the rest of expressions
+boolSemantics other = other
+
+
 -- List semantics
 listSemantics :: CExpr -> CExpr
 -- Semantics for O and S
@@ -38,5 +52,5 @@ listSemantics CExprTuple  { .. } = CExprTuple (map listSemantics _items)
 listSemantics other = other
 
 -- Update all semantic transforms here to create a pipeline
-semantics = listSemantics . natSemantics
+semantics = listSemantics . natSemantics . boolSemantics
 

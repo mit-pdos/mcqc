@@ -18,13 +18,14 @@ data CFile = CFile { _includes :: [Text], _filename :: Text, _funcs :: [CFunc] }
 makeLenses ''CFile
 
 getNativeLibs :: CFunc -> [Text]
+getNativeLibs CFuncEmpty {} = []
 getNativeLibs f = map normalizeType $ _ftype f : (map _typename (_fargs f))
     where normalizeType = T.replace "Datatypes." "" . T.toLower . removeRef . removeTemplate
 
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile
-compile Module { name = n, declarations = decls, .. } = CFile incls (T.append n ".cpp") cfuncs
-    where cfuncs = map toCDecl decls
-          incls = nub $ concat $ map getNativeLibs cfuncs
+compile Module { name = n, declarations = decls, .. } = CFile incls (T.append n ".cpp") cdecls
+    where cdecls = map toCDecl decls
+          incls = nub $ concat $ map getNativeLibs cdecls
 
 

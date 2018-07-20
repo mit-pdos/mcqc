@@ -16,15 +16,20 @@ data Typ =
     TypArrow { left :: Typ, right :: Typ }
     | TypVar { name :: Text, args :: [Expr] }
     | TypGlob { name :: Text }
+    | TypVaridx { idx :: Int }
+    | TypUnknown {}
     deriving (Show, Eq)
 
 -- Expressions
 data Expr = ExprLambda { argnames :: [Text], body :: Expr }
           | ExprCase { expr :: Expr, cases :: [Case] }
+          | IndConstructor { name :: Text, argtypes :: [Typ] }
           | ExprConstructor { name :: Text, args :: [Expr] }
           | ExprApply { func :: Expr , args :: [Expr]}
+          | ExprCoerce { value :: Expr }
           | ExprRel { name :: Text }
           | ExprGlobal { name :: Text }
+          | ExprDummy {}
     deriving (Show, Eq)
 
 instance FromJSON Typ where
@@ -35,8 +40,10 @@ instance FromJSON Typ where
         Just "type:var"         -> TypVar    <$> v .:  "name"
                                              <*> v .:? "args" .!= []
         Just "type:glob"        -> TypGlob   <$> v .:  "name"
-        Just s                  -> fail ("unknown kind: " ++ (show v) ++ " because " ++ (show s))
-        Nothing                 -> fail ("No 'what' quantifier for: " ++ (show v))
+        Just "type:varidx"      -> TypVaridx <$> v .:  "name"
+        Just "type:unknown"     -> return TypUnknown {}
+        Just s                  -> fail ("Unknown kind: " ++ (show v) ++ " because " ++ (show s))
+        Nothing                 -> fail ("No 'what' quantifier for type: " ++ (show v))
 
 instance FromJSON Expr where
   parseJSON (Object v) =
@@ -49,7 +56,10 @@ instance FromJSON Expr where
                                                    <*> v .:? "args"     .!= []
         Just "expr:apply"       -> ExprApply       <$> v .:  "func"
                                                    <*> v .:? "args"     .!= []
+        Just "expr:coerce"      -> ExprCoerce      <$> v .:  "value"
         Just "expr:rel"         -> ExprRel         <$> v .:  "name"
         Just "expr:global"      -> ExprGlobal      <$> v .:  "name"
+        Just "expr:dummy"       -> return ExprDummy {}
         Just s                  -> fail ("Unknown expr: " ++ (show v) ++ " because " ++ (show s))
-        Nothing                 -> fail ("No 'what' quantifier for: " ++ (show v))
+        Nothing                 -> IndConstructor  <$> v .:  "name"
+                                                   <*> v .:? "argtypes"     .!= []

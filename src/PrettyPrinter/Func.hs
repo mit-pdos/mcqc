@@ -23,3 +23,4 @@ instance Pretty CFunc where
                                            <> funcbody
     where funcbody = vcat ["{", tab mainbody, "}"] <> line
           mainbody = "return" <+> (pretty _fbody) <> ";"
+  pretty CFuncEmpty { }      = mempty

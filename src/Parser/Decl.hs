@@ -10,7 +10,7 @@ import Data.HashMap.Strict
 -- Declarations
 data Declaration =
     IndDecl { name :: Text, argnames :: [Text], constructors :: [Expr] }
-  | TypeDecl { name :: Text, argnames :: [Text], value :: Expr }
+  | TypeDecl { name :: Text, argnames :: [Text], tval :: Typ }
   | FixDecl { fixlist :: [Fix] }
   | TermDecl { name :: Text, typ :: Typ, value :: Expr }
     deriving (Show, Eq)

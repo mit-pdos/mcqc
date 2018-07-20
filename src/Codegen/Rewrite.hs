@@ -12,8 +12,8 @@ toCType "Datatypes.list" = "List<T>"
 toCType s = s
 
 toCName :: Text -> Text
-toCName "Datatypes.True" = "true"
-toCName "Datatypes.False" = "false"
+toCName "Datatypes.Coq_true" = "true"
+toCName "Datatypes.Coq_false" = "false"
 toCName "Datatypes.Coq_nil" = "List<T>()"
 toCName "Datatypes.Coq_cons" = "cons"
 toCName "Nat.add" = "add"
