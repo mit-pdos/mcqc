@@ -7,7 +7,12 @@ Alternative extractor to C++, no GC no RTS, pure static.
 
 # Building
 
-In the source root:
+With stack in the source root:
+```
+stack build
+```
+
+With cabal (global dependencies) in the source root:
 ```
 cabal install
 cabal build
