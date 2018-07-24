@@ -40,9 +40,9 @@ debug mod = Left $ B.unpack . encodePretty . compile $ mod
 main :: IO ()
 main = do
   argv <- getArgs
-  files <- listDirectory "include"
-  let clibs = filter isLib $ map (\s -> "include/" ++ s) files
-  cnamespaces <- mapM (\file -> parseHpp file) clibs
+--   files <- listDirectory "include"
+--   let clibs = filter isLib $ map (\s -> "include/" ++ s) files
+-- cnamespaces <- mapM (\file -> parseHpp file) clibs
   mapM_ (\arg -> do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"

@@ -10,16 +10,16 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 -- FFI libclang
-foreign import ccall "clangToJSON" c_clangToJSON :: CString -> CString
+-- foreign import ccall "clangToJSON" c_clangToJSON :: CString -> CString
 
 -- Calls into cbits/clangjson.cpp
-parseHpp :: String -> IO Namespace
-parseHpp fn = do
-    inputStr <- newCAString fn
-    jsonStr <- peekCAString (c_clangToJSON inputStr) -- Call to FFI libclang implementation
-    return $ (unwrapEither . eitherDecode . B.pack) jsonStr
-        where unwrapEither (Right s) = s
-              unwrapEither (Left err) = error err
+-- parseHpp :: String -> IO Namespace
+-- parseHpp fn = do
+--     inputStr <- newCAString fn
+--     jsonStr <- peekCAString (c_clangToJSON inputStr) -- Call to FFI libclang implementation
+--     return $ (unwrapEither . eitherDecode . B.pack) jsonStr
+--         where unwrapEither (Right s) = s
+--               unwrapEither (Left err) = error err
 
-isLib :: FilePath -> Bool
-isLib s = T.takeEnd 4 (T.pack s) == ".hpp"
+-- isLib :: FilePath -> Bool
+-- isLib s = T.takeEnd 4 (T.pack s) == ".hpp"
