@@ -44,7 +44,7 @@ toCExpr ExprGlobal      { .. } = CExprStr name
 
 -- Pattern rewritting
 toCPattern :: Pattern -> CExpr
-toCPattern PatCtor      { .. } = CExprCtor name (map (\x -> CDef x "auto") argnames) -- Make untyped Ctor use auto type, it works I guess
+toCPattern PatCtor      { .. } = CExprCtor name (map untypedDef argnames) -- Make untyped Ctor use auto type, it works I guess
 toCPattern PatTuple     { .. } = CExprTuple (map toCPattern items)
 toCPattern PatRel       { .. } = CExprStr name
 toCPattern PatWild      {}     = CExprWild

@@ -9,10 +9,10 @@ import Data.HashMap.Strict
 
 -- Declarations
 data Declaration =
-    IndDecl { name :: Text, argnames :: [Text], constructors :: [Expr] }
-  | TypeDecl { name :: Text, argnames :: [Text], tval :: Typ }
+    IndDecl { name :: Text, iargs :: [Text], constructors :: [Expr] }
+  | TypeDecl { name :: Text, targs :: [Text], tval :: Typ }
   | FixDecl { fixlist :: [Fix] }
-  | TermDecl { name :: Text, typ :: Typ, value :: Expr }
+  | TermDecl { name :: Text, typ :: Typ, val :: Expr }
     deriving (Show, Eq)
 
 instance FromJSON Declaration where

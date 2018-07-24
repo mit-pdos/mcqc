@@ -7,7 +7,7 @@ import Data.Aeson
 import Data.HashMap.Strict
 
 -- Fixpoint list items
-data Fix = Fix { name :: Maybe Text, typ :: Typ, value :: Expr }
+data Fix = Fix { name :: Maybe Text, ftyp :: Typ, value :: Expr }
     deriving (Show, Eq)
 
 instance FromJSON Fix where

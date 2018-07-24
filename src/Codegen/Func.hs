@@ -19,34 +19,43 @@ import qualified Data.Text as T
 data CFunc =
     CFunc { _fname :: Text, _templtypes :: [Text], _ftype :: Text, _fargs :: [CDef], _fbody :: CExpr }
     | CFuncEmpty {}
-  deriving (Eq, Generic, Semigroup, ToJSON)
+  deriving (Eq, Generic, ToJSON)
 
+-- XXX: Implement fusion here with mappend
+instance Semigroup CFunc where
+  (<>) a b = a
 instance Monoid CFunc where
   mempty = CFuncEmpty {}
-  -- XXX: Implement fusion here with mappend
-  mappend a b = a
+  mappend = (<>)
 
+-- Generate Lens code
 makeLenses ''CFunc
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CFunc
 toCDecl FixDecl  { .. } = toCFunc (head fixlist)
+toCDecl TermDecl { .. } = CFunc name templateTypes retType arguments cbody
+    where templateTypes = addTemplates (getCTypeList typ)
+          cbody = translateCNames $ semantics $ toCExpr val
+          retType = last . getCTypeList $ typ
+          argTypes = init . getCTypeList $ typ
+          arguments = getCDefExtrap (getNames val) argTypes
+
 -- XXX: Implement other declarations
 toCDecl IndDecl  { .. } = mempty
 toCDecl TypeDecl { .. } = mempty
-toCDecl TermDecl { .. } = mempty
 
 -- Nat -> Nat -> Bool ==> [Nat, Nat, Bool]
 getCTypeList :: Typ -> [Text]
 getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCTypeList rt)
-getCTypeList TypVar { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
-getCTypeList TypGlob { name = n } = [toCType n]
+getCTypeList TypVar   { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
+getCTypeList TypGlob  { name = n } = [toCType n]
 
 -- Get the argument names from lamda definition
-getCNames :: Expr -> [Text]
-getCNames ExprLambda { argnames = al } = map toCName al
-getCNames ExprRel {..} = [toCName name]
-getCNames ExprGlobal {..} = [toCName name]
+getNames :: Expr -> [Text]
+getNames ExprLambda { .. } = argnames
+getNames ExprRel    { .. } = [name]
+getNames ExprGlobal { .. } = [name]
 
 -- Hacky and bad in many ways
 addTemplates :: [Text] -> [Text]
@@ -56,14 +65,12 @@ addTemplates incls
 
 -- Fixpoint declaration to C Function
 toCFunc :: Fix -> CFunc
-toCFunc Fix { name = Just n, typ = t, value = l@ExprLambda {..} } = CFunc n templateTypes retType refArguments cbody
-    where arguments = getCDefExtrap args argTypes
-          templateTypes = addTemplates (getCTypeList t)
+toCFunc Fix { name = Just n, value = l@ExprLambda {..}, .. } = CFunc n templateTypes retType refArguments cbody
+    where arguments = getCDefExtrap (getNames l) argTypes
+          templateTypes = addTemplates (getCTypeList ftyp)
           refArguments = map addRef arguments
           cbody = translateCNames $ semantics $ toCExpr body
-          args = getCNames l
-          argTypes = init . getCTypeList $ t
-          retType = last . getCTypeList $ t
+          argTypes = init . getCTypeList $ ftyp
+          retType = last . getCTypeList $ ftyp
 toCFunc Fix { name = Nothing, .. } = error "Anonymous Fixpoints not supported"
-
 

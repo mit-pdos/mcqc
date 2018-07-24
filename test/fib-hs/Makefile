@@ -9,7 +9,7 @@ Fib.hs: Fib.v
 	coqc $<
 
 fib: Main.hs Fib.hs
-	ghc $< -o $@
+	ghc -O3 $< -o $@
 
 clean:
 	-rm -rf fib Datatypes.hs Fib.hs Nat.hs *.hi *.dSYM *.glob *.vo *.json *.o

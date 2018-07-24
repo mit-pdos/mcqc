@@ -9,6 +9,7 @@ toCType :: Text -> Text
 toCType "Datatypes.nat" = "Nat"
 toCType "Datatypes.bool" = "bool"
 toCType "Datatypes.list" = "List<T>"
+toCType "String.string" = "string"
 toCType s = s
 
 toCName :: Text -> Text

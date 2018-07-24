@@ -46,6 +46,6 @@ main = do
   mapM_ (\arg -> do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
-        cpp = parse json >>= debug
+        cpp = parse json >>= transpile
     cppWritter newfilename cpp) argv
 

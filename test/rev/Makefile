@@ -17,6 +17,10 @@ rev: main.cpp Rev.cpp
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@
 
+prof: rev
+	@echo --------------------------------------------------------------------------------
+	@echo Profiling $@ ...
+	valgrind --leak-check=full ./$<
 
 clean:
 	-rm -rf rev Rev.cpp *.dSYM *.glob *.vo *.json *.o

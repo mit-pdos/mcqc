@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Codegen.Utils where
 import Codegen.Defs
 import Control.Lens
@@ -28,6 +28,10 @@ incrementText :: String -> String
 incrementText []          = ['a']
 incrementText ('z':xs)    = 'a' : incrementText xs
 incrementText (x:xs)      = succ x : xs
+
+-- Make untyped definitions into auto definitions
+untypedDef :: Text -> CDef
+untypedDef x = CDef x "auto"
 
 -- If there are less named arguments that positional arguments in the type signature, extrapolate
 -- and if clang gives an "Unused argument warning" then so be it

@@ -17,6 +17,10 @@ fib: main.cpp Fib.cpp
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@
 
+prof: fib
+	@echo --------------------------------------------------------------------------------
+	@echo Profiling $@ ...
+	valgrind --leak-check=full ./$<
 
 clean:
 	-rm -rf fib Fib.cpp *.dSYM *.glob *.vo *.json *.o
