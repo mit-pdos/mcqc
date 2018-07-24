@@ -9,8 +9,7 @@ Fib.json: Fib.v
 	coqc $<
 
 Fib.cpp: Fib.json
-	cd ../../ && ./dist/build/machcoq/machcoq test/fib/$<
-	mv ../../Fib.cpp $@
+	stack exec machcoq -- $<
 
 fib: main.cpp Fib.cpp
 	@echo --------------------------------------------------------------------------------
