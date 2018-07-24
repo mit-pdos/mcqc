@@ -9,8 +9,7 @@ Rev.json: Rev.v
 	coqc $<
 
 Rev.cpp: Rev.json
-	cd ../../ && ./dist/build/machcoq/machcoq test/rev/$<
-	mv ../../Rev.cpp $@
+	stack exec machcoq -- $<
 
 rev: main.cpp Rev.cpp
 	@echo --------------------------------------------------------------------------------
