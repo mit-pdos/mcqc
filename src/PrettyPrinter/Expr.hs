@@ -9,7 +9,9 @@ import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 
 instance Pretty CExpr where
-  pretty CExprLambda  { .. } = "<PLACEHOLDER FOR LAMBDA>" :: Doc ann
+  pretty CExprLambda  { .. } = pretty _largs
+                             <> line
+                             <+> pretty _lbody
   pretty CExprCase    { .. } = "match(" <> pretty _cexpr <> ","
                              <> line
                              <> (vcat . indentCases .  init) _cases  -- add a comma in intermediate cases

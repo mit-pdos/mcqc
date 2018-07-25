@@ -32,15 +32,24 @@ data CExpr =
 -- Generate lenses
 makeLenses ''CExpr
 
+-- get names that appear in expression
+getNames :: Expr -> [Text]
+getNames ExprLambda { .. } = argnames
+getNames ExprRel    { .. } = [name]
+getNames ExprGlobal { .. } = [name]
+
 -- Expression rewritting
 toCExpr :: Expr -> CExpr
-toCExpr ExprLambda      { .. } = CExprStr "<PLACEHOLDER FOR LAMBDA>" -- CExprLambda (getCDefExtrap argtypes argnames) (toCExpr body)
+toCExpr ExprLambda      { .. } = CExprLambda (map untypedDef argnames) (toCExpr body)
 toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseCExpr cases)
 toCExpr ExprConstructor { .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name (map toCExpr args)
 toCExpr ExprRel         { .. } = CExprStr name
 toCExpr ExprGlobal      { .. } = CExprStr name
+toCExpr ExprCoerce      { .. } = toCExpr value
+toCExpr ExprDummy       {    } = CExprStr ""
+toCExpr e                      = error $ "Match fell through " ++ (show e)
 
 -- Pattern rewritting
 toCPattern :: Pattern -> CExpr

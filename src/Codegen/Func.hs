@@ -51,12 +51,6 @@ getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCType
 getCTypeList TypVar   { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
 getCTypeList TypGlob  { name = n } = [toCType n]
 
--- Get the argument names from lamda definition
-getNames :: Expr -> [Text]
-getNames ExprLambda { .. } = argnames
-getNames ExprRel    { .. } = [name]
-getNames ExprGlobal { .. } = [name]
-
 -- Hacky and bad in many ways
 addTemplates :: [Text] -> [Text]
 addTemplates incls
@@ -65,12 +59,13 @@ addTemplates incls
 
 -- Fixpoint declaration to C Function
 toCFunc :: Fix -> CFunc
-toCFunc Fix { name = Just n, value = l@ExprLambda {..}, .. } = CFunc n templateTypes retType refArguments cbody
-    where arguments = getCDefExtrap (getNames l) argTypes
-          templateTypes = addTemplates (getCTypeList ftyp)
+toCFunc Fix { name = Just n, value = ExprLambda { .. }, .. } = CFunc n templateTypes retType refArguments cbody
+    where arguments = getCDefExtrap argnames argTypes
+          templateTypes = addTemplates $ getCTypeList ftyp
           refArguments = map addRef arguments
-          cbody = translateCNames $ semantics $ toCExpr body
+          cbody = translateCNames . semantics $ toCExpr body
           argTypes = init . getCTypeList $ ftyp
           retType = last . getCTypeList $ ftyp
-toCFunc Fix { name = Nothing, .. } = error "Anonymous Fixpoints not supported"
+toCFunc Fix { name = Just n, value = l } = error "Fixpoint not followed by an ExprLambda in undefined behavior"
+toCFunc Fix { name = Nothing, .. } = error "Anonymous Fixpoints are undefined behavior"
 
