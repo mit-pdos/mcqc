@@ -16,6 +16,7 @@ import Parser.Mod
 import Clang.CParser
 import PrettyPrinter.File
 import System.Directory
+import Ops.Flags
 
 -- Calls codegen and prints errors
 cppWritter :: String -> Either String ByteString -> IO ()
@@ -39,13 +40,14 @@ debug mod = Left $ B.unpack . encodePretty . compile $ mod
 
 main :: IO ()
 main = do
-  argv <- getArgs
+  (as, fs) <- getArgs >>= getFlags
+  let pipeline = if Debug `elem` as then debug else transpile
 --   files <- listDirectory "include"
 --   let clibs = filter isLib $ map (\s -> "include/" ++ s) files
 -- cnamespaces <- mapM (\file -> parseHpp file) clibs
   mapM_ (\arg -> do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
-        cpp = parse json >>= transpile
-    cppWritter newfilename cpp) argv
+        cpp = parse json >>= pipeline
+    cppWritter newfilename cpp) fs
 

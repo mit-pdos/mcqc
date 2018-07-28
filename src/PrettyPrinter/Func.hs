@@ -12,15 +12,22 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 
+prettyTempls :: [Text] -> Doc ann
+prettyTempls [] = mempty
+prettyTempls tt = "template<" <> commatize (map ("typename " `T.append`) tt) <> ">"
+                  <> line
+
 instance Pretty CFunc where
-  pretty CFunc { _templtypes = [], .. } = pretty _ftype <+> mkFuncSig _fname _fargs
-                                           <> funcbody
-    where funcbody = vcat ["{", tab mainbody, "}"] <> line
-          mainbody = "return" <+> (pretty _fbody) <> ";"
-  pretty CFunc { _templtypes = tt, .. } = "template<" <> commatize (map ("typename " `T.append`) tt) <> ">"
-                                           <> line
+  pretty CFuncFix { _templtypes = tt, .. } = prettyTempls tt
                                            <> pretty _ftype <+> mkFuncSig _fname _fargs
-                                           <> funcbody
-    where funcbody = vcat ["{", tab mainbody, "}"] <> line
-          mainbody = "return" <+> (pretty _fbody) <> ";"
-  pretty CFuncEmpty { }      = mempty
+                                           <> vcat ["{", tab mainbody, "}"]
+                                           <> line
+    where mainbody = "return" <+> (pretty _fbody) <> ";"
+  pretty CFuncImp { _templtypes = tt, .. } = prettyTempls tt
+                                           <> pretty _ftype <+> mkFuncSig _fname _fargs
+                                           <> vcat ["{", tab mainbody, "}"]
+                                           <> line
+    where mainbody = vcat (map pretty _fstmts)
+                     <> line
+                     <> "return;"
+  pretty CFuncEmpty { }                    = mempty

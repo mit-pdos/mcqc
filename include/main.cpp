@@ -13,10 +13,10 @@ using namespace nat;
 using namespace list;
 
 template<typename T>
-static inline List<T> rev(const List<T> &l) {
-	return dmatch(l,
+static inline List<T> rev(List<T> l) {
+	return list::match(l,
 		[]()	{ return List<T>(); },
-		[](auto h, auto ls) { return dapp(rev(ls), List<T>(1, h)); });
+		[](auto h, auto ls) { return app(rev(ls), List<T>(1, h)); });
 }
 
 int main() {

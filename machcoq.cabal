@@ -37,12 +37,11 @@ executable machcoq
       Clang.Namespaces
       Clang.CParser
       Sema.Pipeline
+      Ops.Flags
       PrettyPrinter.Defs
       PrettyPrinter.Expr
       PrettyPrinter.File
       PrettyPrinter.Func
-      Utils
-      Paths_machcoq
   hs-source-dirs:
       src
   build-depends:
@@ -73,8 +72,6 @@ test-suite spec
       Parser.Pattern
       Parser.Expr
       Parser.Fix
-      Utils
-      Paths_machcoq
   hs-source-dirs:
       test
       src

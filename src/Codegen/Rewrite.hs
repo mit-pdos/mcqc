@@ -25,6 +25,7 @@ toCName "Nat.modulo" = "mod"
 toCName "Nat.even" = "even"
 toCName "Nat.odd" = "odd"
 toCName "Datatypes.app" = "app"
+toCName "String.append" = "append"
 toCName s = s
 
 -- Apply toCName to a CExpr

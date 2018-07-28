@@ -15,11 +15,5 @@ namespace optional {
     constexpr inline static Optional<T> some(T t) {
         return Optional<T>(t);
     }
-
-    // Destructive cons, reuses t so it can not be referenced again
-    template<typename T>
-    constexpr inline static Optional<T> dsome(T t) {
-        return Optional<T>(std::move(t));
-    }
 }
 

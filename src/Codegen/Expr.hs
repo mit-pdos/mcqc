@@ -17,6 +17,7 @@ data CExpr =
           | CExprCase { _cexpr :: CExpr, _cases :: [CExpr] }
           | CExprMatch { _mpat :: CExpr, _mbody :: CExpr }    -- Matched to Case
           | CExprCall { _fname :: Text, _fparams :: [CExpr] } -- Use this for function calls and constructors
+          | CExprStmt { _stype :: Text, _sname :: Text, _sbody :: CExpr } -- C++ statament for monadic unrolling
           -- Patterns
           | CExprCtor { _cname :: Text, _cargs :: [CDef] }
           | CExprTuple { _items :: [CExpr] }

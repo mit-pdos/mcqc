@@ -50,6 +50,12 @@ addRef = over typename (\t -> T.append t "&")
 removeRef :: Text -> Text
 removeRef = T.replace "&" ""
 
+-- Hacky and bad in many ways
+addTemplates :: [Text] -> [Text]
+addTemplates incls
+    | "List<T>" `elem` incls || "Optional<T>" `elem` incls = [ "T" ]
+    | otherwise = []
+
 -- Remove the template decorator
 removeTemplate :: Text -> Text
 removeTemplate = T.replace "<T>" ""
