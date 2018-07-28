@@ -38,13 +38,17 @@ transpile mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutO
 debug :: Module -> Either String ByteString
 debug mod = Left $ B.unpack . encodePretty . compile $ mod
 
+--getNamespaces :: IO [Namespaces]
+--getNamespaces = do
+--  files <- listDirectory "include"
+--  let clibs = filter isLib $ map (\s -> "include/" ++ s) files
+--  return $ mapM (\file -> parseHpp file) clibs
+
 main :: IO ()
 main = do
   (as, fs) <- getArgs >>= getFlags
-  let pipeline = if Debug `elem` as then debug else transpile
---   files <- listDirectory "include"
---   let clibs = filter isLib $ map (\s -> "include/" ++ s) files
--- cnamespaces <- mapM (\file -> parseHpp file) clibs
+  let pipeline = if Debug `elem` as then debug
+                 else transpile
   mapM_ (\arg -> do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
