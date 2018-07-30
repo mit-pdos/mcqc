@@ -1,3 +1,5 @@
+#ifndef NAT_CPP
+#define NAT_CPP
 #include <climits>
 #include <cstdlib>
 #include <cassert>
@@ -63,4 +65,4 @@ namespace nat {
         return a % b;
     }
 }
-
+#endif

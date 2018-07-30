@@ -1,3 +1,5 @@
+#ifndef LIST_CPP
+#define LIST_CPP
 #include <list>
 #include "nat.hpp"
 #include "list.hpp"
@@ -118,3 +120,4 @@ namespace list {
         return static_cast<nat::Nat>(l.length());
     }
 }
+#endif

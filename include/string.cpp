@@ -1,3 +1,5 @@
+#ifndef STRING_CPP
+#define STRING_CPP
 #include <string>
 #include "optional.hpp"
 #include "string.hpp"
@@ -43,3 +45,4 @@ namespace string {
         return static_cast<nat::Nat>(l.length());
     }
 }
+#endif

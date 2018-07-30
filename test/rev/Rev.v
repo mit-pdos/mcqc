@@ -10,7 +10,5 @@ Fixpoint rev {T} (l : list T) : list T :=
     | h :: ts => rev(ts) ++ [h]
   end.
 
-Compute rev([1;2;3]).
-
 Extraction Language JSON.
 Separate Extraction rev.

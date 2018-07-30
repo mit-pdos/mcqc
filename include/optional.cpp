@@ -1,3 +1,5 @@
+#ifndef OPTIONAL_CPP
+#define OPTIONAL_CPP
 #include <iostream>
 #include <optional>
 #include <tuple>
@@ -16,4 +18,4 @@ namespace optional {
         return Optional<T>(t);
     }
 }
-
+#endif
