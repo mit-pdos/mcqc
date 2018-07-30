@@ -9,7 +9,8 @@ toCType :: Text -> Text
 toCType "Datatypes.nat" = "Nat"
 toCType "Datatypes.bool" = "bool"
 toCType "Datatypes.list" = "List<T>"
-toCType "String.string" = "string"
+toCType "String.string" = "String"
+toCType "coq_Proc" = "proc"
 toCType s = s
 
 toCName :: Text -> Text
@@ -26,6 +27,10 @@ toCName "Nat.even" = "even"
 toCName "Nat.odd" = "odd"
 toCName "Datatypes.app" = "app"
 toCName "String.append" = "append"
+toCName "Coq_open" = "open"
+toCName "Coq_read" = "close"
+toCName "Coq_print" = "close"
+toCName "Coq_close" = "close"
 toCName s = s
 
 -- Apply toCName to a CExpr

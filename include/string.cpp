@@ -22,7 +22,7 @@ namespace string {
     }
 
     // Fully constructive app, both l1, l2 are immutable and will be copied.
-    inline static String app(String l1, String l2) {
+    inline static String append(String l1, String l2) {
         String s = String(l1);
         s.append(l2);
         return s;

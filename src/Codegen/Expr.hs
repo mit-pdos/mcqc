@@ -28,7 +28,9 @@ data CExpr =
           | CExprNat { _nat :: Int }
           | CExprBool { _bool :: Bool }
           | CExprList { _elems :: [CExpr] }
-    deriving (Eq, Generic, ToJSON)
+          -- Continuation
+          | CExprSeq { _left :: CExpr, _right :: CExpr }
+    deriving (Eq, Generic, ToJSON, Show)
 
 -- Generate lenses
 makeLenses ''CExpr

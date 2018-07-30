@@ -18,7 +18,7 @@ import qualified Data.Text as T
 -- C function definition, ie: int main(int argc, char **argv)
 data CFunc =
     CFuncFix { _fname :: Text, _templtypes :: [Text], _ftype :: Text, _fargs :: [CDef], _fbody :: CExpr }
-    | CFuncImp { _fname :: Text, _templtypes :: [Text], _ftype :: Text, _fargs :: [CDef], _fstmts :: [CExpr] }
+    | CFuncImp { _fname :: Text, _templtypes :: [Text], _ftype :: Text, _fargs :: [CDef], _fstmt :: CExpr }
     | CFuncEmpty {}
   deriving (Eq, Generic, ToJSON)
 
@@ -38,6 +38,8 @@ getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCType
 getCTypeList TypVar   { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
 getCTypeList TypGlob  { name = n } = [toCType n]
 
+-- data Expr = ExprLambda { argnames :: [Text], body :: Expr }
+
 -- Declarations to C Function
 toCDecl :: Declaration -> CFunc
 -- Define fixpoint by translating it to a single return-match statement
@@ -49,12 +51,12 @@ toCDecl FixDecl  { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .
           argTypes = init . getCTypeList $ ftyp
           retType = last . getCTypeList $ ftyp
 -- Define imperative function by unrolling the proc monad to sequential statement expressions
-toCDecl TermDecl { .. } = CFuncImp name templateTypes retType arguments [cbody]
+toCDecl TermDecl { val = ExprLambda { .. }, .. } = CFuncImp name templateTypes retType arguments cbody
     where templateTypes = addTemplates (getCTypeList typ)
-          cbody = translateCNames $ semantics $ toCExpr val
+          cbody = translateCNames $ semantics $ toCExpr body
           retType = last . getCTypeList $ typ
           argTypes = init . getCTypeList $ typ
-          arguments = getCDefExtrap (getNames val) argTypes
+          arguments = getCDefExtrap argnames argTypes
 
 -- Sanitize declarations for correctness
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixpoint not followed by an ExprLambda in undefined behavior"

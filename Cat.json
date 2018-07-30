@@ -1,11 +1,11 @@
 {
   "what": "module", "name": "Cat", "need_magic": false, "need_dummy": true,
   "used_modules": [
-    "Datatypes", "String"
+    "Ascii", "Datatypes", "String"
   ],
   "declarations": [
     {
-      "what": "decl:ind", "name": "proc", "argnames": [
+      "what": "decl:ind", "name": "coq_Proc", "argnames": [
         "x"
       ],
       "constructors": [
@@ -61,7 +61,7 @@
           "name": "Coq_bind",
           "argtypes": [
             {
-              "what": "type:glob", "name": "proc",
+              "what": "type:glob", "name": "coq_Proc",
               "args": [
                 {
                   "what": "type:unknown"
@@ -73,7 +73,7 @@
                 "what": "type:unknown"
               },
               "right": {
-                "what": "type:glob", "name": "proc",
+                "what": "type:glob", "name": "coq_Proc",
                 "args": [
                   {
                     "what": "type:var", "name": "x"
@@ -102,7 +102,7 @@
             ]
           },
           "right": {
-            "what": "type:glob", "name": "proc",
+            "what": "type:glob", "name": "coq_Proc",
             "args": [
               {
                 "what": "type:dummy"
@@ -129,8 +129,82 @@
                   "args": [
                     {
                       "what": "expr:rel", "name": "path"
-                    }, {
-                      "what": "expr:rel", "name": "fn"
+                    },
+                    {
+                      "what": "expr:apply",
+                      "func": {
+                        "what": "expr:global", "name": "String.append"
+                      },
+                      "args": [
+                        {
+                          "what": "expr:constructor",
+                          "name": "String.String",
+                          "args": [
+                            {
+                              "what": "expr:constructor",
+                              "name": "Ascii.Ascii",
+                              "args": [
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_true", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_true", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_true", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_true", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_false", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_true", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_false", "args": [
+                                    
+                                  ]
+                                },
+                                {
+                                  "what": "expr:constructor",
+                                  "name": "Datatypes.Coq_false", "args": [
+                                    
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "what": "expr:constructor",
+                              "name": "String.EmptyString", "args": [
+                                
+                              ]
+                            }
+                          ]
+                        }, {
+                          "what": "expr:rel", "name": "fn"
+                        }
+                      ]
                     }
                   ]
                 }

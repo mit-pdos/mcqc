@@ -24,10 +24,9 @@ instance Pretty CFunc where
                                            <> line
     where mainbody = "return" <+> (pretty _fbody) <> ";"
   pretty CFuncImp { _templtypes = tt, .. } = prettyTempls tt
-                                           <> pretty _ftype <+> mkFuncSig _fname _fargs
-                                           <> vcat ["{", tab mainbody, "}"]
+                                           <> pretty _ftype <+> mkFuncSig _fname _fargs <+> "{"
                                            <> line
-    where mainbody = vcat (map pretty _fstmts)
-                     <> line
-                     <> "return;"
+                                           <> (tab . pretty) _fstmt
+                                           <> ";" <> line
+                                           <> "}"
   pretty CFuncEmpty { }                    = mempty

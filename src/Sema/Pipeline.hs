@@ -3,7 +3,10 @@ module Sema.Pipeline where
 import Data.Text (Text)
 import Codegen.Expr
 import Codegen.Utils
+import Codegen.Defs
 import Control.Lens
+import Data.Text (Text)
+import qualified Data.Text as T
 
 -- Natural semantics
 natSemantics :: CExpr -> CExpr
@@ -40,7 +43,7 @@ listSemantics :: CExpr -> CExpr
 -- Semantics for O and S
 listSemantics CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [] } = CExprList []
 listSemantics CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [args] } = error "Datatypes.Coq_nil with args found!"
-listSemantics CExprCall { _fname = "Datatypes.Coq_cons", _fparams = [a, b] } = CExprList $ (semantics $ a):(_elems . listSemantics $ b)
+listSemantics CExprCall { _fname = "Datatypes.Coq_cons", _fparams = [a, b] } = CExprList $ (semantics a):(_elems . listSemantics $ b)
 listSemantics CExprCall { _fname = "Datatypes.Coq_cons", _fparams = a:b:arg } = error "Datatypes.Coq_cons with more than two args found!"
 -- Propagate to children expr
 listSemantics CExprLambda { .. } = CExprLambda _largs (listSemantics _lbody)
@@ -51,6 +54,67 @@ listSemantics CExprTuple  { .. } = CExprTuple (map listSemantics _items)
 -- Transparent to the rest of expressions
 listSemantics other = other
 
+{-
+  "tag": "CExprCall",
+                        "_fname": "Coq_bind",
+                        "_fparams": [
+                            {
+                                "tag": "CExprCall",
+                                "_fname": "Coq_open",
+                                "_fparams": [
+                                    {
+                                        "tag": "CExprCall",
+                                        "_fname": "append",
+                                        "_fparams": [
+                                            {
+                                                "tag": "CExprStr",
+                                                "_str": "path"
+                                            },
+                                            {
+                                                "tag": "CExprStr",
+                                                "_str": "fn"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "_largs": [
+                                    {
+                                        "_name": "f",
+                                        "_typename": "auto"
+                                    }
+                                ],
+                                "tag": "CExprLambda",
+                                "_lbody": {
+                                    "tag": "CExprCall",
+                                    "_fname": "Coq_bind",
+                                    "_fparams": [
+                                        {
+
+-}
+
+-- TODO:
+-- Proc semantics (monadic)
+procSemantics :: CExpr -> CExpr
+procSemantics CExprCall { _fname = "Coq_bind", _fparams = [arg] } = error "Datatypes.Coq_bind with one arg found, undefined behavior."
+procSemantics CExprCall { _fname = "Coq_bind", _fparams = [a,
+    CExprLambda { .. }] } = CExprSeq (CExprStmt typenm nm a) $ procSemantics _lbody
+    where unidef []     = ("void", "fake_name")
+          unidef [d@CDef { .. }]    = (_typename, _name)
+          unidef (a:ls) = error "Bind to multiple arguments not allowed, failing"
+          typenm = fst . unidef $ _largs
+          nm = snd . unidef $ _largs
+procSemantics CExprCall { _fname = "Coq_bind", _fparams = a:b:arg } = error "Datatypes.Coq_bind with more than two args found!"
+procSemantics CExprCall { _fname = "Coq_ret", .. } = CExprStr "return" -- implement return arguments
+procSemantics CExprLambda { .. } = CExprLambda _largs (procSemantics _lbody)
+procSemantics CExprCase   { .. } = CExprCase (procSemantics _cexpr) (map procSemantics _cases)
+procSemantics CExprMatch  { .. } = CExprMatch (procSemantics _mpat) (procSemantics _mbody)
+procSemantics CExprCall   { .. } = CExprCall _fname (map procSemantics _fparams)
+procSemantics CExprTuple  { .. } = CExprTuple (map procSemantics _items)
+-- Transparent to the rest of expressions
+procSemantics other = other
+
 -- Update all semantic transforms here to create a pipeline
-semantics = listSemantics . natSemantics . boolSemantics
+semantics = procSemantics . listSemantics . natSemantics . boolSemantics
 

@@ -9,8 +9,7 @@ Cat.json: Cat.v
 	coqc $<
 
 Cat.cpp: Cat.json
-	cd ../../ && ./dist/build/machcoq/machcoq test/cat/$<
-	mv ../../Cat.cpp $@
+	stack exec machcoq -- $<
 
 cat: main.cpp Cat.cpp
 	@echo --------------------------------------------------------------------------------
@@ -19,5 +18,5 @@ cat: main.cpp Cat.cpp
 
 
 clean:
-	-rm -rf cat Cat.cpp *.dSYM *.glob *.vo *.json *.o
+	-rm -rf cat *.dSYM *.glob *.vo *.json *.o
 

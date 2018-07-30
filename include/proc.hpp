@@ -1,5 +1,7 @@
-#include "string.hpp"
-#include "list.hpp"
+#ifndef PROC_H
+#define PROC_H
+#include "string.cpp"
+#include "list.cpp"
 #include <iostream>
 
 namespace proc {
@@ -59,3 +61,4 @@ namespace proc {
         }
     };
 }
+#endif
