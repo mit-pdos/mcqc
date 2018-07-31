@@ -1,13 +1,16 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
-module Sema.Byte where
+module Sema.String where
 import Sema.Common
 import Codegen.Expr
+import Codegen.Utils
+import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Bits
 
 -- Ascii as byte semantics
 asciiSemantics :: CExpr -> CExpr
 asciiSemantics CExprCall { _fname = "Ascii.Ascii", _fparams = fp }
-    | (length fp) == 8 = CExprChar $ makeByte (map _bool fp)
+    | (length fp) == 8 = CExprStr $ T.pack [w2c (makeByte (map _bool fp))]
     | otherwise        = error "Ascii char is not 8 bytes"
     where fromBool b      = if b then fromInteger 1 else zeroBits
           makeByte []     = zeroBits
@@ -15,3 +18,12 @@ asciiSemantics CExprCall { _fname = "Ascii.Ascii", _fparams = fp }
 asciiSemantics CExprCall { .. } = CExprCall _fname (map asciiSemantics _fparams)
 asciiSemantics other = descend asciiSemantics other
 
+makeStr :: CExpr -> Text
+makeStr CExprStr  { .. } = _str
+makeStr CExprCall { _fname = "String.EmptyString", .. } = mempty
+
+stringSemantics :: CExpr -> CExpr
+stringSemantics CExprCall { _fname = "String.String", .. } =
+    CExprStr $ T.concat $ map makeStr _fparams
+stringSemantics CExprCall { .. } = CExprCall _fname (map stringSemantics _fparams)
+stringSemantics other = descend stringSemantics other

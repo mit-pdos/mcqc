@@ -28,8 +28,8 @@ toCName "Nat.odd" = "odd"
 toCName "Datatypes.app" = "app"
 toCName "String.append" = "append"
 toCName "Coq_open" = "open"
-toCName "Coq_read" = "close"
-toCName "Coq_print" = "close"
+toCName "Coq_read" = "read"
+toCName "Coq_print" = "print"
 toCName "Coq_close" = "close"
 toCName s = s
 

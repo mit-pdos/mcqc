@@ -27,9 +27,9 @@ instance Pretty CExpr where
                              <+> pretty _mbody
                              <> ";" <+> "}"
   pretty CExprCall    { .. } = pretty (toCName _fname) <> "(" <> commatize _fparams <> ")"
-  pretty CExprStr     { .. } = pretty _str
-  pretty CExprChar    { .. } = "\"" <> c <> "\""
-    where c = pretty . C.chr . fromIntegral $ _char
+--  pretty CExprChar    { .. } = "\"" <> pretty (w2c _char) <> "\""
+  pretty CExprVar     { .. } = pretty _var
+  pretty CExprStr     { .. } = "\"" <> pretty _str <> "\""
   pretty CExprNat     { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool    { .. } = pretty _bool
   pretty CExprList    { .. } = "List<T>{" <> commatize _elems <> "}"

@@ -3,15 +3,21 @@ module Codegen.Utils where
 import Codegen.Defs
 import Control.Lens
 import qualified Data.Text as T
+import qualified Data.Char as C
 import Data.Text.Read
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
 import Data.Monoid
+import Data.Word (Word8)
 
 -- Utility function
 -- Add parenteses if the argument needs them
 maybeParens :: Doc ann -> Doc ann
 maybeParens x = if (show x) == "" then mempty else parens x
+
+-- Word to Character cast
+w2c :: Word8 -> Char
+w2c = C.chr . fromIntegral
 
 -- Format and pretty print as a comma-separated list
 commatize :: Pretty a => [a] -> Doc ann

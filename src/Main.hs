@@ -27,12 +27,9 @@ cppWritter _ (Left s) = hPutStrLn stderr s
 parse :: ByteString -> Either String Module
 parse buffer = eitherDecode buffer :: Either String Module
 
-dbgModule :: Module -> Either String ByteString
-dbgModule mod = Left $ show mod
-
 -- TODO: Use namespaces to verify link of C++17 functions in place of their coq counterparts
 transpile :: Module -> Either String ByteString
-transpile mod = Right $ (B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . compile) mod
+transpile mod = Right $ B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . compile $ mod
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
 
 debug :: Module -> Either String ByteString

@@ -4,7 +4,12 @@ import Sema.Nat
 import Sema.Proc
 import Sema.Bool
 import Sema.List
-import Sema.Byte
+import Sema.String
 
 semantics :: CExpr -> CExpr
-semantics = procSemantics . listSemantics . asciiSemantics . natSemantics . boolSemantics
+semantics = procSemantics .
+            listSemantics .
+            stringSemantics .
+            asciiSemantics .
+            natSemantics .
+            boolSemantics

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, UndecidableInstances, StandaloneDeriving, FlexibleContexts, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE TemplateHaskell, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
 module Codegen.Expr where
 import GHC.Generics
 import Codegen.Defs
@@ -8,7 +8,6 @@ import Parser.Decl
 import Parser.Expr
 import Control.Lens
 import Data.Aeson
-import Data.Word (Word8)
 import Data.Text (Text)
 
 -- C++ Expressions
@@ -24,8 +23,8 @@ data CExpr =
           | CExprWild {}                                      -- Wildcard pattern, matches everything
           -- Reduced forms
           -- TODO: Add optional and nested types
+          | CExprVar { _var :: Text }
           | CExprStr { _str :: Text }
-          | CExprChar { _char :: Word8 }
           | CExprNat { _nat :: Int }
           | CExprBool { _bool :: Bool }
           | CExprList { _elems :: [CExpr] }
@@ -49,17 +48,17 @@ toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseCExpr cases)
 toCExpr ExprConstructor { .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name (map toCExpr args)
-toCExpr ExprRel         { .. } = CExprStr name
-toCExpr ExprGlobal      { .. } = CExprStr name
+toCExpr ExprRel         { .. } = CExprVar name
+toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value
-toCExpr ExprDummy       {    } = CExprStr ""
+toCExpr ExprDummy       {    } = CExprVar ""
 toCExpr e                      = error $ "Match fell through " ++ (show e)
 
 -- Pattern rewritting
 toCPattern :: Pattern -> CExpr
 toCPattern PatCtor      { .. } = CExprCtor name (map untypedDef argnames) -- Make untyped Ctor use auto type, it works I guess
 toCPattern PatTuple     { .. } = CExprTuple (map toCPattern items)
-toCPattern PatRel       { .. } = CExprStr name
+toCPattern PatRel       { .. } = CExprVar name
 toCPattern PatWild      {}     = CExprWild
 
 -- Case rewrittting

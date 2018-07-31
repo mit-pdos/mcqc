@@ -29,7 +29,7 @@ executable machcoq
       Parser.Pattern
       Parser.Fix
       Sema.Bool
-      Sema.Byte
+      Sema.String
       Sema.Common
       Sema.List
       Sema.Nat
