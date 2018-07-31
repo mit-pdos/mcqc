@@ -28,6 +28,12 @@ executable machcoq
       Parser.Expr
       Parser.Pattern
       Parser.Fix
+      Sema.Bool
+      Sema.Byte
+      Sema.Common
+      Sema.List
+      Sema.Nat
+      Sema.Proc
       Codegen.File
       Codegen.Func
       Codegen.Defs

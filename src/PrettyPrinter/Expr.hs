@@ -6,6 +6,7 @@ import Codegen.Rewrite
 import PrettyPrinter.Defs
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Char as C
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 --          | CExprStmt { _stype :: Text, _sname :: Text, _sbody :: CExpr } -- C++ statament for monadic unrolling
@@ -27,6 +28,8 @@ instance Pretty CExpr where
                              <> ";" <+> "}"
   pretty CExprCall    { .. } = pretty (toCName _fname) <> "(" <> commatize _fparams <> ")"
   pretty CExprStr     { .. } = pretty _str
+  pretty CExprChar    { .. } = "\"" <> c <> "\""
+    where c = pretty . C.chr . fromIntegral $ _char
   pretty CExprNat     { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool    { .. } = pretty _bool
   pretty CExprList    { .. } = "List<T>{" <> commatize _elems <> "}"

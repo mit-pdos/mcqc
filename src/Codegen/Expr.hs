@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE TemplateHaskell, UndecidableInstances, StandaloneDeriving, FlexibleContexts, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
 module Codegen.Expr where
 import GHC.Generics
 import Codegen.Defs
@@ -8,7 +8,7 @@ import Parser.Decl
 import Parser.Expr
 import Control.Lens
 import Data.Aeson
-import Data.Maybe
+import Data.Word (Word8)
 import Data.Text (Text)
 
 -- C++ Expressions
@@ -25,6 +25,7 @@ data CExpr =
           -- Reduced forms
           -- TODO: Add optional and nested types
           | CExprStr { _str :: Text }
+          | CExprChar { _char :: Word8 }
           | CExprNat { _nat :: Int }
           | CExprBool { _bool :: Bool }
           | CExprList { _elems :: [CExpr] }
