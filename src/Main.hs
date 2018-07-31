@@ -50,5 +50,5 @@ main = do
     json <- B.readFile arg;
     let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
         cpp = parse json >>= pipeline
+    -- Write output to file
     cppWritter newfilename cpp) fs
-

@@ -1,5 +1,5 @@
-#ifndef PROC_H
-#define PROC_H
+#ifndef PROC_CPP
+#define PROC_CPP
 #include "string.cpp"
 #include "list.cpp"
 #include <iostream>
@@ -7,6 +7,7 @@
 namespace proc {
 
 	using Fd=FILE *;
+	using proc=void;
 
 	// open file
 	static inline Fd open(string::String s) {

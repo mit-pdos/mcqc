@@ -22,10 +22,17 @@ getNativeLibs CFuncEmpty {} = []
 getNativeLibs f = map normalizeType $ _ftype f : (map _typename (_fargs f))
     where normalizeType = T.replace "Datatypes." "" . T.toLower . removeRef . removeTemplate
 
+-- JSON plugin doesnt export parametric types so have to do this hack
+patchDecl :: CFunc -> CFunc
+patchDecl = over ftype patch
+    where patch "proc" = "void"
+          patch o = o
+
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile
 compile Module { name = n, declarations = decls, .. } = CFile incls (T.append n ".cpp") cdecls
-    where cdecls = map toCDecl decls
-          incls = nub $ concat $ map getNativeLibs cdecls
+    where cdecls = map (patchDecl . toCDecl) decls
+          incls = nub $ concat $ map (getNativeLibs . toCDecl) decls
+
 
 

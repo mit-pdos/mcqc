@@ -18,5 +18,5 @@ cat: main.cpp Cat.cpp
 
 
 clean:
-	-rm -rf cat *.dSYM *.glob *.vo *.json *.o
+	-rm -rf cat Cat.cpp *.dSYM *.glob *.vo *.json *.o
 
