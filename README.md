@@ -35,6 +35,11 @@ make
 ./rev
 ```
 
+Go in `test/cat` and type:
+```
+make
+./cat Cat.v
+```
 # Memory Profiling
 
 Go to either of the above and run
