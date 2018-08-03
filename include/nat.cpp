@@ -2,14 +2,16 @@
 #define NAT_CPP
 #include <climits>
 #include <cstdlib>
-#include <cassert>
 #include "nat.hpp"
+#include "exceptions.hpp"
 
 namespace nat {
 
     constexpr inline static Nat succ(Nat a) {
         // Boundary check
-        assert(a < UINT_MAX && "Out of UINT_MAX limit");
+        if (a >= UINT_MAX) {
+			throw new OverflowException("Out of UINT_MAX limit");
+		}
         return a + 1;
     }
     constexpr inline static Nat pred(Nat a) {
@@ -30,35 +32,38 @@ namespace nat {
     }
     // Arithmetic
     constexpr inline static Nat add(Nat a, Nat b) {
-        assert(UINT_MAX - a > b && "add: Out of UINT_MAX limit");
-        assert(UINT_MAX - b > a && "add: Out of UINT_MAX limit");
+        if (UINT_MAX - a < b || UINT_MAX - b < a) {
+			throw new OverflowException("add: Out of UINT_MAX limit");
+		}
         return a + b;
     }
+
     constexpr inline static Nat sub(Nat a, Nat b) {
-        // static_assert(a >= b, "Below 0 for Nat");
         if (a < b) {
             return 0;
         }
         return a - b;
     }
+
     constexpr inline static Nat mul(Nat a, Nat b) {
         if (a == 0 || b == 0) {
             return 0;
+        } else if (UINT_MAX/a < b || UINT_MAX/b < a) {
+			throw new OverflowException("mul: Out of UINT_MAX limit");
         }
-        assert(UINT_MAX/a > b && "mul: Out of UINT_MAX limit");
-        assert(UINT_MAX/b > a && "mul: Out of UINT_MAX limit");
-        return a * b;
+		return a * b;
     }
 
+	// total division, does not fail when /0
     constexpr inline static Nat div(Nat a, Nat b) {
-        // assert(b != 0, "Division by zero");
         if (b == 0) {
             return 0;
         }
         return a / b;
     }
+
+	// total division, does not fail when /0
     constexpr inline static Nat mod(Nat a, Nat b) {
-        // _assert( b != 0, "Division by zero");
         if (b == 0) {
             return 0;
         }

@@ -2,7 +2,12 @@
 #define PROC_CPP
 #include "string.cpp"
 #include "list.cpp"
+#include "exceptions.hpp"
+#include "optional.cpp"
 #include <iostream>
+
+using namespace list;
+using namespace string;
 
 namespace proc {
 
@@ -10,40 +15,45 @@ namespace proc {
 	using proc=void;
 
 	// open file
-	static inline Fd open(string::String s) {
-		return fopen(s.c_str(), "r");
+	static inline Fd open(String s) noexcept(false) {
+		if (Fd o = fopen(s.c_str(), "r")) {
+			return o;
+		}
+		throw IOException("File not found");
 	}
 
 	// read file
-	static inline string::String read(Fd f) {
+	static inline String read(Fd f) {
 		fseek(f, 0, SEEK_END);
 		long fsize = ftell(f);
-		fseek(f, 0, SEEK_SET);  //same as rewind(f);
-		string::String dp = string::String(fsize, '\0' );
+		fseek(f, 0, SEEK_SET);
+		String dp = String(fsize, '\0' );
 		fread(&(dp[0]), sizeof(char), (size_t)fsize, f);
 		return dp;
 	}
 
 	// write file
-	static inline void write(Fd f, string::String& s) {
+	static inline void write(Fd f, String& s) {
         fwrite(&s[0], sizeof(char), s.size(), f);
 	}
 
 	// close file
-	static inline void close(Fd f) {
-		fclose(f);
+	static inline void close(Fd f) noexcept(false) {
+		if(fclose(f)) {
+			throw IOException("Could not close fd");
+		}
 	}
 
 	// print string to standard output
-	static inline void print(string::String& s) {
+	static inline void print(String& s) {
 		std::cout << s << std::endl;
 	}
 
 	// print list to standard output
 	template<typename T>
-	static inline void print(const list::List<T>& s) {
+	static inline void print(const List<T>& s) {
 		std::cout << "{ ";
-		for(typename list::List<T>::const_iterator i = s.begin(); i != s.end(); ++i) {
+		for(typename List<T>::const_iterator i = s.begin(); i != s.end(); ++i) {
 			if (i != s.begin())
 				std::cout << ", ";
 			std::cout << *i;
