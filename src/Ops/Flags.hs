@@ -8,14 +8,14 @@ import System.IO
 import Text.Printf
 
 data Flag
-    = Output                -- -o
+    = Output String         -- -o
     | Debug                 -- -d
     | Libs                  -- -s
     | Help                  -- -h, --help
-    deriving (Eq,Ord,Enum,Show,Bounded)
+    deriving (Eq,Ord,Show)
 
 flags =
-   [Option ['o'] []       (NoArg Output)
+   [Option ['o'] []       (ReqArg (\arg -> Output arg) "FILE")
         "Redirect output to specified file."
    ,Option ['d'] []       (NoArg Debug)
         "Does not generate C++ output but prints the final IR as Json."
@@ -26,6 +26,12 @@ flags =
    ,Option ['h'] []       (NoArg Help)
         "Print this help message"
    ]
+
+-- Get output filename if exists
+getOutput :: [Flag] -> Maybe String
+getOutput [] = Nothing
+getOutput ((Output fn):fs) = Just fn
+getOutput (f:fs) = getOutput fs
 
 getFlags argv = case getOpt Permute flags argv of
     (args,fs,[]) -> do
@@ -39,4 +45,4 @@ getFlags argv = case getOpt Permute flags argv of
         hPutStrLn stderr (concat errs ++ usageInfo header flags)
         exitWith (ExitFailure 1)
 
-    where header = "Usage: machcoq [-ds] [-o cpp  file] [json file ...]"
+    where header = "Usage: machcoq [-ds] [-o cpp_file] [json_file ...]"

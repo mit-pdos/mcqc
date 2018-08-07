@@ -7,9 +7,6 @@
 #include "nat.hpp"
 
 namespace string {
-    // String definition
-    enum StringAtom { Nil, Cons };
-
     using Char = char;
     using String = std::string;
 

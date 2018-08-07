@@ -1,5 +1,5 @@
 #include "list.hpp"
-#include "proc.hpp"
+#include "proc.cpp"
 #include "benchmark.h"
 #include "Rev.cpp"
 

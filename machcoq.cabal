@@ -70,28 +70,12 @@ executable machcoq
 
 test-suite spec
   type: exitcode-stdio-1.0
-  main-is: Json.hs
-  other-modules:
-      ModuleTest
-      Parser.Mod
-      Parser.Decl
-      Parser.Pattern
-      Parser.Expr
-      Parser.Fix
+  main-is: Main.hs
   hs-source-dirs:
       test
-      src
   cpp-options: -DTEST
   build-depends:
-      aeson,
-      ansi-wl-pprint,
       base >=4.9 && <5,
-      bytestring,
-      containers,
-      unordered-containers,
-      directory,
-      filepath,
-      hspec,
-      generic-deriving,
-      text
+      process,
+      hspec
   default-language: Haskell2010

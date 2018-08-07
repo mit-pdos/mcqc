@@ -12,34 +12,15 @@ With stack in the source root:
 stack build
 ```
 
-With cabal (global dependencies) in the source root:
-```
-cabal install
-cabal build
-```
-
 Or use cabal sandbox if you prefer.
 
 # Testing
 
-Go in `test/fib` and type:
-
+We're using `lit` for testing, use:
 ```
-make
-./fib
+lit test
 ```
 
-Go in `test/rev` and type:
-```
-make
-./rev
-```
-
-Go in `test/cat` and type:
-```
-make
-./cat Cat.v
-```
 # Memory Profiling
 
 Go to either of the above and run

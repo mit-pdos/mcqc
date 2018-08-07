@@ -46,9 +46,9 @@ main = do
   (as, fs) <- getArgs >>= getFlags
   let pipeline = if Debug `elem` as then debug
                  else transpile
-  mapM_ (\arg -> do
-    json <- B.readFile arg;
-    let newfilename = addExtension ((dropExtension . takeFileName) arg) "cpp"
-        cpp = parse json >>= pipeline
-    -- Write output to file
-    cppWritter newfilename cpp) fs
+  let givefn = case getOutput as of
+                (Nothing) -> (\arg -> addExtension ((dropExtension . takeFileName) arg) "cpp")
+                (Just fn) -> (\_ -> fn)
+  mapM_ (\arg -> B.readFile arg >>=
+    (\json -> cppWritter (givefn arg) (parse json >>=
+      pipeline))) fs
