@@ -1,5 +1,4 @@
 (**
-    XFAIL: *
     RUN: %coqc %s
     RUN: %clean
     RUN: %machcoq Cat.json -o %t.cpp

@@ -34,6 +34,8 @@ executable machcoq
       Sema.List
       Sema.Nat
       Sema.Proc
+      Sema.Tuple
+      Codegen.Config
       Codegen.File
       Codegen.Func
       Codegen.Defs

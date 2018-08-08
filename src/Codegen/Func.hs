@@ -34,11 +34,14 @@ makeLenses ''CFunc
 
 -- Nat -> Nat -> Bool ==> [Nat, Nat, Bool]
 getCTypeList :: Typ -> [Text]
-getCTypeList TypArrow { left = lt, right = rt } = (getCTypeList lt) ++ (getCTypeList rt)
-getCTypeList TypVar   { name = n, args = al } = ["<getCTypeLast PLACEHOLDER>"]
-getCTypeList TypGlob  { name = n } = [toCType n]
-
--- data Expr = ExprLambda { argnames :: [Text], body :: Expr }
+getCTypeList TypArrow { left = lt, right = rt }       = (getCTypeList lt) ++ (getCTypeList rt)
+getCTypeList TypVar   { name = n, .. }                = [toCType n]
+getCTypeList TypGlob  { name = n, targs = [] }        = [toCType n]
+getCTypeList TypGlob  { name = "Datatypes.list", .. } = [toCType "Datatypes.list"]
+getCTypeList TypGlob  { name = n, .. }                = concat $ map getCTypeList targs
+getCTypeList TypVaridx  { .. }                        = error "Generic indexed types not supported, undefined behavior"
+getCTypeList TypDummy   {}                            = [ "void" ]
+getCTypeList TypUnknown {}                            = [ "void" ]
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CFunc
@@ -57,9 +60,8 @@ toCDecl TermDecl { val = ExprLambda { .. }, .. } = CFuncImp name templateTypes r
           retType = last . getCTypeList $ typ
           argTypes = init . getCTypeList $ typ
           arguments = getCDefExtrap argnames argTypes
-
 -- Sanitize declarations for correctness
-toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixpoint not followed by an ExprLambda in undefined behavior"
+toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
 toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
 toCDecl FixDecl { fixlist = [] }                                   = error "Empty fixlist for declaration found, undefined behavior"
 toCDecl FixDecl { fixlist = f:fl }                                 = error "Fixlist with multiple fixpoints is undefined behavior"

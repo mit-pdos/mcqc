@@ -29,12 +29,6 @@ commatize args
 mkFuncSig :: (Pretty a, Pretty b) => a -> [b] -> Doc ann
 mkFuncSig n args = pretty n <> "(" <> commatize args <> ")"
 
--- Get the next string lexicographically
-incrementText :: String -> String
-incrementText []          = ['a']
-incrementText ('z':xs)    = 'a' : incrementText xs
-incrementText (x:xs)      = succ x : xs
-
 -- Make untyped definitions into auto definitions
 untypedDef :: Text -> CDef
 untypedDef x = CDef x "auto"
@@ -69,6 +63,9 @@ removeTemplate = T.replace "<T>" ""
 -- Define a succ for Texts
 instance Enum Text where
   succ = T.pack . reverse . incrementText . reverse . T.unpack
+    where incrementText []          = ['a']
+          incrementText ('z':xs)    = 'a' : incrementText xs
+          incrementText (x:xs)      = succ x : xs
 
 tab :: Doc ann -> Doc ann
 tab d = indent 2 d

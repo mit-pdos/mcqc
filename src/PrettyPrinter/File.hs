@@ -13,6 +13,5 @@ instance Pretty CFile where
            <> line
            <> vcat (map (\p -> "using namespace" <+> pretty p <> ";") (_includes f))
            <> line
-           <> line
            <> vcat (map pretty (_funcs f))
            <> line

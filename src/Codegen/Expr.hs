@@ -40,6 +40,7 @@ getNames :: Expr -> [Text]
 getNames ExprLambda { .. } = argnames
 getNames ExprRel    { .. } = [name]
 getNames ExprGlobal { .. } = [name]
+getNames ExprCoerce { .. } = getNames value
 
 -- Expression rewritting
 toCExpr :: Expr -> CExpr
@@ -48,6 +49,7 @@ toCExpr ExprCase        { .. } = CExprCase (toCExpr expr) (map caseCExpr cases)
 toCExpr ExprConstructor { .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name (map toCExpr args)
+toCExpr ExprApply       { .. } = CExprCall (head . getNames $ func) (map toCExpr args)
 toCExpr ExprRel         { .. } = CExprVar name
 toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value

@@ -15,9 +15,10 @@ data Case = Case { pat :: Pattern, body :: Expr}
 data Typ =
     TypArrow { left :: Typ, right :: Typ }
     | TypVar { name :: Text, args :: [Expr] }
-    | TypGlob { name :: Text }
+    | TypGlob { name :: Text, targs :: [Typ] }
     | TypVaridx { idx :: Int }
     | TypUnknown {}
+    | TypDummy {}
     deriving (Show, Eq)
 
 -- Expressions
@@ -40,8 +41,10 @@ instance FromJSON Typ where
         Just "type:var"         -> TypVar    <$> v .:  "name"
                                              <*> v .:? "args" .!= []
         Just "type:glob"        -> TypGlob   <$> v .:  "name"
+                                             <*> v .:? "args" .!= []
         Just "type:varidx"      -> TypVaridx <$> v .:  "name"
         Just "type:unknown"     -> return TypUnknown {}
+        Just "type:dummy"       -> return TypDummy {}
         Just s                  -> fail ("Unknown kind: " ++ (show v) ++ " because " ++ (show s))
         Nothing                 -> fail ("No 'what' quantifier for type: " ++ (show v))
 

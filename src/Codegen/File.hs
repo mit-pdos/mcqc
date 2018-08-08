@@ -7,31 +7,26 @@ import Data.List (nub)
 import Codegen.Func
 import Codegen.Defs
 import Codegen.Utils
+import Codegen.Config
 import Clang.Namespaces
 import Control.Lens
 import Data.Text (Text)
 import qualified Data.Text as T
 
-data CFile = CFile { _includes :: [Text], _filename :: Text, _funcs :: [CFunc] }
+data CFile = CFile { _includes :: [Text], _funcs :: [CFunc] }
     deriving (Eq, Generic, ToJSON)
 
 makeLenses ''CFile
 
 getNativeLibs :: CFunc -> [Text]
 getNativeLibs CFuncEmpty {} = []
-getNativeLibs f = map normalizeType $ _ftype f : (map _typename (_fargs f))
+getNativeLibs f = filter (flip elem $ libs) $ (normalizeType . _ftype $ f):typargs
     where normalizeType = T.replace "Datatypes." "" . T.toLower . removeRef . removeTemplate
-
--- JSON plugin doesnt export parametric types so have to do this hack
-patchDecl :: CFunc -> CFunc
-patchDecl = over ftype patch
-    where patch "proc" = "void"
-          patch o = o
-
+          typargs = map (normalizeType . _typename) $ _fargs f
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile
-compile Module { name = n, declarations = decls, .. } = CFile incls (T.append n ".cpp") cdecls
-    where cdecls = map (patchDecl . toCDecl) decls
+compile Module { name = n, declarations = decls, .. } = CFile incls cdecls
+    where cdecls = map toCDecl decls
           incls = nub $ concat $ map (getNativeLibs . toCDecl) decls
 
 
