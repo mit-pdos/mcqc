@@ -19,11 +19,20 @@ maybeParens x = if (show x) == "" then mempty else parens x
 w2c :: Word8 -> Char
 w2c = C.chr . fromIntegral
 
--- Format and pretty print as a comma-separated list
+-- Format and pretty print as a breakable comma-separated list
+breakcommatize :: Pretty a => [a] -> Doc ann
+breakcommatize [] = mempty
+breakcommatize [a] = pretty a
+breakcommatize (a:args) = softcommatize (pretty a) $
+     align . tab $ concatWith softcommatize prettyargs
+    where softcommatize x y = x <> "," <> softline <> y
+          prettyargs = map pretty args
+
+-- Format and pretty print as an unbreakable comma-separated list
 commatize :: Pretty a => [a] -> Doc ann
-commatize args
-    | null args = mempty
-    | otherwise = concatWith (\x y -> x <> "," <+> y) $ map pretty args
+commatize [] = mempty
+commatize args = concatWith (\x y -> x <> "," <+> y) prettyargs
+    where prettyargs = map pretty args
 
 -- Make function signature, ie: "int foo(int a, int b)"
 mkFuncSig :: (Pretty a, Pretty b) => a -> [b] -> Doc ann
@@ -38,8 +47,8 @@ untypedDef x = CDef x "auto"
 getCDefExtrap :: [Text] -> [Text] -> [CDef]
 getCDefExtrap [] [] = []
 getCDefExtrap [x] [y] = [CDef x y]
-getCDefExtrap [x] (y:ys) = (CDef x y):(getCDefExtrap [succ x] ys)
-getCDefExtrap (x:xs) [y] = (CDef x y):(getCDefExtrap xs [succ y])
+getCDefExtrap [x] (y:ys) = (CDef x y):(getCDefExtrap [next x] ys)
+getCDefExtrap (x:xs) [y] = (CDef x y):(getCDefExtrap xs [next y])
 getCDefExtrap (x:xs) (y:ys) = (CDef x y):(getCDefExtrap xs ys)
 
 -- Adds the reference symbol to a CDef
@@ -61,8 +70,8 @@ removeTemplate :: Text -> Text
 removeTemplate = T.replace "<T>" ""
 
 -- Define a succ for Texts
-instance Enum Text where
-  succ = T.pack . reverse . incrementText . reverse . T.unpack
+next :: Text -> Text
+next = T.pack . reverse . incrementText . reverse . T.unpack
     where incrementText []          = ['a']
           incrementText ('z':xs)    = 'a' : incrementText xs
           incrementText (x:xs)      = succ x : xs

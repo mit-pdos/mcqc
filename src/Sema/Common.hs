@@ -7,11 +7,8 @@ descend :: (CExpr -> CExpr) -> CExpr -> CExpr
 descend f c@CExprCall   { .. } = f c
 descend f   CExprStmt   { .. } = CExprStmt _stype _sname $ descend f _sbody
 descend f   CExprLambda { .. } = CExprLambda _largs $ descend f _lbody
-descend f   CExprCase   { .. } = CExprCase (descend f _cexpr) $ map (descend f) _cases
-descend f   CExprMatch  { .. } = CExprMatch (descend f _mpat) (descend f _mbody)
 descend f   CExprSeq    { .. } = CExprSeq (descend f _left) (descend f _right)
 descend f   CExprTuple  { .. } = CExprTuple $ map (descend f) _items
 descend f   CExprList   { .. } = CExprList $ map (descend f) _elems
-descend f   CExprStmt   { .. } = CExprStmt _stype _sname $ descend f _sbody
 -- If it doesn't match anything, then it's a normal form, ignore
 descend f   other              = other

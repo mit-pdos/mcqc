@@ -30,7 +30,7 @@ parse buffer = eitherDecode buffer :: Either String Module
 -- TODO: Use namespaces to verify link of C++17 functions in place of their coq counterparts
 transpile :: Module -> Either String ByteString
 transpile mod = Right $ B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . compile $ mod
-    where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 180 1 }
+    where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 40 1 }
 
 debug :: Module -> Either String ByteString
 debug mod = Left $ B.unpack . encodePretty . compile $ mod

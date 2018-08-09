@@ -8,8 +8,9 @@
     CPP: template<typename T>
     CPP: List<T> rev(List<T>& l)
     CPP: return match{{.*}}l{{.*}}
-    CPP: (){ return List<T>{}; }
-    CPP: ({{.*}} h, {{.*}} ts){ return app(rev(ts), List<T>{h}); }
+    CPP: () { return List<T>{}; }
+    CPP: (auto h, auto ts) { return app{{.*}}rev(ts)
+    CPP: List<T>{h}
 *)
 
 Require Import Coq.Lists.List.

@@ -45,10 +45,6 @@ translateCNames = -- single step lenses
                   -- recursive lenses
                   . over lbody translateCNames
                   . over (items . traverse) translateCNames
-                  . over cexpr translateCNames
-                  . over (cases . traverse) translateCNames
-                  . over mpat translateCNames
-                  . over mbody translateCNames
                   . over (fparams . traverse) translateCNames
                   . over (items . traverse) translateCNames
                   . over (elems . traverse) translateCNames
