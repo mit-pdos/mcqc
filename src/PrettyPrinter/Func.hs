@@ -14,16 +14,17 @@ import Data.Text.Prettyprint.Doc
 
 prettyTempls :: [Text] -> Doc ann
 prettyTempls [] = mempty
-prettyTempls tt = "template<" <> commatize (map ("typename " `T.append`) tt) <> ">"
-                  <> line
+prettyTempls tt = "template<" <> commatize (map (T.append "typename ") tt) <> ">"
 
 instance Pretty CFunc where
   pretty CFuncFix { _templtypes = tt, .. } = prettyTempls tt
+                                           <> line
                                            <> pretty _ftype <+> mkFuncSig _fname _fargs
                                            <> vcat ["{", tab mainbody, "}"]
                                            <> line
-    where mainbody = "return" <+> (pretty _fbody) <> ";"
+    where mainbody = "return" <+> pretty _fbody <> ";"
   pretty CFuncImp { _templtypes = tt, .. } = prettyTempls tt
+                                           <> line
                                            <> pretty _ftype <+> mkFuncSig _fname _fargs <+> "{"
                                            <> line
                                            <> (tab . pretty) _fstmt

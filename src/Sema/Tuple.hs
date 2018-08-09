@@ -13,6 +13,8 @@ tupleSemantics CExprCall { _fname = "Coq_pair", _fparams = args }   =
     CExprTuple (map tupleSemantics args)
 tupleSemantics CExprCall { .. }                                     =
     CExprCall _fname (map tupleSemantics _fparams)
+tupleSemantics CExprLambda { .. }                                   =
+    CExprLambda _largs $ tupleSemantics _lbody
 tupleSemantics other                                                =
     descend tupleSemantics other
 

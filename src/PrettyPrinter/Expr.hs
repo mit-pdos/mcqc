@@ -15,7 +15,7 @@ instance Pretty CExpr where
                              <> ") {"
                              <+> "return" <+> pretty _lbody <> ";"
                              <+> "}"
-  pretty CExprCall    { _fname = "Coq_ret", .. } = group $ "return" <+> hsep (map pretty _fparams)
+  pretty CExprCall    { _fname = "Coq_ret", _fparams = [a] } = group $ "return" <+> pretty a
   pretty CExprCall    { _fname = "Nat.eqb", _fparams = [a, b] } = (pretty a) <+> "==" <+> (pretty b)
   pretty CExprCall    { .. } = group $ pretty (toCName _fname) <> "(" <> breakcommatize _fparams <> ")"
   pretty CExprVar     { .. } = pretty _var
