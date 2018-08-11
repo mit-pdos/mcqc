@@ -1,13 +1,11 @@
 #ifndef PROC_CPP
 #define PROC_CPP
+#include <iostream>
 #include "string.cpp"
 #include "list.cpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "optional.cpp"
-#include <iostream>
-
-using namespace list;
-using namespace string;
+#include "nat.cpp"
 
 namespace proc {
 
@@ -15,7 +13,7 @@ namespace proc {
 	using proc=void;
 
 	// open file
-	static inline Fd open(String s) noexcept(false) {
+	static inline Fd open(string::String s) noexcept(false) {
 		if (Fd o = fopen(s.c_str(), "r")) {
 			return o;
 		}
@@ -23,17 +21,14 @@ namespace proc {
 	}
 
 	// read file
-	static inline String read(Fd f) {
-		fseek(f, 0, SEEK_END);
-		long fsize = ftell(f);
-		fseek(f, 0, SEEK_SET);
-		String dp = String(fsize, '\0' );
-		fread(&(dp[0]), sizeof(char), (size_t)fsize, f);
+	static inline string::String read(Fd f, nat::Nat &size) {
+		auto dp = string::String(size, '\0' );
+		fread(&(dp[0]), sizeof(char), (size_t)size, f);
 		return dp;
 	}
 
 	// write file
-	static inline void write(Fd f, String& s) {
+	static inline void write(Fd f, string::String& s) {
         fwrite(&s[0], sizeof(char), s.size(), f);
 	}
 
@@ -45,15 +40,15 @@ namespace proc {
 	}
 
 	// print string to standard output
-	static inline void print(String& s) {
+	static inline void print(string::String& s) {
 		std::cout << s << std::endl;
 	}
 
 	// print list to standard output
 	template<typename T>
-	static inline void print(const List<T>& s) {
+	static inline void print(const list::List<T>& s) {
 		std::cout << "{ ";
-		for(typename List<T>::const_iterator i = s.begin(); i != s.end(); ++i) {
+		for(auto i = s.begin(); i != s.end(); ++i) {
 			if (i != s.begin())
 				std::cout << ", ";
 			std::cout << *i;
@@ -61,15 +56,20 @@ namespace proc {
 		std::cout << "}" << std::endl;
 	}
 
-    // forever: infinite loop
-	template<typename Func>
-    static inline void forever(Func inner) {
-		static_assert(std::is_function<typename std::remove_pointer<Func>::type>::value, "Argument needs to be a lambda");
-        bool retval = inner();
-        while(retval) {
-            // Maybe need to pass arguments here?
-            retval = inner();
-        }
+    // until: Loop by closure passing
+    // TODO: More strict typechecking
+	template<typename FuncCmp, typename Func, typename T>
+    static inline T until(FuncCmp fcmp, Func f, optional::Optional<T> init) {
+		static_assert(std::is_function<typename std::remove_pointer<FuncCmp>::type>::value, "Compare func needs to be a lambda");
+		static_assert(std::is_function<typename std::remove_pointer<Func>::type>::value, "Argument func needs to be a lambda");
+        optional::Optional<T> base = init;
+        T result;
+        do {
+			result = f(base);
+            base = optional::some(result);
+
+		} while (fcmp(result));
+		return result;
     };
 }
 #endif

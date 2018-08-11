@@ -1,6 +1,5 @@
 #ifndef LIST_H
 #define LIST_H
-#include <tuple>
 #include <list>
 #include "nat.hpp"
 #include "optional.hpp"

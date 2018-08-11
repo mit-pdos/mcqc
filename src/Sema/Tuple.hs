@@ -5,11 +5,11 @@ import Codegen.Expr
 
 -- Proc semantics (monadic)
 tupleSemantics :: CExpr -> CExpr
-tupleSemantics CExprCall { _fname = "Coq_pair", _fparams = [a] }    =
+tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = [a] }    =
     error "Datatypes.Coq_pair with one arg found, undefined behavior."
-tupleSemantics CExprCall { _fname = "Coq_pair", _fparams = [a, b] } =
+tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = [a, b] } =
     CExprTuple [tupleSemantics a, tupleSemantics b]
-tupleSemantics CExprCall { _fname = "Coq_pair", _fparams = args }   =
+tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = args }   =
     CExprTuple (map tupleSemantics args)
 tupleSemantics CExprCall { .. }                                     =
     CExprCall _fname (map tupleSemantics _fparams)

@@ -3,7 +3,7 @@
 #include <climits>
 #include <cstdlib>
 #include "nat.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 
 namespace nat {
 

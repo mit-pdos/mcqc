@@ -23,6 +23,7 @@ getNativeLibs CFuncEmpty {} = []
 getNativeLibs f = filter (flip elem $ libs) $ (normalizeType . _ftype $ f):typargs
     where normalizeType = T.replace "Datatypes." "" . T.toLower . removeRef . removeTemplate
           typargs = map (normalizeType . _typename) $ _fargs f
+
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile
 compile Module { name = n, declarations = decls, .. } = CFile incls cdecls

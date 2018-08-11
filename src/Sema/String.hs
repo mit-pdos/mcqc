@@ -20,7 +20,8 @@ asciiSemantics other = descend asciiSemantics other
 
 makeStr :: CExpr -> Text
 makeStr CExprStr  { .. } = _str
-makeStr CExprCall { _fname = "String.EmptyString", .. } = mempty
+makeStr CExprCall { _fname = "String.EmptyString", _fparams = [] } = mempty
+makeStr CExprCall { _fname = "String.EmptyString", .. } = error "EmptyString takes no arguments"
 
 stringSemantics :: CExpr -> CExpr
 stringSemantics CExprCall { _fname = "String.String", .. } =

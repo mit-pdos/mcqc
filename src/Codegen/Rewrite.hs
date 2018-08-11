@@ -27,10 +27,12 @@ toCName "Nat.even" = "even"
 toCName "Nat.odd" = "odd"
 toCName "Datatypes.app" = "app"
 toCName "String.append" = "append"
+toCName "String.length" = "length"
 toCName "Coq_open" = "open"
 toCName "Coq_read" = "read"
 toCName "Coq_print" = "print"
 toCName "Coq_close" = "close"
+toCName "Coq_until" = "until"
 toCName s = s
 
 -- Apply toCName to a CExpr

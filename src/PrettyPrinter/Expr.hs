@@ -11,6 +11,12 @@ import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 
 instance Pretty CExpr where
+  pretty CExprLambda  { _lbody = s@CExprSeq { .. }, .. } = group $ "[=](" <> commatize _largs
+                             <> ") {"
+                             <> line
+                             <> tab (pretty s) <> ";"
+                             <> line
+                             <> "}"
   pretty CExprLambda  { .. } = group $ "[=](" <> commatize _largs
                              <> ") {"
                              <+> "return" <+> pretty _lbody <> ";"
@@ -24,7 +30,7 @@ instance Pretty CExpr where
   pretty CExprBool    { .. } = pretty _bool
   pretty CExprList    { .. } = "List<T>{" <> commatize _elems <> "}"
   pretty CExprCtor    { .. } = commatize _cargs
-  pretty CExprTuple   { .. } = group (parens . breakcommatize $ _items)
+  pretty CExprTuple   { .. } = group ("mkTuple" <> (parens . breakcommatize $ _items))
   pretty CExprStmt    { _stype = "auto", _sname = "_", .. } = pretty _sbody
   pretty CExprStmt    { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
   pretty CExprSeq     { .. } = pretty _left <> ";" <> line <> pretty _right

@@ -50,13 +50,13 @@ toCDecl FixDecl  { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .
     where arguments = getCDefExtrap argnames argTypes
           templateTypes = addTemplates $ getCTypeList ftyp
           refArguments = map addRef arguments
-          cbody = translateCNames . semantics $ toCExpr body
+          cbody = translateCNames . semantics . semantics . semantics $ toCExpr body
           argTypes = init . getCTypeList $ ftyp
           retType = last . getCTypeList $ ftyp
 -- Define imperative function by unrolling the proc monad to sequential statement expressions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } = CFuncImp name templateTypes retType arguments cbody
     where templateTypes = addTemplates (getCTypeList typ)
-          cbody = translateCNames $ semantics $ toCExpr body
+          cbody = translateCNames . semantics . semantics . semantics $ toCExpr body
           retType = last . getCTypeList $ typ
           argTypes = init . getCTypeList $ typ
           arguments = getCDefExtrap argnames argTypes

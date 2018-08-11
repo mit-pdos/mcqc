@@ -1,9 +1,9 @@
 #include <iostream>
 #include <ctime>
 #include "optional.cpp"
-#include "list.hpp"
 #include "list.cpp"
-#include "proc.hpp"
+#include "proc.cpp"
+#include "tuple.cpp"
 #include "benchmark.h"
 
 #define BMAX 1000
@@ -11,6 +11,7 @@
 using namespace optional;
 using namespace nat;
 using namespace list;
+using namespace tuple;
 
 template<typename T>
 static inline List<T> rev(List<T> l) {
@@ -33,8 +34,8 @@ int main() {
 		[]()	  { std::cout << "Empty" << std::endl; },
 		[](int m) { std::cout << "Some " << m << std::endl; });
 
-	 // Lists with initializer_list
-	 proc::print(rev(List<int>{}));
+	// Lists with initializer_list
+	proc::print(rev(List<int>{}));
 
 	// Lists benchmark
 	List<int> bar;
@@ -44,6 +45,12 @@ int main() {
 	proc::print(rev(bar));
 	toc();
 
+    // Tuples
+    auto t = mkTuple(1, 'b', "foo");
+	match(t,
+		[](int a, char b, const char* c) {
+			std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl; });
+	std::cout << "snd(t): " << snd(t) << std::endl;
     return 0;
 }
 

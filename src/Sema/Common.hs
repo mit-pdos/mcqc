@@ -9,5 +9,6 @@ descend f   CExprStmt   { .. } = CExprStmt _stype _sname $ f _sbody
 descend f   CExprSeq    { .. } = CExprSeq (f _left) (f _right)
 descend f   CExprTuple  { .. } = CExprTuple $ map f _items
 descend f   CExprList   { .. } = CExprList $ map f _elems
+descend f   CExprLambda { .. } = CExprLambda _largs (f _lbody)
 -- If it doesn't match anything, then it's a normal form, ignore
 descend f   other              = other
