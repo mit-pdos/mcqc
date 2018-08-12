@@ -26,6 +26,7 @@ makeStr CExprCall { _fname = "String.EmptyString", .. } = error "EmptyString tak
 stringSemantics :: CExpr -> CExpr
 stringSemantics CExprCall { _fname = "String.String", .. } =
     CExprStr $ T.concat $ map makeStr _fparams
+stringSemantics s@CExprCall { _fname = "String.EmptyString" } = CExprStr $ makeStr s
 stringSemantics CExprCall   { .. } = CExprCall _fname (map stringSemantics _fparams)
 stringSemantics CExprLambda { .. } = CExprLambda _largs $ stringSemantics _lbody
 stringSemantics other = descend stringSemantics other

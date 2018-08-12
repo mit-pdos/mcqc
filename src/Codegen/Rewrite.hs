@@ -11,6 +11,7 @@ toCType "Datatypes.bool" = "bool"
 toCType "Datatypes.list" = "List<T>"
 toCType "String.string" = "String"
 toCType "coq_Proc" = "proc"
+toCType "coq_Fd" = "Nat"
 toCType s = s
 
 toCName :: Text -> Text
@@ -33,6 +34,10 @@ toCName "Coq_read" = "read"
 toCName "Coq_print" = "print"
 toCName "Coq_close" = "close"
 toCName "Coq_until" = "until"
+toCName "Datatypes.fst" = "fst"
+toCName "Datatypes.snd" = "snd"
+toCName "Datatypes.Some" = "some"
+toCName "Datatypes.None" = "none"
 toCName s = s
 
 -- Apply toCName to a CExpr
