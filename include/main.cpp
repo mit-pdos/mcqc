@@ -1,16 +1,21 @@
 #include <iostream>
 #include <ctime>
-#include "optional.cpp"
-#include "list.cpp"
-#include "proc.cpp"
-#include "tuple.cpp"
+#include <cassert>
+#include "optional.hpp"
+#include "list.hpp"
+#include "proc.hpp"
+#include "tuple.hpp"
+#include "string.hpp"
+#include "curry.h"
 #include "benchmark.h"
+#include "type_checks.h"
 
 #define BMAX 1000
 
 using namespace optional;
 using namespace nat;
 using namespace list;
+using namespace string;
 using namespace tuple;
 
 template<typename T>
@@ -21,16 +26,14 @@ static inline List<T> rev(List<T> l) {
 }
 
 int main() {
-    // Optionals
-    Optional<int> o = Optional<int>(42);
-    // Switch 1
-    match(o,
-        []()      { std::cout << "Empty" << std::endl; },
-        [](int m) { std::cout << "Some " << m << std::endl; });
 
-    // Switch 1
-    auto a = none<int>();
-    match(a,
+	// Currying
+  	auto f = [](auto a, auto b, auto c, auto d) {
+    	return a  * b * c * d;
+  	};
+  	std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
+    // Optional Switch
+    match(some(42),
         []()      { std::cout << "Empty" << std::endl; },
         [](int m) { std::cout << "Some " << m << std::endl; });
 
@@ -42,8 +45,22 @@ int main() {
     for(int i = 0; i < BMAX; ++i)
         bar.push_back(i);
     tic();
-    proc::print(rev(bar));
+    assert(rev(rev(bar)) == bar);
     toc();
+
+    // Strings
+	match(append(String("foo"), String("bar")),
+		[]() { throw IOException("Should never be matched, since the str is non-empty"); },
+		[](auto h, auto ts) { 
+			assert(h == 'f' && ts == "oobar"); 
+			std::cout << "String matching works" << std::endl;
+		});
+
+	String foo = "foo";
+	String baz = "baz";
+	proc::print(append(String(foo),baz));
+	proc::print(append(String(foo),baz));
+	proc::print(foo);
 
     // Tuples
     auto t = mkTuple(1, 'b', "foo");

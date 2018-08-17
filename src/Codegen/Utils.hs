@@ -42,6 +42,18 @@ mkFuncSig n args = pretty n <> "(" <> commatize args <> ")"
 untypedDef :: Text -> CDef
 untypedDef x = CDef x "auto"
 
+-- Greedy strip prefix, safe. Examples:
+--     "foo" -> "foobar" -> "bar"
+--     "Datatypes" -> "Datatypes.foo" -> "foo"
+--     "Datatypes" -> "Datatypes..foo" -> ".foo"
+--     "bar" -> "foobar" -> "foobar"
+safeStripPrefix :: Text -> Text -> Text
+safeStripPrefix pre s = case T.stripPrefix (T.append pre ".") s of
+    (Just stripped) -> stripped                               
+    (Nothing) -> case T.stripPrefix pre s of
+        (Just stripped) -> stripped
+        (Nothing) -> s
+
 -- If there are less named arguments that positional arguments in the type signature, extrapolate
 -- and if clang gives an "Unused argument warning" then so be it
 getCDefExtrap :: [Text] -> [Text] -> [CDef]
@@ -53,7 +65,9 @@ getCDefExtrap (x:xs) (y:ys) = (CDef x y):(getCDefExtrap xs ys)
 
 -- Adds the reference symbol to a CDef
 addRef :: CDef -> CDef
-addRef = over typename (\t -> T.append t "&")
+addRef = over typename (\t -> case t of
+                                ("Nat")   -> t -- Don't reference small types
+                                otherwise -> T.append t "&")
 
 -- Remove the reference symbol from a CDef
 removeRef :: Text -> Text

@@ -6,8 +6,8 @@
     RUN: %clang %t.cpp -emit-llvm -g -S -o %t.ll %s
     RUN: FileCheck %s -check-prefix=LLVM < %t.ll
 
-    CPP: #include "nat.{{(h|hpp|cpp)}}"
-    CPP: Nat fib(Nat& n)
+    CPP: #include "nat.hpp"
+    CPP: Nat fib(Nat n)
     CPP: return match{{.*}}n{{.*}}
     CPP: return (Nat)1;
     CPP: return match{{.*}}sm{{.*}}
@@ -20,8 +20,8 @@
     LLVM: [[SM:%[0-9]+]] = add i32 [[NN]], -1
     LLVM: icmp eq i32 [[SM]], 0
     LLVM: [[MM:%[0-9]+]] = add i32 [[NN]], -2
-    LLVM: call {{.*}} i32 @"{{.*}}fib{{.*}}"{{.*}}[[MM]]
-    LLVM: call {{.*}} i32 @"{{.*}}fib{{.*}}"{{.*}}[[SM]]
+    LLVM: {{.*}} call {{.*}}i32 @{{.*}}fib{{.*}}[[MM]]
+    LLVM: {{.*}} call {{.*}}i32 @{{.*}}fib{{.*}}[[SM]]
 *)
 
 Require Extraction.

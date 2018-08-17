@@ -33,7 +33,7 @@ Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
 Definition read_loop (f: Fd) := tup <- until (fun prev => (snd prev) =? 0)
                                       (fun prev => s <- read f 4096;
                                                 ret match prev with
-                                                       | Some (s', _) => (s' ++ s, length s)
+                                                       | Some (sp, _) => (sp ++ s, length s)
                                                        | None => (s, length s)
                                                        end
                                        )
