@@ -12,19 +12,17 @@ namespace optional {
 
     template<typename O, typename T = typename std::remove_reference_t<O>::value_type,
              typename Func, typename Func2,
-             typename Ret = std::invoke_result_t<Func>,
+             typename Ret = std::invoke_result_t<Func2>,
              typename = std::enable_if_t<is_same_kind_v<O, Optional<T>>>>
-    constexpr const auto match(O&& o, Func f, Func2 g) {
-        static_assert(CallableWith<Func>, "1st argument not callable with void");
-        static_assert(CallableWith<Func2, T>, "2nd argument not callable with T");
-        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, T>>::value, "Arg function return types must match");
+    constexpr Ret match(O&& o, Func f, Func2 g) {
+        static_assert(CallableWith<Func, T>, "1st argument not callable with T");
+        static_assert(CallableWith<Func2>, "2nd argument not callable with void");
+        static_assert(std::is_same<std::invoke_result_t<Func2>, std::invoke_result_t<Func, T>>::value, "Arg function return types must match");
 
-		switch(o.has_value()) {
-        case false: return f();
-        case true:  return g(o.value());
-        }
-        // Silence warnings
-        return f();
+        if (o.has_value()) {
+            return f(o.value());
+        } 
+        return g();
     }
 
     // None

@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Proc where
-import Sema.Common
+import Common.Flatten
 import Codegen.Expr
 import Codegen.Defs
 import Data.Text (Text)

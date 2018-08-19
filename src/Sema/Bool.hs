@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Bool where
-import Sema.Common
+import Common.Flatten
 import Codegen.Expr
 import Data.Text (Text)
 import qualified Data.Text as T

@@ -3,11 +3,14 @@
     RUN: %clean
     RUN: %machcoq Cat.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %clang %t.cpp -emit-llvm -g -S -o %t.ll %s
 
-    CPP: #include "proc.{{(h|hpp|cpp)}}"
-    CPP: #include "string.{{(h|hpp|cpp)}}"
+    CPP: #include "nat.hpp"
+    CPP: #include "optional.hpp"
+    CPP: #include "proc.hpp"
+    CPP: #include "string.hpp"
+    CPP: #include "tuple.hpp"
 *)
-
 Require Import List.
 Require Import String.
 Require Import Nat.

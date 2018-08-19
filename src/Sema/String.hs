@@ -1,8 +1,8 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.String where
-import Sema.Common
+import Common.Flatten
 import Codegen.Expr
-import Codegen.Utils
+import Common.Utils
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Bits

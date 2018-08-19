@@ -4,14 +4,13 @@ import GHC.Generics
 import Codegen.Rewrite
 import Codegen.Expr
 import Codegen.Defs
-import Codegen.Utils
+import Common.Utils
 import Parser.Decl
 import Parser.Fix
 import Parser.Expr
 import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
-import qualified Codegen.Config as Conf
 import qualified Data.Text as T
 
 -- Global scope C definitions, 

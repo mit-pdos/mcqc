@@ -1,7 +1,7 @@
 {-# LANGUAGE  OverloadedStrings, RecordWildCards  #-}
 module PrettyPrinter.Decl where
+import Common.Utils
 import Codegen.Decl
-import Codegen.Utils
 import Codegen.Defs
 import PrettyPrinter.Expr
 import PrettyPrinter.Defs

@@ -2,7 +2,7 @@
 module Codegen.Expr where
 import GHC.Generics
 import Codegen.Defs
-import Codegen.Utils
+import Common.Utils
 import Parser.Pattern
 import Parser.Decl
 import Parser.Expr
@@ -33,13 +33,6 @@ data CExpr =
 -- Generate lenses
 makeLenses ''CExpr
 
--- get names that appear in expression
-getNames :: Expr -> [Text]
-getNames ExprLambda { .. } = argnames
-getNames ExprRel    { .. } = [name]
-getNames ExprGlobal { .. } = [name]
-getNames ExprCoerce { .. } = getNames value
-
 -- Pattern rewritting
 toCDefs :: Pattern -> [CDef]
 toCDefs PatCtor  { .. } = map untypedDef argnames
@@ -55,7 +48,8 @@ toCExpr ExprCase        { .. } = CExprCall "match" $ (toCExpr expr):(map mkCase 
 toCExpr ExprConstructor { .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name (map toCExpr args)
-toCExpr ExprApply       { .. } = CExprCall (head . getNames $ func) (map toCExpr args)
+toCExpr ExprApply       { func = ExprLambda { .. }, .. } = CExprCall (head argnames) (map toCExpr args)
+toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr (ExprApply value args)
 toCExpr ExprRel         { .. } = CExprVar name
 toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value

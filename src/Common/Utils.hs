@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-module Codegen.Utils where
+module Common.Utils where
 import Codegen.Defs
 import Control.Lens
 import qualified Data.Text as T

@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module PrettyPrinter.Expr where
 import Codegen.Expr
-import Codegen.Utils
+import Common.Utils
 import Codegen.Rewrite
 import PrettyPrinter.Defs
 import Data.Text (Text)
@@ -23,7 +23,7 @@ instance Pretty CExpr where
   pretty CExprCall    { _fname = "Nat.eqb", _fparams = [a, b] } = (pretty a) <+> "==" <+> (pretty b)
   pretty CExprCall    { .. } = group $ pretty (toCName _fname) <> "(" <> breakcommatize _fparams <> ")"
   pretty CExprVar     { .. } = pretty _var
-  pretty CExprStr     { .. } = "\"" <> pretty _str <> "\""
+  pretty CExprStr     { .. } = "String(\"" <> pretty _str <> "\")"
   pretty CExprNat     { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool    { .. } = pretty _bool
   pretty CExprList    { .. } = "List<T>{" <> commatize _elems <> "}"

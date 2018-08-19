@@ -23,6 +23,7 @@ source-repository head
 executable machcoq
   main-is: Main.hs
   other-modules:
+      Ops.Flags
       Parser.Mod
       Parser.Decl
       Parser.Expr
@@ -30,22 +31,19 @@ executable machcoq
       Parser.Fix
       Sema.Bool
       Sema.String
-      Sema.Common
       Sema.List
       Sema.Nat
       Sema.Proc
       Sema.Tuple
-      Codegen.Config
+      Sema.Pipeline
       Codegen.File
       Codegen.Decl
       Codegen.Defs
       Codegen.Expr
       Codegen.Rewrite
-      Codegen.Utils
-      Clang.Namespaces
-      Clang.CParser
-      Sema.Pipeline
-      Ops.Flags
+      Common.Config
+      Common.Utils
+      Common.Flatten
       PrettyPrinter.Defs
       PrettyPrinter.Expr
       PrettyPrinter.File

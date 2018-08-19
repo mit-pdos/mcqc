@@ -1,7 +1,7 @@
 #include <iostream>
 #include "benchmark.h"
 #include "Cat.cpp"
-#include "proc.cpp"
+#include "proc.hpp"
 
 using namespace proc;
 

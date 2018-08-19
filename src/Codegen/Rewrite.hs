@@ -2,7 +2,7 @@
 module Codegen.Rewrite where
 import Codegen.Expr
 import Codegen.Defs
-import Codegen.Utils
+import Common.Utils
 import Control.Lens
 import Data.Text (Text)
 import Data.Text as T
@@ -13,6 +13,9 @@ toCType "Datatypes.bool" = "bool"
 toCType "Datatypes.list" = "List<T>"
 toCType "String.string" = "String"
 toCType "coq_Proc" = "proc"
+toCType "coq_Bind" = "proc"
+toCType "coq_Ret"  = "proc"
+toCType "coq_Fd"   = "Nat"
 toCType s = s
 
 -- String rewriting for low-level translation of Gallina names to C++ names

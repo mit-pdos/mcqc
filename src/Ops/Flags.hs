@@ -19,8 +19,6 @@ flags =
         "Redirect output to specified file."
    ,Option ['d'] []       (NoArg Debug)
         "Does not generate C++ output but prints the final IR as Json."
-   ,Option ['s'] []       (NoArg Libs)
-        "Print functions found by libclang in ./include/."
    ,Option []    ["help"] (NoArg Help)
         "Print this help message"
    ,Option ['h'] []       (NoArg Help)
