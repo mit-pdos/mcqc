@@ -37,7 +37,7 @@ executable machcoq
       Sema.Tuple
       Codegen.Config
       Codegen.File
-      Codegen.Func
+      Codegen.Decl
       Codegen.Defs
       Codegen.Expr
       Codegen.Rewrite
@@ -49,7 +49,7 @@ executable machcoq
       PrettyPrinter.Defs
       PrettyPrinter.Expr
       PrettyPrinter.File
-      PrettyPrinter.Func
+      PrettyPrinter.Decl
   hs-source-dirs:
       src
   build-depends:

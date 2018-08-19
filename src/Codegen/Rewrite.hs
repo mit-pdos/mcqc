@@ -21,6 +21,8 @@ toCName "Datatypes.Coq_nil" = "List<T>()"
 toCName "Nat.modulo" = "mod"
 toCName "Datatypes.Some" = "some"
 toCName "Datatypes.None" = "none"
+toCName "Coq_ret" = "Coq_ret"
+toCName "Coq_bind" = "Coq_bind"
 toCName s
     | T.isPrefixOf "Nat" s = safeStripPrefix "Nat" s
     | T.isPrefixOf "String" s = safeStripPrefix "String" s
@@ -31,18 +33,19 @@ toCName s
     | otherwise = s
 
 -- Apply toCName to a CExpr
-translateCNames :: CExpr -> CExpr
-translateCNames = -- single step lenses
-                  over fname toCName
-                  . over str toCName
-                  . over cname toCName
-                  -- nested definition lenses
-                  . over (cargs . traverse . name) toCName
-                  . over (largs . traverse . name) toCName
-                  -- recursive lenses
-                  . over lbody translateCNames
-                  . over (items . traverse) translateCNames
-                  . over (fparams . traverse) translateCNames
-                  . over (items . traverse) translateCNames
-                  . over (elems . traverse) translateCNames
+renames :: CExpr -> CExpr
+renames = 
+ -- single step lenses
+ over fname toCName
+ . over str toCName
+ . over cname toCName
+ -- nested definition lenses
+ . over (cargs . traverse . name) toCName
+ . over (largs . traverse . name) toCName
+ -- recursive lenses
+ . over lbody renames
+ . over (items . traverse) renames
+ . over (fparams . traverse) renames
+ . over (items . traverse) renames
+ . over (elems . traverse) renames
 

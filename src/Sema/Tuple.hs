@@ -11,10 +11,6 @@ tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = [a, b] } =
     CExprTuple [tupleSemantics a, tupleSemantics b]
 tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = args }   =
     CExprTuple (map tupleSemantics args)
-tupleSemantics CExprCall { .. }                                     =
-    CExprCall _fname (map tupleSemantics _fparams)
-tupleSemantics CExprLambda { .. }                                   =
-    CExprLambda _largs $ tupleSemantics _lbody
 tupleSemantics other                                                =
     descend tupleSemantics other
 

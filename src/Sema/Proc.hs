@@ -19,10 +19,6 @@ bindSemantics CExprCall { _fname = "Coq_bind", _fparams = [call, CExprLambda { _
     error "Bind followed by a non-unary lambda, undefined behavior"
 bindSemantics CExprCall { _fname = "Coq_bind", _fparams = a:b:arg } =
     error "Datatypes.Coq_bind with more than two args found!"
-bindSemantics CExprCall { .. }                                      =
-    CExprCall _fname (map bindSemantics _fparams)
-bindSemantics CExprLambda { .. }                                    =
-    CExprLambda _largs $ bindSemantics _lbody
 bindSemantics other                                                 =
     descend bindSemantics other
 

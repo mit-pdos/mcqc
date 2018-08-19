@@ -4,31 +4,35 @@ import GHC.Generics
 import Parser.Mod
 import Data.Aeson
 import Data.List (nub)
-import Codegen.Func
+import Codegen.Decl
 import Codegen.Defs
 import Codegen.Utils
-import Codegen.Config
-import Clang.Namespaces
+import Codegen.Rewrite
 import Control.Lens
+import Sema.Pipeline
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Codegen.Config as Conf
 
-data CFile = CFile { _includes :: [Text], _funcs :: [CFunc] }
+data CFile = CFile { _includes :: [Text], _decls :: [CDecl] }
     deriving (Eq, Generic, ToJSON)
 
 makeLenses ''CFile
 
-getNativeLibs :: CFunc -> [Text]
-getNativeLibs CFuncEmpty {} = []
-getNativeLibs f = filter (flip elem $ libs) $ (normalizeType . _ftype $ f):typargs
-    where normalizeType = T.replace "Datatypes." "" . T.toLower . removeRef . removeTemplate
-          typargs = map (normalizeType . _typename) $ _fargs f
+getLibs :: CDecl -> [Text]
+getLibs CEmpty {}     = []
+getLibs CFunc  { .. } = filter (flip elem Conf.libs) $ (normalizeType _ftype):typargs
+    where normalizeType = T.replace "Datatypes." "" . T.toLower . removeTemplate
+          typargs = map (normalizeType . _typename) _fargs
+
+-- optimize pipeline
+optimize :: CDecl -> CDecl
+optimize = over fbody (renames . semantics)
 
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile
-compile Module { name = n, declarations = decls, .. } = CFile incls cdecls
-    where cdecls = map toCDecl decls
-          incls = nub $ concat $ map (getNativeLibs . toCDecl) decls
-
+compile Module { .. } = CFile incls cdecls
+    where cdecls = map (optimize . toCDecl) declarations
+          incls = nub $ concat $ map (getLibs . toCDecl) declarations
 
 

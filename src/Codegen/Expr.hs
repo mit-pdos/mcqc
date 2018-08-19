@@ -42,10 +42,10 @@ getNames ExprCoerce { .. } = getNames value
 
 -- Pattern rewritting
 toCDefs :: Pattern -> [CDef]
-toCDefs PatCtor      { .. } = map untypedDef argnames
-toCDefs PatTuple     { .. } = error "Tuple patterns not implemented yet"
-toCDefs PatRel       { .. } = [untypedDef name]
-toCDefs PatWild      {}     = [untypedDef "_"]
+toCDefs PatCtor  { .. } = map untypedDef argnames
+toCDefs PatTuple { .. } = error "Tuple patterns not implemented yet"
+toCDefs PatRel   { .. } = [untypedDef name]
+toCDefs PatWild  {}     = [untypedDef "_"]
 
 -- Expression rewritting
 toCExpr :: Expr -> CExpr
@@ -60,5 +60,4 @@ toCExpr ExprRel         { .. } = CExprVar name
 toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value
 toCExpr ExprDummy       {    } = CExprVar ""
-toCExpr e                      = error $ "Match fell through " ++ (show e)
 
