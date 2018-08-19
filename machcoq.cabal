@@ -24,6 +24,7 @@ executable machcoq
   main-is: Main.hs
   other-modules:
       Ops.Flags
+      Ops.Holes
       Parser.Mod
       Parser.Decl
       Parser.Expr
@@ -62,6 +63,7 @@ executable machcoq
       directory,
       filepath,
       logict,
+      transformers,
       mtl,
       lens,
       generic-deriving,

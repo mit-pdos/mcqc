@@ -4,7 +4,6 @@ import GHC.Generics
 import Codegen.Defs
 import Common.Utils
 import Parser.Pattern
-import Parser.Decl
 import Parser.Expr
 import Control.Lens
 import Data.Aeson

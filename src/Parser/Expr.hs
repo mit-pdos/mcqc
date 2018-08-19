@@ -44,6 +44,7 @@ instance FromJSON Typ where
                                              <*> v .:? "args" .!= []
         Just "type:varidx"      -> TypVaridx <$> v .:  "name"
         Just "type:unknown"     -> return TypUnknown {}
+        Just "type:axiom"       -> return TypUnknown {}
         Just "type:dummy"       -> return TypDummy {}
         Just s                  -> fail ("Unknown kind: " ++ (show v) ++ " because " ++ (show s))
         Nothing                 -> fail ("No 'what' quantifier for type: " ++ (show v))

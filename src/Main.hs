@@ -22,10 +22,6 @@ cppWritter :: String -> Either String ByteString -> IO ()
 cppWritter fn (Right cpp) = B.writeFile fn cpp
 cppWritter _ (Left s) = hPutStrLn stderr s
 
--- Parse JSON file into a Module
-parse :: ByteString -> Either String Module
-parse buffer = eitherDecode buffer :: Either String Module
-
 -- TODO: Use namespaces to verify link of C++17 functions in place of their coq counterparts
 transpile :: Module -> Either String ByteString
 transpile mod = Right $ B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . compile $ mod
@@ -44,5 +40,5 @@ main = do
                     addExtension ((dropExtension . takeFileName) arg) "cpp")
                 (Just fn) -> (\_ -> fn)
   mapM_ (\arg -> B.readFile arg >>=
-    (\json -> cppWritter (givefn arg) (parse json >>=
+    (\json -> cppWritter (givefn arg) (eitherDecode json >>=
       pipeline))) fs

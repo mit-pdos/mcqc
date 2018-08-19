@@ -23,6 +23,7 @@ makeLenses ''CFile
 -- Traverse Declarations for libraries
 getLibs :: CDecl -> [Text]
 getLibs CEmpty {}     = []
+getLibs CAlias { .. } = nub . filter (flip elem Conf.libs) $ getTypes _tvalue
 getLibs CFunc  { .. } = nub . filter (flip elem Conf.libs) $ typargs ++ bodyargs
     where normalizeType = T.toLower . toCType . removeTemplate
           typargs = map (normalizeType . _typename) _fargs
