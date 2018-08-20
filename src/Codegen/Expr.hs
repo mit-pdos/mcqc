@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
 module Codegen.Expr where
 import GHC.Generics
-import Codegen.Defs
 import Common.Utils
 import Parser.Pattern
 import Parser.Expr
@@ -9,41 +8,50 @@ import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
 
+-- C++ Types
+data CType =
+    CTFunc { _ftype :: CType, _fargs :: [CType] }
+    | CTExpr { _tname :: CType, _targs :: [CType] }
+    | CTVar  { _vname :: Text, _vargs :: [CExpr] }
+    | CTBase { _base :: Text }
+    | CTFree { _idx :: Int }
+    | CTAuto { }
+    deriving (Show, Eq, Generic, ToJSON)
+
 -- C++ Expressions
 data CExpr =
-            CExprLambda { _largs :: [CDef], _lbody :: CExpr }
-          | CExprCall { _fname :: Text, _fparams :: [CExpr] } -- Use this for function calls and constructors
-          | CExprStmt { _stype :: Text, _sname :: Text, _sbody :: CExpr } -- C++ statament for monadic unrolling
-          -- Patterns
-          | CExprCtor { _cname :: Text, _cargs :: [CDef] }
-          | CExprTuple { _items :: [CExpr] }
-          | CExprWild {}                                      -- Wildcard pattern, matches everything
+          -- High level C++ expressions
+            CExprLambda { _ltype :: CType, _largs :: [Text], _lbody :: CExpr }
+          | CExprCall { _fname :: Text, _fparams :: [CExpr] }
+          -- C++ statament for monadic unrolling
+          | CExprStmt { _stype :: Text, _sname :: Text, _sbody :: CExpr } 
           -- Reduced forms
-          -- TODO: Add optional and nested types
           | CExprVar { _var :: Text }
           | CExprStr { _str :: Text }
           | CExprNat { _nat :: Int }
           | CExprBool { _bool :: Bool }
           | CExprList { _elems :: [CExpr] }
-          -- Continuation
+          | CExprTuple { _items :: [CExpr] }
+          -- Continuations
           | CExprSeq { _left :: CExpr, _right :: CExpr }
     deriving (Eq, Generic, ToJSON, Show)
 
 -- Generate lenses
 makeLenses ''CExpr
+makeLenses ''CType
 
--- Pattern rewritting
-toCDefs :: Pattern -> [CDef]
-toCDefs PatCtor  { .. } = map untypedDef argnames
-toCDefs PatTuple { .. } = error "Tuple patterns not implemented yet"
-toCDefs PatRel   { .. } = [untypedDef name]
-toCDefs PatWild  {}     = [untypedDef "_"]
+ExprLambda { argnames :: [Text], body :: Expr }
 
--- Expression rewritting
+-- Expression compiling, from Coq to C++
 toCExpr :: Expr -> CExpr
-toCExpr ExprLambda      { .. } = CExprLambda (map untypedDef argnames) (toCExpr body)
-toCExpr ExprCase        { .. } = CExprCall "match" $ (toCExpr expr):(map mkCase cases)
-    where mkCase Case   { .. } = CExprLambda (toCDefs pat) (toCExpr body)
+toCExpr ExprLambda      { .. } = CExprLambda funcT argnames $ toCExpr body
+	where funcT = -- to-do
+toCExpr ExprCase        { .. } = CExprCall "match" $ (toCExpr expr):(map mkLambdacases)
+    where mkLambda Case    { .. } = CExprLambda (getArgs pat) (toCExpr body)
+          getArgs PatCtor  { .. } = argnames
+          getArgs PatTuple { .. } = concat $ map getArgs items
+          getArgs PatRel   { .. } = [name]
+          getArgs PatWild  {}     = ["_"]
 toCExpr ExprConstructor { .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name (map toCExpr args)
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name (map toCExpr args)
@@ -53,4 +61,17 @@ toCExpr ExprRel         { .. } = CExprVar name
 toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value
 toCExpr ExprDummy       {    } = CExprVar ""
+
+-- Type compiling, from Coq to C++
+toCType :: Typ -> CType
+toCType TypVar     { .. }             = CTVar name $ map toCExpr args
+toCType TypGlob    { targs = [], .. } = CTBase name
+toCType TypGlob    { .. }             = CTComp (CTBase name) $ map toCType targs
+toCType TypVaridx  { .. }             = CTFree idx
+toCType TypDummy   {}                 = CTAuto
+toCType TypUnknown {}                 = CTAuto
+toCType t    {- TypArrow -}           = CTFunc (last . flattenType $ t) (init . flattenType $ t)
+    where flattenType TypArrow { .. } = flattenType left ++ flattenType right
+          flattenType t               = toCType t
+
 

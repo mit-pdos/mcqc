@@ -7,17 +7,36 @@ import Control.Lens
 import Data.Text (Text)
 import Data.Text as T
 
-toCType :: Text -> Text
-toCType "Datatypes.nat" = "Nat"
-toCType "Datatypes.bool" = "bool"
-toCType "Datatypes.list" = "List<T>"
-toCType "String.string" = "String"
-toCType "coq_Proc" = "proc"
-toCType "coq_Bind" = "proc"
-toCType "coq_Ret"  = "proc"
-toCType "coq_Fd"   = "Nat"
-toCType s = s
+-- String rewriting for low-level translation of Gallina base types to C++ base types
+toCTBase :: Text -> Text
+toCTBase "Datatypes.nat" = "Nat"
+toCTBase "Datatypes.bool" = "bool"
+toCTBase "Datatypes.list" = "List<T>"
+toCTBase "String.string" = "String"
+toCTBase "coq_Proc" = "proc"
+toCTBase "coq_Bind" = "proc"
+toCTBase "coq_Ret"  = "proc"
+toCTBase "coq_Fd"   = "Nat"
+toCTBase s = s
 
+data CType =
+    CTFunc { _ftype :: CType, _fargs :: [CType] }
+    | CTComp { _tname :: Text, _targs :: [CType] }
+    | CTFree { _idx :: Int }
+    | CTBound { _base :: Text }
+    deriving (Show, Eq, Generic, ToJSON)
+
+-- Apply toCTBase to all CType
+retypes :: CType -> CType
+retypes = 
+ -- single step lenses
+ over ftype retypes
+ . over tname toCTBase
+ . over base toCTBase
+ -- recursive lenses
+ . over (targs . traverse) retypes 
+ . over (fargs . traverse) retypes
+ 
 -- String rewriting for low-level translation of Gallina names to C++ names
 toCName :: Text -> Text
 toCName "Datatypes.Coq_nil" = "List<T>()"

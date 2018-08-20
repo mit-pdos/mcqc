@@ -19,7 +19,6 @@ getTypes CExprTuple  { .. } = "tuple":(concat $ map getTypes _items)
 getTypes CExprStmt   { .. } = "proc":_stype:(getTypes _sbody)
 getTypes CExprList   { .. } = "list":(concat $ map getTypes _elems)
 getTypes CExprLambda { .. } = (map _typename _largs) ++ (getTypes _lbody)
-getTypes CExprCtor   { .. } = _cname:(map _typename _cargs)
 getTypes CExprVar    { .. } = []
 
 -- Propagate to children expr

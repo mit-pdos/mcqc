@@ -39,13 +39,11 @@ executable machcoq
       Sema.Pipeline
       Codegen.File
       Codegen.Decl
-      Codegen.Defs
       Codegen.Expr
       Codegen.Rewrite
       Common.Config
       Common.Utils
       Common.Flatten
-      PrettyPrinter.Defs
       PrettyPrinter.Expr
       PrettyPrinter.File
       PrettyPrinter.Decl

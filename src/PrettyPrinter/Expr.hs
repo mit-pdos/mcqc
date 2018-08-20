@@ -27,9 +27,7 @@ instance Pretty CExpr where
   pretty CExprNat     { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool    { .. } = pretty _bool
   pretty CExprList    { .. } = "List<T>{" <> commatize _elems <> "}"
-  pretty CExprCtor    { .. } = commatize _cargs
   pretty CExprTuple   { .. } = group ("mkTuple" <> (parens . breakcommatize $ _items))
   pretty CExprStmt    { _sname = "_", .. } = pretty _sbody
   pretty CExprStmt    { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
   pretty CExprSeq     { .. } = pretty _left <> ";" <> line <> pretty _right
-  pretty CExprWild     {}    = "Otherwise"
