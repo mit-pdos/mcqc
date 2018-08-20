@@ -1,3 +1,9 @@
+(**
+    XFAIL:
+	RUN: %coqc %s
+    RUN: %clean
+    RUN: %machcoq Mail.json -o %t.cpp
+*)	
 Require Import List.
 Import ListNotations.
 

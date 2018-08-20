@@ -57,12 +57,12 @@ toCDecl TermDecl { val = ExprLambda { .. }, .. } =
 -- Define type aliases, fill holes from user
 toCDecl TypeDecl { tval = TypUnknown {}, .. } = CAlias name typexpr 
     where typexpr = CExprVar . unsafePerformIO . fillHole $ name
-toCDecl d@TypeDecl { .. } = error $ "Not implemented: " ++ (show d)
 -- Sanitize declarations for correctness
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
 toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
 toCDecl FixDecl { fixlist = [] }                                   = error "Empty fixlist for declaration found, undefined behavior"
 toCDecl FixDecl { fixlist = f:fl }                                 = error "Fixlist with multiple fixpoints is undefined behavior"
 -- XXX: Implement other declarations
+toCDecl TypeDecl { .. } = CEmpty {} 
 toCDecl IndDecl  { .. } = CEmpty {}
 
