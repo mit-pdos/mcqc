@@ -2,37 +2,35 @@
 #define LIST_H
 #include <list>
 #include "nat.hpp"
+#include "bool.hpp"
 #include "optional.hpp"
 #include "type_checks.h"
+
+using namespace boolean;
 
 namespace list {
 
     template<typename T>
     using List = std::list<T>;
 
-    // Constructive match, l is considered immutable and will be copied safely
-    template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
-             typename Func, typename Func2, 
+    template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
+             typename Func, typename Func2,
              typename Ret = std::invoke_result_t<Func>,
-             typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
+             typename = std::enable_if_t<is_same_kind_v<L, List<T>>  && "Only match on List<T> types">,
+             typename = std::enable_if_t<CallableWith<Func>          && "1st argument not callable with void">,
+             typename = std::enable_if_t<CallableWith<Func2, T, L>   && "2nd argument not callable with (T, List<T>)">,
+             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, T, L>> && "Arg function return types must match">>
     static Ret match(L&& l, Func f, Func2 g) {
-        static_assert(CallableWith<Func>, "1st argument not callable with void");
-        static_assert(CallableWith<Func2, T, List<T>>, "2nd argument not callable with (T, List<T>)");
-        static_assert(std::is_same<
-            std::invoke_result_t<Func>, 
-            std::invoke_result_t<Func2, T, List<T>>>::value, "Arg function return types must match");
-
         switch(FWD(l).empty()) {
         case true:  return f();
-        case false: {
-            auto head = FWD(l).begin();
-            return g(*head, List<T>(++head, FWD(l).end()));
+        default: {
+            auto head = FWD(l.begin());
+            return g(*head, List<T>(++head, FWD(l.end())));
         }
         }
-		// Silence compiler warning
-        return f();
     }
 
+    // TODO: Make not copy
     // Constructive cons, copies l so l can be referenced again
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
              typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
@@ -43,14 +41,13 @@ namespace list {
     }
 
     // Utility functions
-    // List
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
              typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
     static optional::Optional<T> head(L&& l) {
-        if (FWD(l).empty()) {
+        if (FWD(l.empty())) {
             return optional::none();
         }
-        return optional::some(FWD(l).front());
+        return optional::some(FWD(l.front()));
     }
 
     // Constructive tail, l is considered immutable and will be copied safely
@@ -74,11 +71,10 @@ namespace list {
     // Constructive mpp,
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
              typename Func,  
-             typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
+             typename = std::enable_if_t<is_same_kind_v<L, List<T>>>,
+             typename = std::enable_if_t<CallableWith<Func, T> && "Function not callable with type T">,
+		     typename = std::enable_if_t<std::is_same_v<std::invoke_result_t<Func, T>, T> && "Function return type must match T">>
     static List<T> map(Func f, L&& l) {
-        // Ensure Func: T -> T
-        static_assert(CallableWith<Func, T>, "Function not callable with type T");
-        static_assert(std::is_same<std::invoke_result_t<Func, T>, T>::value, "Function return type must match T");
         // Create new list
         List<T> l2 = List<T>(l);
         for (auto it = l2.begin(); it != l2.end(); ++it) {
@@ -90,17 +86,16 @@ namespace list {
     // Fold right
     template<typename L, typename T2, typename T1 = typename std::remove_reference_t<L>::value_type, 
              typename Func,  
-             typename = std::enable_if_t<is_same_kind_v<L, List<T1>>>>
-    static T2 foldr(Func f, T2 elem, L&& l) {
-        // Ensure Func: T -> Y -> Y
-        static_assert(CallableWith<Func, T1, T2>, "Function not callable with type T1, T2");
-        static_assert(std::is_same<std::invoke_result_t<Func, T1, T2>, T2>::value, "Function must be T1 -> T2 -> T2");
+             typename = std::enable_if_t<is_same_kind_v<L, List<T1>>>,
+     		 typename = std::enable_if_t<CallableWith<Func, T1, T2> && "Function not callable with type T1, T2">,
+             typename = std::enable_if_t<std::is_same_v<std::invoke_result_t<Func, T1, T2>, T2> && "Function must be T1 -> T2 -> T2">>
+    static T2 foldr(Func f, T2&& elem, L&& l) {
         // Empty list, return element
-        if (l.empty()) {
+        if (FWD(l.empty())) {
             return elem;
         }
-        T2 buffer = f(*(l.end()), elem);
-        for (auto it = l.end(); it != l.begin(); --it) {
+        T2 buffer = f(FWD(*l.end()), FWD(elem));
+        for (auto it = FWD(l.end()); it != FWD(l.begin()); --it) {
             auto prev = it - 1;
             buffer = f(*prev, buffer);
         }
@@ -108,13 +103,12 @@ namespace list {
     }
 
     // Fold left
-    template<typename L, typename T2, typename T1 = typename std::remove_reference_t<L>::value_type, 
-             typename Func,  
-             typename = std::enable_if_t<is_same_kind_v<L, List<T1>>>>
+    template<typename L, typename T2, typename T1 = typename std::remove_reference_t<L>::value_type,
+             typename Func,
+             typename = std::enable_if_t<is_same_kind_v<L, List<T1>>>,
+             typename = std::enable_if_t<CallableWith<Func, T1, T2> && "Function not callable with type T1, T2">,
+             typename = std::enable_if_t<std::is_same_v<std::invoke_result_t<Func, T1, T2>, T2> && "Function must be T1 -> T2 -> T2">>
     static T2 foldl(Func f, T2 elem, L&& l) {
-        // Ensure Func: T -> Y -> Y
-        static_assert(CallableWith<Func, T1, T2>, "Function not callable with type T1, T2");
-        static_assert(std::is_same<std::invoke_result_t<Func, T1, T2>, T2>::value, "Function must be T1 -> T2 -> T2");
         // Empty list, return element
         if (l.empty()) {
             return elem;
@@ -130,11 +124,10 @@ namespace list {
     // Constructive filter,
  	template<typename L, typename Func,
 			 typename T = typename std::remove_reference_t<L>::value_type, 
-             typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
+             typename = std::enable_if_t<is_same_kind_v<L, List<T>>>,
+			 typename = std::enable_if_t<CallableWith<Func, T> && "Function not callable with type T">,
+             typename = std::enable_if_t<std::is_same_v<std::invoke_result_t<Func, T>, Bool> && "Function must be T -> Bool">>
     static List<T> filter(Func f, L&& l) {
-        // Ensure Func: T -> bool
-        static_assert(CallableWith<Func, T>, "Function not callable with type T");
-        static_assert(std::is_same<std::invoke_result_t<Func, T>, bool>::value, "Function must be T -> bool");
         List<T> l2 = List<T>(l);
         return filterd(l2, f);
     }
@@ -142,14 +135,14 @@ namespace list {
     // Boolean
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
              typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
-    static bool empty(L&& l) {
-        return FWD(l).empty();
+    static Bool empty(L&& l) {
+        return FWD(l.empty());
     }
 
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
              typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
-    inline static bool in(L&& l, T t) {
-        for (auto it = FWD(l).begin(); it != FWD(l).end(); it++) {
+    inline static Bool in(L&& l, T t) {
+        for (auto it = FWD(l.begin()); it != FWD(l.end()); it++) {
             if(*it == t)
                 return true;
         }
@@ -159,7 +152,7 @@ namespace list {
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type, 
              typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
     static nat::Nat length(L&& l) {
-        return static_cast<nat::Nat>(FWD(l).length());
+        return static_cast<nat::Nat>(FWD(l.length()));
     }
 }
 #endif

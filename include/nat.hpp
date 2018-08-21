@@ -7,14 +7,14 @@
 
 namespace nat {
     // Nat definition
-    using Nat = const unsigned int;
+    using Nat = unsigned int;
 
-    // Matching unsigned int -> Nat
-	template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>>
+    // Pattern matching Nat
+    template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>,
+             typename = std::enable_if_t<CallableWith<Func>          && "1st argument not callable with void">,
+             typename = std::enable_if_t<CallableWith<Func2, Nat>    && "2nd argument not callable with Nat">,
+		     typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, Nat>> && "Arg function return types must match">>
     constexpr Ret match(Nat a, Func f, Func2 g){
-        static_assert(CallableWith<Func>, "1st argument not callable with void");
-        static_assert(CallableWith<Func2, Nat>, "2nd argument not callable with Nat");
-        static_assert(std::is_same<std::invoke_result_t<Func>, std::invoke_result_t<Func2, Nat>>::value, "Arg function return types must match");
         switch(a) {
         case 0:  return f();     // Call function with no argument
         default: return g(a-1);  // Call function with m, where S m = a

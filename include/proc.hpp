@@ -81,9 +81,9 @@ namespace proc {
     // print list to standard output, cannot use universal reference as print(T&&) is defined twice
     template<typename T>
     static void print(list::List<T> l) {
-        std::cout << "{ ";
-        for(auto i = FWD(l).begin(); i != FWD(l).end(); ++i) {
-            if (i != FWD(l).begin())
+        std::cout << "{";
+        for(auto i = l.begin(); i != l.end(); ++i) {
+            if (i != l.begin())
                 std::cout << ", ";
             std::cout << *i;
         }
@@ -93,7 +93,7 @@ namespace proc {
     // print optional to standard output
     template<typename T>
     static void print(optional::Optional<T> o) {
-        match(FWD(o),
+        match(o,
             []() { std::cout << "None" << std::endl; },
             [](T c) { std::cout << "Some " << c << std::endl; });
      }

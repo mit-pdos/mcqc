@@ -23,7 +23,8 @@ namespace tuple {
     }
 
     // constructive match
-    template<typename Func, class ...Args, typename Ret = std::invoke_result_t<Func, Args...>>
+    template<typename Func, class ...Args, typename Ret = std::invoke_result_t<Func, Args...>,
+             typename = std::enable_if_t<CallableWith<Func, Args...> && "Argument not callable with tuple types">>
     constexpr Ret match(Tuple<Args...>&& tp, Func f) {
         static_assert(CallableWith<Func, Args...>, "Tuple match closure not callable with element types");
         return std::apply(f, tp);
