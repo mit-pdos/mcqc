@@ -1,6 +1,5 @@
 {-# LANGUAGE DuplicateRecordFields, OverloadedStrings  #-}
 module Parser.Pattern where
-import GHC.Generics
 import Data.Aeson
 import Data.Text
 import Data.HashMap.Strict

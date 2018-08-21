@@ -12,5 +12,5 @@ fillHole name = do
     putStr $ T.concat ["Hole found `", name, "`:= "]
     t <- getLine
     -- Test if valid CType by how it reacts with toCType
-    if (t /= (toCType t)) then return (toCType t)
+    if (t /= (toCTBase t)) then return (toCTBase t)
     else fillHole name

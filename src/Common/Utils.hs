@@ -1,12 +1,9 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Common.Utils where
-import Control.Lens
 import qualified Data.Text as T
 import qualified Data.Char as C
-import Data.Text.Read
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
-import Data.Monoid
 import Data.Word (Word8)
 
 -- Utility function
@@ -27,15 +24,10 @@ breakcommatize (a:args) = softcommatize (pretty a) $
     where softcommatize x y = x <> "," <> softline <> y
           prettyargs = map pretty args
 
--- Format and pretty print as an unbreakable comma-separated list
-commatize :: Pretty a => [a] -> Doc ann
+-- Format as an unbreakable comma-separated list
+commatize :: [Doc ann] -> Doc ann
 commatize [] = mempty
-commatize args = concatWith (\x y -> x <> "," <+> y) prettyargs
-    where prettyargs = map pretty args
-
--- Make function signature, ie: "int foo(int a, int b)"
-mkFuncSig :: (Pretty a, Pretty b) => a -> [b] -> Doc ann
-mkFuncSig n args = pretty n <> "(" <> commatize args <> ")"
+commatize args = concatWith (\x y -> x <> "," <+> y) args
 
 -- Strip prefix, does not fail. Examples:
 --     "foo" -> "foobar" -> "bar"

@@ -22,6 +22,7 @@ source-repository head
 
 executable machcoq
   main-is: Main.hs
+--  ghc-options: -Wall
   other-modules:
       Ops.Flags
       Ops.Holes

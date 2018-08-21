@@ -1,11 +1,8 @@
 module Ops.Flags where
-import Control.Monad
 import Data.List
 import System.Console.GetOpt
-import System.Environment
 import System.Exit
 import System.IO
-import Text.Printf
 
 data Flag
     = Output String         -- -o

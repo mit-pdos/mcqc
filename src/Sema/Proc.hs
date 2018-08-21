@@ -2,9 +2,6 @@
 module Sema.Proc where
 import Common.Flatten
 import Codegen.Expr
-import Codegen.Defs
-import Data.Text (Text)
-import qualified Data.Text as T
 
 -- Proc semantics (monadic)
 bindSemantics :: CExpr -> CExpr
@@ -12,9 +9,9 @@ bindSemantics CExprLambda { _lbody = CExprCall { _fname = "Coq_ret", _fparams = 
     CExprLambda _largs a
 bindSemantics CExprCall { _fname = "Coq_bind", _fparams = [arg] }   =
     error "Datatypes.Coq_bind with one arg found, undefined behavior."
-bindSemantics CExprCall { _fname = "Coq_bind", _fparams = [call, CExprLambda { _largs = [d], .. }] } =
+bindSemantics CExprCall { _fname = "Coq_bind", _fparams = [call, CExprLambda { _largs = [varname], .. }] } =
     CExprSeq statement $ bindSemantics _lbody
-    where statement = CExprStmt (_typename d) (_name d) $ bindSemantics call
+    where statement = CExprStmt CTAuto varname $ bindSemantics call
 bindSemantics CExprCall { _fname = "Coq_bind", _fparams = [call, CExprLambda { _largs = args, .. }] } =
     error "Bind followed by a non-unary lambda, undefined behavior"
 bindSemantics CExprCall { _fname = "Coq_bind", _fparams = a:b:arg } =

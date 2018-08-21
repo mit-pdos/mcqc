@@ -1,6 +1,5 @@
 {-# LANGUAGE DuplicateRecordFields, OverloadedStrings  #-}
 module Parser.Fix where
-import GHC.Generics
 import Parser.Expr
 import Data.Text (Text)
 import Data.Aeson

@@ -5,7 +5,7 @@
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
 
     CPP: #include "list.{{(h|hpp|cpp)}}"
-    CPP: template<typename T>
+    CPP: template<{{typename|class}} T>
     CPP: List<T> rev(List<T> l)
     CPP: return match{{.*}}l{{.*}}
     CPP: () { return List<T>{}; }

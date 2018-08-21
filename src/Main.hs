@@ -5,16 +5,14 @@ import System.Environment
 import System.FilePath.Posix
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as B
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
-import Codegen.File
 import Parser.Mod
-import PrettyPrinter.File
-import System.Directory
+import Codegen.File
+import PrettyPrinter.File()
 import Ops.Flags
 
 -- Calls codegen and prints errors

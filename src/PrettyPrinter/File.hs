@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards  #-}
 module PrettyPrinter.File where
 import Codegen.File
-import PrettyPrinter.Decl
-import Data.Text (Text)
+import PrettyPrinter.Decl()
 import Data.Text.Prettyprint.Doc
 
 instance Pretty CFile where
@@ -10,4 +9,5 @@ instance Pretty CFile where
            <> line <> vcat (map (\p -> "#include \"" <> pretty p <> ".hpp\"") (_includes f))
            <> line
            <> line <> vcat (map (\p -> "using namespace" <+> pretty p <> ";") (_includes f))
+           <> line
            <> line <> vsep (map pretty (_decls f))
