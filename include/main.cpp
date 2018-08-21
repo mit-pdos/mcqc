@@ -3,6 +3,7 @@
 #include <cassert>
 #include "optional.hpp"
 #include "list.hpp"
+#include "bool.hpp"
 #include "proc.hpp"
 #include "tuple.hpp"
 #include "string.hpp"
@@ -17,6 +18,7 @@ using namespace nat;
 using namespace list;
 using namespace string;
 using namespace tuple;
+using namespace boolean;
 
 template<typename T>
 static inline List<T> rev(List<T> l) {
@@ -36,6 +38,11 @@ int main() {
     match(some(42),
         [](int m) { std::cout << "Some " << m << std::endl; },
         []()      { std::cout << "Empty" << std::endl; });
+
+    // Bools
+	match((bool)false,
+		[]() { throw IOException("Should never be matched, since bool is false"); },
+		[]() { std::cout << "Bool matching works" << std::endl; });
 
     // Lists with initializer_list
     proc::print(rev(List<int>{}));

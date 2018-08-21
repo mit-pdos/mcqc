@@ -29,13 +29,14 @@ instance Pretty CExpr where
   pretty CExprCall   { _fname = "eqb", _fparams = [a, b] } = (pretty a) <+> "==" <+> (pretty b)
   pretty CExprCall   { _fname = "ltb", _fparams = [a, b] } = (pretty a) <+> "<"  <+> (pretty b)
   pretty CExprCall   { _fname = "leb", _fparams = [a, b] } = (pretty a) <+> "<=" <+> (pretty b)
-  pretty CExprCall   { .. } = group $ pretty (toCName _fname) <> (parens . breakcommatize $ _fparams)
+  pretty CExprCall   { _fname = "match", .. } = "match" <> (parens . breakcommatize $ _fparams)
+  pretty CExprCall   { .. } = pretty (toCName _fname) <> (parens . commatize $ map pretty _fparams)
   pretty CExprVar    { .. } = pretty _var
   pretty CExprStr    { .. } = "String(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
   pretty CExprList   { .. } = "List<T>{" <> commatize (map pretty _elems) <> "}"
-  pretty CExprTuple  { .. } = "mkTuple" <> (parens . breakcommatize $ _items)
+  pretty CExprTuple  { .. } = "mkTuple" <> (parens . commatize $ map pretty _items)
   pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
   pretty CExprStmt   { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
   pretty CExprSeq    { .. } = pretty _left <> ";" <> line <> pretty _right
