@@ -5,16 +5,19 @@ import Codegen.Decl
 import Codegen.Rewrite
 import Data.List (nub)
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Common.Config as Conf
 import Control.Lens
+import Debug.Trace
 
 -- Traverse Type-tree for all typenames
 getTypesT :: CType -> [Text]
+-- getTypesT d | trace ("=== DEBUG " ++ show d) False = undefined
 getTypesT CTFunc { .. } = getTypesT _fret ++ (concat $ map getTypesT _fins)
 getTypesT CTExpr { .. } = getTypesT _tbase ++ (concat $ map getTypesT _tins)
 getTypesT CTVar  { .. } = concat $ map getTypes _vargs
-getTypesT CTBase { .. } = [_base]
-getTypesT other         = []
+getTypesT CTBase { .. } = [T.toLower _base]
+getTypesT _             = []
 
 -- Traverse type, look for all C++ template free variables and return them
 -- ie: (List<T>,Optional<Q>) -> [T, Q]

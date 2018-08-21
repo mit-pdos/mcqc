@@ -7,6 +7,7 @@ import Parser.Expr
 import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
+import qualified Data.ByteString.Lazy.Char8 as B
 
 -- C++ Types
 data CType =

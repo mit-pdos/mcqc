@@ -11,6 +11,8 @@ import Data.Aeson
 import Data.Text (Text)
 import System.IO.Unsafe
 import Debug.Trace
+import Data.Aeson.Encode.Pretty
+import qualified Data.ByteString.Lazy.Char8 as B
 
 -- Global scope C definitions, 
 -- TODO: Records, Types, global vars
@@ -24,9 +26,12 @@ data CDecl =
 -- Generate Lens code
 makeLenses ''CDecl
 
+instance Show CDecl where
+    show = B.unpack . encodePretty
+
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
-toCDecl d | trace ("=== DEBUG " ++ show d) False = undefined
+-- toCDecl d | trace ("=== DEBUG " ++ show d) False = undefined
 -- Define fixpoint by translating it to a single return-match statement
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } = 
     CDFunc n funcT argnames cbody
