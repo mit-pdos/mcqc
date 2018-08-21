@@ -1,6 +1,6 @@
 (**
-    XFAIL:
-	RUN: %coqc %s
+    XFAIL
+    RUN: %coqc %s
     RUN: %clean
     RUN: %machcoq Mail.json -o %t.cpp
 *)	
@@ -10,24 +10,34 @@ Import ListNotations.
 Set Implicit Arguments.
 
 Parameter filename : Type.
-Parameter fd : Type.
+Definition Fd := nat.
 Parameter data : Type.
 Definition pathname := list filename.
 
-Inductive proc: Type -> Type :=
-| open : pathname -> proc fd
-| write : fd -> data -> proc unit
-| close : fd -> proc unit
-| pidfn : proc filename
-| random : proc filename
-| link : pathname -> pathname -> proc bool
-| unlink : pathname -> proc unit
-| ret: forall T, T -> proc T
-| bind: forall T T', proc T -> (T -> proc T') -> proc T'
-| whilefalse : proc bool -> proc unit.
+Inductive Proc: Type -> Type :=
+| open : pathname -> Proc Fd
+| write : Fd -> data -> Proc unit
+| close : Fd -> Proc unit
+| pidfn : Proc filename
+| random : Proc filename
+| link : pathname -> pathname -> Proc bool
+| unlink : pathname -> Proc unit
+| until : forall T, (T -> bool) -> (option T -> Proc T) -> option T -> Proc T
+| ret: forall T, T -> Proc T
+| bind: forall T T', Proc T -> (T -> Proc T') -> Proc T'
+| whilefalse : Proc bool -> Proc unit.
 
 Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
   (at level 60, right associativity).
+
+(**
+Definition whilefalse (f: bool -> Proc unit) := 
+  until id (fun o => match o with
+                  | None => f
+                  | Some true => f true
+                  | _ => tt
+                  end) None.
+*)
 
 Definition mail_deliver (msg : data) (tmpdir : pathname) (mboxdir : pathname) :=
   tmpfn <- pidfn;

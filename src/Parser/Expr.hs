@@ -11,7 +11,6 @@ import Prelude hiding (lookup)
 data Case = Case { pat :: Pattern, body :: Expr}
     deriving (Show, Eq, Generic, FromJSON)
 
--- Types TODO: Varidx
 data Typ =
     TypArrow { left :: Typ, right :: Typ }
     | TypVar { name :: Text, args :: [Expr] }

@@ -44,6 +44,7 @@ executable machcoq
       Common.Config
       Common.Utils
       Common.Flatten
+      Common.Predicates
       PrettyPrinter.Expr
       PrettyPrinter.File
       PrettyPrinter.Decl
