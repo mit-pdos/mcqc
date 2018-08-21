@@ -34,8 +34,8 @@ int main() {
   	std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
     match(some(42),
-        []()      { std::cout << "Empty" << std::endl; },
-        [](int m) { std::cout << "Some " << m << std::endl; });
+        [](int m) { std::cout << "Some " << m << std::endl; },
+        []()      { std::cout << "Empty" << std::endl; });
 
     // Lists with initializer_list
     proc::print(rev(List<int>{}));

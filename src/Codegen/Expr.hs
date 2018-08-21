@@ -63,9 +63,9 @@ toCExpr ExprDummy       {}     = CExprVar ""
 toCType :: Typ -> CType
 toCType TypVar     { .. }             = CTVar name $ map toCExpr args
 toCType TypGlob    { targs = [], .. } = CTBase $ toCTBase name
-toCType TypGlob    { .. }             = CTExpr (CTBase name) (map toCType targs)
+toCType TypGlob    { .. }             = CTExpr (CTBase $ toCTBase name) (map toCType targs)
 toCType TypVaridx  { .. }             = CTFree idx
-toCType TypDummy   {}                 = CTAuto
+toCType TypDummy   {}                 = CTBase "void"
 toCType TypUnknown {}                 = CTAuto
 toCType t          {- TypArrow -}     = CTFunc (last . flattenType $ t) (init . flattenType $ t)
 -- TODO: Does not take Functions as first-class args for now, flattens everything

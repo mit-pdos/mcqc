@@ -17,10 +17,8 @@ makeLenses ''CFile
 
 -- optimize pipeline
 optimize :: CDecl -> CDecl
-optimize = 
--- apply syntanctic optimizations
-    over fbody (renames . semantics)
-    . over ftype retypes
+optimize = over fbody (renames . semantics)
+           . over ftype retypes
 
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile

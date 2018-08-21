@@ -10,7 +10,7 @@ toCTBase "Datatypes.nat" = "Nat"
 toCTBase "Datatypes.bool" = "bool"
 toCTBase "Datatypes.list" = "List"
 toCTBase "String.string" = "String"
-toCTBase "coq_Proc" = "proc"
+toCTBase "Datatypes.unit" = "void"
 toCTBase s
     | T.isPrefixOf "coq_" s = safeStripPrefix "coq_" s
     | otherwise = s

@@ -18,6 +18,10 @@ using namespace string;
 
 namespace proc {
 
+	// Make proc an alias for the enclosing type
+	template<class T>
+	using Proc = T;
+
     // open file
     template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
     static inline nat::Nat open(S&& s) noexcept(false) {

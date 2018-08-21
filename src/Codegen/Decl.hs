@@ -6,11 +6,11 @@ import Codegen.Expr
 import Parser.Decl
 import Parser.Fix
 import Parser.Expr
-import Ops.Holes
 import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
 import System.IO.Unsafe
+import Debug.Trace
 
 -- Global scope C definitions, 
 -- TODO: Records, Types, global vars
@@ -26,6 +26,7 @@ makeLenses ''CDecl
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
+toCDecl d | trace ("=== DEBUG " ++ show d) False = undefined
 -- Define fixpoint by translating it to a single return-match statement
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } = 
     CDFunc n funcT argnames cbody
@@ -37,8 +38,6 @@ toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     where cbody = toCExpr body
           funcT = toCType typ
 -- Define type aliases, fill holes from user
-toCDecl TypeDecl { tval = TypUnknown {}, .. } = CDType (toCTBase name) baseT
-    where baseT = CTBase . unsafePerformIO . fillHole $ name
 toCDecl TypeDecl { .. } = CDType (toCTBase name) $ toCType tval
 -- Sanitize declarations for correctness
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"

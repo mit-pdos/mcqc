@@ -27,8 +27,8 @@ getTemplates other         = []
 -- Traverse AST for all typenames
 getTypes :: CExpr -> [Text]
 getTypes CExprSeq   { .. } = "proc":(getTypes _left ++ getTypes _right)
-getTypes CExprCall  { _fname  = "Datatypes.Some", .. } = "optional":(concat $ map getTypes _fparams)
-getTypes CExprCall  { _fname  = "Datatypes.None", .. } = "optional":(concat $ map getTypes _fparams)
+getTypes CExprCall  { _fname  = "some", .. } = "optional":(concat $ map getTypes _fparams)
+getTypes CExprCall  { _fname  = "none", .. } = "optional":(concat $ map getTypes _fparams)
 getTypes CExprCall  { .. } = _fname:(concat $ map getTypes _fparams)
 getTypes CExprStr   { .. } = ["string"]
 getTypes CExprNat   { .. } = ["nat"]
@@ -36,6 +36,7 @@ getTypes CExprTuple { .. } = "tuple":(concat $ map getTypes _items)
 getTypes CExprStmt  { .. } = "proc":(getTypesT _stype) ++ getTypes _sbody
 getTypes CExprList   { .. } = "list":(concat $ map getTypes _elems)
 getTypes CExprLambda { .. } = _largs ++ (getTypes _lbody)
+getTypes CExprBool   { .. } = []
 getTypes CExprVar    { .. } = []
 
 -- Traverse Declarations for libraries
