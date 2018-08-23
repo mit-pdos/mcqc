@@ -11,7 +11,7 @@ Rev.json: Rev.v
 Rev.cpp: Rev.json
 	stack exec machcoq -- $<
 
-rev: main.cpp Rev.cpp
+rev: main.cpp Rev.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@

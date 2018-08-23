@@ -11,7 +11,7 @@ Fib.json: Fib.v
 Fib.cpp: Fib.json
 	stack exec machcoq -- $<
 
-fib: main.cpp Fib.cpp
+fib: main.cpp Fib.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@

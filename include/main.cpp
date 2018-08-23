@@ -20,9 +20,18 @@ using namespace string;
 using namespace tuple;
 using namespace boolean;
 
+
+
+template<typename T, typename Func>
+List<T> mapl(Func f, List<T> l) {
+    return match(l,
+        [=]()    { return List<T>(); },
+        [=](auto h, auto ls) { return cons(f(h), mapl(f, ls)); });
+}
+
 template<typename T>
 static inline List<T> rev(List<T> l) {
-    return list::match(l,
+    return match(l,
         []()    { return List<T>(); },
         [](auto h, auto ls) { return app(rev(ls), List<T>(1, h)); });
 }
@@ -46,6 +55,9 @@ int main() {
 
     // Lists with initializer_list
     proc::print(rev(List<int>{1,2,3}));
+
+	// High order logic (map)
+	proc::print(mapl([](int n) { return n * 2; }, List<int>{1,2,3}));
 
     // Lists benchmark
     List<int> bar;

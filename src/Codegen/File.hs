@@ -18,7 +18,6 @@ makeLenses ''CFile
 -- optimize pipeline
 optimize :: CDecl -> CDecl
 optimize = over fbody (renames . semantics)
-           . over ftype retypes
 
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile

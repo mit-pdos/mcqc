@@ -12,8 +12,7 @@
     CPP: return (Nat)1;
     CPP: return match{{.*}}sm{{.*}}
     CPP: return (Nat)1;
-    CPP: add{{.*}}fib(m){{.*}}
-    CPP: fib(sm)
+    CPP: add{{.*}}fib(m){{.*}}fib(sm)
 
     LLVM: define i32 @{{.*}}fib{{.*}}
     LLVM: icmp eq i32 [[NN:%[0-9]+]], 0

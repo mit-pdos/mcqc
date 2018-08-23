@@ -19,13 +19,18 @@ getTypesT CTVar  { .. } = concat $ map getTypes _vargs
 getTypesT CTBase { .. } = [T.toLower _base]
 getTypesT _             = []
 
+getMaxVaridx :: CType -> Int
+getMaxVaridx t = foldl max 0 $ getVaridxs t
+    where getVaridxs CTFree { .. } = [_idx]
+          getVaridxs CTFunc { .. } = getVaridxs _fret ++ (concat $ map getVaridxs _fins)
+          getVaridxs CTExpr { .. } = getVaridxs _tbase ++ (concat $ map getVaridxs _tins)
+          getVaridxs other         = []
+
+
 -- Traverse type, look for all C++ template free variables and return them
 -- ie: (List<T>,Optional<Q>) -> [T, Q]
 getTemplates :: CType -> [Char]
-getTemplates CTFunc { .. } = getTemplates _fret ++ (concat $ map getTemplates _fins)
-getTemplates CTExpr { .. } = getTemplates _tbase ++ (concat $ map getTemplates _tins)
-getTemplates CTFree { .. } = [['T'..'Z'] !! (_idx - 1)]
-getTemplates other         = []
+getTemplates t = take (getMaxVaridx t) ['T'..'Z']
 
 -- Traverse AST for all typenames
 getTypes :: CExpr -> [Text]
@@ -39,7 +44,7 @@ getTypes CExprTuple { .. } = "tuple":(concat $ map getTypes _items)
 getTypes CExprStmt  { .. } = "proc":(getTypesT _stype) ++ getTypes _sbody
 getTypes CExprList   { .. } = "list":(concat $ map getTypes _elems)
 getTypes CExprLambda { .. } = _largs ++ (getTypes _lbody)
-getTypes CExprBool   { .. } = []
+getTypes CExprBool   { .. } = ["bool"]
 getTypes CExprVar    { .. } = []
 
 -- Traverse Declarations for libraries

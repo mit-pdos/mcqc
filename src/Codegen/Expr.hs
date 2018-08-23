@@ -69,7 +69,5 @@ toCType TypVaridx  { .. }             = CTFree idx
 toCType TypDummy   {}                 = CTBase "void"
 toCType TypUnknown {}                 = CTAuto
 toCType t          {- TypArrow -}     = CTFunc (last . flattenType $ t) (init . flattenType $ t)
--- TODO: Does not take Functions as first-class args for now, flattens everything
--- ie : A -> (A -> B) -> A = [A, A, B, A]
-    where flattenType TypArrow { .. } = flattenType left ++ flattenType right 
+    where flattenType TypArrow { .. } = (toCType left):(flattenType right)
           flattenType t               = [toCType t]
