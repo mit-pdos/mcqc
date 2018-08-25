@@ -2,14 +2,14 @@
 module PrettyPrinter.Decl where
 import Common.Utils
 import Common.Flatten
-import Codegen.Decl
-import Codegen.Expr
+import CIR.Decl
+import CIR.Expr
 import PrettyPrinter.Expr()
 import Data.List (nub)
 import Data.Text.Prettyprint.Doc
 
 instance Pretty CDecl where
-  pretty CDFunc  { _ftype = CTFunc { .. }, .. } = templateline  
+  pretty CDFunc  { _ftype = CTFunc { .. }, .. } = templateline
           <> line <> pretty _fret <+> pretty _fn <> "(" <> commatize typedargs <> ") {"
           <> line <> (tab . pretty) _fbody <> ";"
           <> line <> "}"

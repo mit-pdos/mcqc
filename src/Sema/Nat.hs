@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Nat where
 import Common.Flatten
-import Codegen.Expr
+import CIR.Expr
 
 -- Natural semantics
 natSemantics :: CExpr -> CExpr

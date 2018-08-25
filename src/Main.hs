@@ -11,7 +11,7 @@ import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Parser.Mod
-import Codegen.File
+import Codegen.Compiler
 import PrettyPrinter.File()
 import Ops.Flags
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module PrettyPrinter.Expr where
-import Codegen.Expr
+import CIR.Expr
 import Common.Utils
 import Codegen.Rewrite
 import qualified Data.Text as T
@@ -16,11 +16,11 @@ instance Pretty CType where
   pretty CTAuto {}     = "auto" :: Doc ann
 
 instance Pretty CExpr where
-  pretty CExprLambda { _lbody = CExprSeq { .. }, .. } = 
+  pretty CExprLambda { _lbody = CExprSeq { .. }, .. } =
                             group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
                             <> line <> tab (pretty _left <> ";" <> line <> pretty _right) <> ";"
                             <> line <> "}"
-  pretty CExprLambda { .. } = 
+  pretty CExprLambda { .. } =
                             group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
                             <+> "return" <+> pretty _lbody <> ";"
                             <+> "}"

@@ -1,45 +1,10 @@
-{-# LANGUAGE TemplateHaskell, DeriveAnyClass, DeriveGeneric, RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Codegen.Expr where
-import GHC.Generics
+import CIR.Expr
 import Codegen.Rewrite
+import Common.Flatten
 import Parser.Pattern
 import Parser.Expr
-import Control.Lens
-import Data.Aeson
-import Data.Text (Text)
-import qualified Data.ByteString.Lazy.Char8 as B
-
--- C++ Types
-data CType =
-    CTFunc { _fret :: CType, _fins :: [CType] }
-    | CTExpr { _tbase :: CType, _tins :: [CType] }
-    | CTVar  { _vname :: Text, _vargs :: [CExpr] }
-    | CTBase { _base :: Text }
-    | CTFree { _idx :: Int }
-    | CTAuto {}
-    deriving (Show, Eq, Generic, ToJSON)
-
--- C++ Expressions
-data CExpr =
-          -- High level C++ expressions
-            CExprLambda { _largs :: [Text], _lbody :: CExpr }
-          | CExprCall { _fname :: Text, _fparams :: [CExpr] }
-          -- C++ statament for monadic unrolling
-          | CExprStmt { _stype :: CType, _sname :: Text, _sbody :: CExpr } 
-          -- Reduced forms
-          | CExprVar { _var :: Text }
-          | CExprStr { _str :: Text }
-          | CExprNat { _nat :: Int }
-          | CExprBool { _bool :: Bool }
-          | CExprList { _elems :: [CExpr] }
-          | CExprTuple { _items :: [CExpr] }
-          -- Continuations
-          | CExprSeq { _left :: CExpr, _right :: CExpr }
-    deriving (Eq, Generic, ToJSON, Show)
-
--- Generate lenses
-makeLenses ''CExpr
-makeLenses ''CType
 
 -- Expression compiling, from Coq to C++
 toCExpr :: Expr -> CExpr
@@ -68,6 +33,8 @@ toCType TypGlob    { .. }             = CTExpr (CTBase $ toCTBase name) (map toC
 toCType TypVaridx  { .. }             = CTFree idx
 toCType TypDummy   {}                 = CTBase "void"
 toCType TypUnknown {}                 = CTAuto
-toCType t          {- TypArrow -}     = CTFunc (last . flattenType $ t) (init . flattenType $ t)
+toCType t          {- TypArrow -}     = CTFunc (last typelist) (init typelist)
     where flattenType TypArrow { .. } = (toCType left):(flattenType right)
           flattenType t               = [toCType t]
+          nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
+          typelist                    = [raiseFunc nfreevars typ | typ <- flattenType t]

@@ -2,6 +2,11 @@
     RUN: %coqc %s
     RUN: %clean
     RUN: %machcoq H1.json -o %t.cpp
+    RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+
+    CPP: #include "nat.hpp"
+    CPP: template<{{typename|class}} [[TT:.?]]>
+    CPP: Nat onEvens([[TT]] f, Nat n)
 *)
 
 Fixpoint isEven(n: nat) :=
@@ -17,7 +22,7 @@ Definition onEvens (f : nat -> nat) (n: nat) :=
     | false => n
   end.
 
-Import Coq.Init.Nat. 
+Import Coq.Init.Nat.
 Compute onEvens (fun x => div x 2) 10.
 
 Require Extraction.

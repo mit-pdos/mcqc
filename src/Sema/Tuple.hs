@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Tuple where
 import Common.Flatten
-import Codegen.Expr
+import CIR.Expr
 
 -- Proc semantics (monadic)
 tupleSemantics :: CExpr -> CExpr

@@ -2,7 +2,7 @@
 module Sema.Proc where
 import Common.Flatten
 import Common.Predicates(isSeq, isRet)
-import Codegen.Expr
+import CIR.Expr
 import Debug.Trace
 
 -- Proc semantics (monadic)

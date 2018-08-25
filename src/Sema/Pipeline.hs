@@ -1,5 +1,5 @@
 module Sema.Pipeline where
-import Codegen.Expr
+import CIR.Expr
 import Sema.Nat
 import Sema.Proc
 import Sema.Bool

@@ -1,6 +1,6 @@
 {-# language OverloadedStrings, RecordWildCards #-}
 module Common.Predicates where
-import Codegen.Expr
+import CIR.Expr
 
 isSeq :: CExpr -> Bool
 isSeq CExprSeq { .. } = True

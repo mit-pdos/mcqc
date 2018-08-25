@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards  #-}
 module PrettyPrinter.File where
-import Codegen.File
+import CIR.File
 import PrettyPrinter.Decl()
 import Data.Text.Prettyprint.Doc
 

@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.List where
 import Common.Flatten
-import Codegen.Expr
+import CIR.Expr
 
 -- List semantics
 listSemantics :: CExpr -> CExpr

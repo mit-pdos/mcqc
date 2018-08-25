@@ -34,7 +34,7 @@ data Expr = ExprLambda { argnames :: [Text], body :: Expr }
 
 instance FromJSON Typ where
   parseJSON (Object v) =
-      case (lookup "what" v) of
+      case lookup "what" v of
         Just "type:arrow"       -> TypArrow  <$> v .:  "left"
                                              <*> v .:  "right"
         Just "type:var"         -> TypVar    <$> v .:  "name"
@@ -45,12 +45,12 @@ instance FromJSON Typ where
         Just "type:unknown"     -> return TypUnknown {}
         Just "type:axiom"       -> return TypUnknown {}
         Just "type:dummy"       -> return TypDummy {}
-        Just s                  -> fail ("Unknown kind: " ++ (show v) ++ " because " ++ (show s))
-        Nothing                 -> fail ("No 'what' quantifier for type: " ++ (show v))
+        Just s                  -> fail $ "Unknown kind: " ++ show v ++ " because " ++ show s
+        Nothing                 -> fail $ "No 'what' quantifier for type: " ++ show v
 
 instance FromJSON Expr where
   parseJSON (Object v) =
-      case (lookup "what" v) of
+      case lookup "what" v of
         Just "expr:lambda"      -> ExprLambda      <$> v .:? "argnames" .!= []
                                                    <*> v .:  "body"
         Just "expr:case"        -> ExprCase        <$> v .:  "expr"
@@ -63,6 +63,6 @@ instance FromJSON Expr where
         Just "expr:rel"         -> ExprRel         <$> v .:  "name"
         Just "expr:global"      -> ExprGlobal      <$> v .:  "name"
         Just "expr:dummy"       -> return ExprDummy {}
-        Just s                  -> fail ("Unknown expr: " ++ (show v) ++ " because " ++ (show s))
+        Just s                  -> fail $ "Unknown expr: " ++  show v  ++ " because " ++ show s
         Nothing                 -> IndConstructor  <$> v .:  "name"
                                                    <*> v .:? "argtypes"     .!= []

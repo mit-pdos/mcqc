@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Bool where
 import Common.Flatten
-import Codegen.Expr
+import CIR.Expr
 
 -- TODO: add more bool expression semantics
 boolSemantics :: CExpr -> CExpr

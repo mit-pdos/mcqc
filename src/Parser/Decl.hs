@@ -16,7 +16,7 @@ data Declaration =
 
 instance FromJSON Declaration where
   parseJSON (Object v) =
-      case (v ! "what") of
+      case v ! "what" of
         "decl:ind"      -> IndDecl  <$> v .:  "name"
                                     <*> v .:? "argnames"     .!= []
                                     <*> v .:? "constructors" .!= []
@@ -27,6 +27,6 @@ instance FromJSON Declaration where
         "decl:term"     -> TermDecl <$> v .:  "name"
                                     <*> v .:  "type"
                                     <*> v .:  "value"
-        _               -> fail ("Unknown declaration type: " ++ (show v))
+        _               -> fail $ "Unknown declaration type: " ++ show v
 
 
