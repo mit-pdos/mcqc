@@ -16,18 +16,10 @@ Or use cabal sandbox if you prefer.
 
 # Testing
 
-We're using `lit` for testing, use:
+We're using `llvm-lit` for testing, use:
 ```
 lit test
 ```
 
-# Memory Profiling
-
-Go to either of the above and run
-```
-make prof
-```
-
-# Maintainer
 
 Lef Ioannidis <elefthei@mit.edu>
