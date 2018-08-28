@@ -21,7 +21,6 @@ using namespace tuple;
 using namespace boolean;
 
 
-
 template<typename T, typename Func>
 List<T> mapl(Func f, List<T> l) {
     return match(l,
@@ -38,26 +37,29 @@ static inline List<T> rev(List<T> l) {
 
 int main() {
 
-	// Currying
-  	auto f = [](auto a, auto b, auto c, auto d) {
-    	return a  * b * c * d;
-  	};
-  	std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
+    // Currying
+    auto f = [](auto a, auto b, auto c, auto d) {
+        return a  * b * c * d;
+    };
+    std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
     match(some(42),
         [](int m) { std::cout << "Some " << m << std::endl; },
         []()      { std::cout << "Empty" << std::endl; });
 
+    // Random
+    proc::print(proc::random());
+
     // Bools
-	match((bool)false,
-		[]() { throw IOException("Should never be matched, since bool is false"); },
-		[]() { std::cout << "Bool matching works" << std::endl; });
+    match((bool)false,
+        []() { throw IOException("Should never be matched, since bool is false"); },
+        []() { std::cout << "Bool matching works" << std::endl; });
 
     // Lists with initializer_list
     proc::print(rev(List<int>{1,2,3}));
 
-	// High order logic (map)
-	proc::print(mapl([](int n) { return n * 2; }, List<int>{1,2,3}));
+    // High order logic (map)
+    proc::print(mapl([](int n) { return n * 2; }, List<int>{1,2,3}));
 
     // Lists benchmark
     List<int> bar;
@@ -68,24 +70,24 @@ int main() {
     toc();
 
     // Strings
-	match(append(String("foo"), String("bar")),
-		[]() { throw IOException("Should never be matched, since the str is non-empty"); },
-		[](auto h, auto ts) { 
-			assert(h == 'f' && ts == "oobar"); 
-			std::cout << "String matching works" << std::endl;
-		});
+    match(append(String("foo"), String("bar")),
+        []() { throw IOException("Should never be matched, since the str is non-empty"); },
+        [](auto h, auto ts) {
+            assert(h == 'f' && ts == "oobar");
+            std::cout << "String matching works" << std::endl;
+        });
 
-	String foo = "foo";
-	String baz = "baz";
-	proc::print(append(String(foo),baz));
-	proc::print(append(String(foo),baz));
-	proc::print(foo);
+    String foo = "foo";
+    String baz = "baz";
+    proc::print(append(String(foo),baz));
+    proc::print(append(String(foo),baz));
+    proc::print(foo);
 
     // Tuples
     auto t = mkTuple(1, 'b', "foo");
     match(t,
         [](int a, char b, const char* c) {
-            std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl; 
+            std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;
         });
     std::cout << "snd(t): " << snd(t) << std::endl;
     std::cout << "fst(t): "; proc::print(fst(t));

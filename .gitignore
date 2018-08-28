@@ -2,6 +2,7 @@ dist
 dist-*
 *.bpl
 cabal-dev
+*.json
 *.o
 *~
 *.hi

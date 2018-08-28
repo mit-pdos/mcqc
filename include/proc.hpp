@@ -10,17 +10,17 @@
 
 // Keep libc from poluting the global namespace
 namespace sys {
-	#include <fcntl.h>
-	#include <unistd.h>
+    #include <fcntl.h>
+    #include <unistd.h>
 }
 
 using namespace string;
 
 namespace proc {
 
-	// Make proc an alias for the enclosing type
-	template<class T>
-	using Proc = T;
+    // Make proc an alias for the enclosing type
+    template<class T>
+    using Proc = T;
 
     // open file
     template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
@@ -51,6 +51,24 @@ namespace proc {
         }
     }
 
+    // Create hardlink
+    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
+    static inline Bool link(S&& src, S&& dest) {
+        if(sys::link(FWD(src.c_str()), FWD(dest.c_str()))) {
+            return true;
+        }
+        return false;
+    }
+
+    // Remove link from directory
+    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
+    static inline Bool unlink(S&& path) {
+        if(sys::unlink(FWD(path.c_str()))) {
+            return true;
+        }
+        return false;
+    }
+
     // until: Loop by closure passing
     // TODO: More strict typechecking
     template<typename FuncCmp, typename Func, typename T>
@@ -66,6 +84,11 @@ namespace proc {
         } while (fcmp(result));
         return result;
     };
+
+    // random number
+    static inline nat::Nat random() {
+        return rand();
+    }
 
     // print Nat
     static inline void print(nat::Nat n) {
@@ -105,7 +128,7 @@ namespace proc {
          (..., (std::cout << (I == 0? "" : ", ") << std::get<I>(t)));
          std::cout << ")\n";
      }
-     
+
      template<class ...Args>
      static void print (const std::tuple<Args...>& t)
      {
