@@ -4,7 +4,9 @@ import CIR.Expr
 import Codegen.Rewrite
 import Common.Flatten
 import Parser.Pattern
+import Control.Monad.State
 import Parser.Expr
+import Debug.Trace
 
 -- Expression compiling, from Coq to C++
 toCExpr :: Expr -> CExpr
@@ -37,4 +39,4 @@ toCType t          {- TypArrow -}     = CTFunc (last typelist) (init typelist)
     where flattenType TypArrow { .. } = (toCType left):(flattenType right)
           flattenType t               = [toCType t]
           nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
-          typelist                    = [raiseFunc nfreevars typ | typ <- flattenType t]
+          typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars

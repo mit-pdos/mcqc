@@ -1,7 +1,7 @@
 .PHONY=all
 
 CXX=clang++
-CXXFLAGS?=-g -O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I../../include
+CXXFLAGS?=-O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I../../include
 
 all: fib
 
@@ -16,6 +16,10 @@ fib: main.cpp Fib.cpp ../../include/*
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@
 
+bench: FibHs.v Main.hs
+	coqc $<
+	ghc -O3 Main.hs -o fibhs
+
 prof: fib
 	@echo --------------------------------------------------------------------------------
 	@echo Profiling $@ ...
@@ -23,4 +27,4 @@ prof: fib
 
 clean:
 	-rm -rf fib Fib.cpp *.dSYM *.glob *.vo *.json *.o
-
+	-rm -rf FibHs.hs Datatypes.hs Nat.hs fibhs *.hi *.o

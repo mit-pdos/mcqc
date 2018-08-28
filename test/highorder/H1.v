@@ -22,9 +22,6 @@ Definition onEvens (f : nat -> nat) (n: nat) :=
     | false => n
   end.
 
-Import Coq.Init.Nat.
-Compute onEvens (fun x => div x 2) 10.
-
 Require Extraction.
 Extraction Language JSON.
 Separate Extraction onEvens.

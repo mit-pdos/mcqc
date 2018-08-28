@@ -3,7 +3,7 @@ module Common.Flatten where
 import CIR.Expr
 import CIR.Decl
 import Codegen.Rewrite
-import Control.Monad.State.Lazy
+import Control.Monad.State
 import Data.List (nub)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -29,14 +29,10 @@ getTypesT CTBase { .. } = [T.toLower _base]
 getTypesT _             = []
 
 -- raise CTFuncs to template functions
-raiseFunc :: Int -> CType -> CType
-raiseFunc m t =
-    let stateful = do { put m; raiseCTFunc t } in
-    evalState stateful 0
-    where raiseCTFunc :: CType -> State Int CType
-          raiseCTFunc CTFunc { .. } = do { m <- get; put (m+1); return (CTFree $ m + 1) }
-          raiseCTFunc CTExpr { .. } = do { c <- raiseCTFunc _tbase; cargs <- mapM raiseCTFunc _tins; return $ CTExpr c cargs }
-          raiseCTFunc o             = return o
+raiseCTFunc :: CType -> State Int CType
+raiseCTFunc CTFunc { .. } = do { m <- get; put (m+1); return $ CTFree (m+1) }
+raiseCTFunc CTExpr { .. } = do { c <- raiseCTFunc _tbase; cargs <- mapM raiseCTFunc _tins; return $ CTExpr c cargs }
+raiseCTFunc o             = return o
 
 -- Get number of free parameters (Varidx)
 getMaxVaridx :: CType -> Int
