@@ -3,13 +3,16 @@
     RUN: %clean
     RUN: %machcoq Types3.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %clang -c %t.cpp
+
     CPP: #include "list.hpp"
-    CPP: using filename = auto;
-    CPP: using pathname = List<List<List<filename>>>;
+    CPP: #include "nat.hpp"
+    CPP: using fn = Nat;
+    CPP: using pathname = List<List<List<fn>>>;
 *)
 
-Parameter filename : Type.
-Definition pathname := list (list (list filename)).
+Definition fn := nat.
+Definition pathname := list (list (list fn)).
 
 Require Extraction.
 Extraction Language JSON.

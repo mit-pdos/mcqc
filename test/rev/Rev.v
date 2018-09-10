@@ -3,6 +3,7 @@
     RUN: %clean
     RUN: %machcoq Rev.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %clang -c %t.cpp
 
     CPP: #include "list.{{(h|hpp|cpp)}}"
     CPP: template<{{typename|class}} T>

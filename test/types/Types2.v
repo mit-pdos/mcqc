@@ -3,6 +3,7 @@
     RUN: %clean
     RUN: %machcoq Types2.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+
     CPP: #include "list.hpp"
     CPP: using filename = auto;
     CPP: using pathname = List<filename>;
