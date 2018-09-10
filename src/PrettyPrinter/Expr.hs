@@ -11,7 +11,7 @@ instance Pretty CType where
   pretty CTExpr { .. } = pretty _tbase <> "<" <> commatize (map pretty _tins) <> ">"
   pretty CTVar  { .. } = "PLACEHOLDER for CTVar:"  <+> pretty _vname <> "<" <> (pretty _vargs) <> ">"
   pretty CTBase { .. } = pretty _base
-  -- Use letters starting at T as is custom in C++
+  -- Use template letters starting at T as is custom in C++
   pretty CTFree { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto {}     = "auto" :: Doc ann
 

@@ -9,7 +9,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Common.Config as Conf
 import Control.Lens
-import Debug.Trace
 
 -- Traverse Declarations for libraries
 getLibs :: CDecl -> [Text]
@@ -21,7 +20,6 @@ getLibs CDFunc  { .. } = filter (`elem` Conf.libs) $ typargs ++ bodyargs
 
 -- Traverse Type-tree for all typenames
 getTypesT :: CType -> [Text]
--- getTypesT d | trace ("=== DEBUG " ++ show d) False = undefined
 getTypesT CTFunc { .. } = getTypesT _fret ++ concatMap getTypesT _fins
 getTypesT CTExpr { .. } = getTypesT _tbase ++ concatMap getTypesT _tins
 getTypesT CTVar  { .. } = concatMap getTypes _vargs

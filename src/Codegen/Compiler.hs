@@ -14,6 +14,7 @@ import Sema.Pipeline
 import Control.Lens
 import Data.Text (Text)
 import Data.List (sort, nub)
+import Debug.Trace
 
 -- TODO: Ignore used modules for now
 compile :: Module -> CFile
@@ -27,7 +28,7 @@ optimize = over fbody (renames . semantics)
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
--- toCDecl d | trace ("=== DEBUG " ++ show d) False = undefined
+-- toCDecl d | trace ("=== DBG Compiler.hs/toCDecl " ++ show d) False = undefined
 -- Define fixpoint by translating it to a single return statement
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
     CDFunc n funcT argnames cbody

@@ -40,4 +40,4 @@ getFlags argv = case getOpt Permute flags argv of
         hPutStrLn stderr (concat errs ++ usageInfo header flags)
         exitWith (ExitFailure 1)
 
-    where header = "Usage: machcoq [-ds] [-o cpp_file] [json_file ...]"
+    where header = "Usage: machcoq [-d] [-o cpp_file] <json_file ...>"

@@ -26,6 +26,7 @@ data Expr = ExprLambda { argnames :: [Text], body :: Expr }
           | IndConstructor { name :: Text, argtypes :: [Typ] }
           | ExprConstructor { name :: Text, args :: [Expr] }
           | ExprApply { func :: Expr , args :: [Expr]}
+          | ExprLet { name :: Text, nameval :: Expr, body :: Expr }
           | ExprCoerce { value :: Expr }
           | ExprRel { name :: Text }
           | ExprGlobal { name :: Text }
@@ -60,6 +61,9 @@ instance FromJSON Expr where
         Just "expr:apply"       -> ExprApply       <$> v .:  "func"
                                                    <*> v .:? "args"     .!= []
         Just "expr:coerce"      -> ExprCoerce      <$> v .:  "value"
+        Just "expr:let"         -> ExprLet         <$> v .:  "name"
+                                                   <*> v .:  "nameval"
+                                                   <*> v .:  "body"
         Just "expr:rel"         -> ExprRel         <$> v .:  "name"
         Just "expr:global"      -> ExprGlobal      <$> v .:  "name"
         Just "expr:dummy"       -> return ExprDummy {}
