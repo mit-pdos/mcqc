@@ -2,21 +2,34 @@
 module Sema.List where
 import Common.Flatten
 import CIR.Expr
+import Data.Maybe
 
--- List semantics
+-- Deconstructs a list to it's static part and dynamic part, in order to append them
+deconstruct :: CExpr -> ([CExpr], Maybe CExpr)
+-- deconstruct d | trace ("DBG Sema/List.hs/deconstruct " ++ show d) False = undefined
+deconstruct CExprCall { _fname = "Datatypes.Coq_cons", _fparams = [a, b] } =
+    case deconstruct b of
+        (ls, Just bb) -> (a:ls, snd . deconstruct $ bb)
+        (ls, Nothing) -> (a:ls, Nothing)
+deconstruct CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [] } =
+    ([], Nothing)
+deconstruct CExprCall { _fname = "Datatypes.Coq_cons", _fparams = _ } =
+    error "Non-binary Coq_cons found in source, undefined behavior"
+deconstruct CExprCall { _fname = "Datatypes.Coq_nil", _fparams = _ } =
+    error "Non-nullary Coq_nil found in source, undefined behavior"
+deconstruct other = ([], Just other)
+
+-- List semantics, ie:
+--   * cons(1, cons(2, cons(3, []))) = [1,2,3]
+--   * cons(1, cons(add 2 3, []) = [1, 2 + 3]
+--   * foo :: Nat -> List Nat
+--   * cons(1, cons(2, foo n)) = [1, 2] ++ foo n
 listSemantics :: CExpr -> CExpr
--- Semantics for O and S
-listSemantics CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [] }       = CExprList []
-listSemantics CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [args] }   = error "Datatypes.Coq_nil with args found!"
-listSemantics CExprCall { _fname = "Datatypes.Coq_cons", _fparams = [a, b] }  = CExprList $ (listSemantics a):(listSemanticsM b)
-    -- For Co-recursion and expanding to [CExpr]
-    where listSemanticsM :: CExpr -> [CExpr]
-          listSemanticsM CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [] }       = []
-          listSemanticsM CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [args] }   =
-              error "Datatypes.Coq_nil with args found!"
-          listSemanticsM CExprCall { _fname = "Datatypes.Coq_cons", _fparams = [a, b] }  = (listSemantics a):(listSemanticsM b)
-          listSemanticsM CExprCall { _fname = "Datatypes.Coq_cons", _fparams = a:b:arg } =
-              error "Datatypes.Coq_cons with more than two args found!"
-          listSemanticsM other                                                           = [listSemantics other]
-listSemantics CExprCall { _fname = "Datatypes.Coq_cons", _fparams = a:b:arg } = error "Datatypes.Coq_cons with more than two args found!"
-listSemantics other                                                           = descend listSemantics other
+listSemantics c = case deconstruct c of
+    -- All of list unrolled successfully
+    (l, Nothing) -> CExprList $ map listSemantics l
+    -- Some expression remained, do not use append haphazardly
+    ([a], Just e) -> CExprCall "cons" [listSemantics a, descend listSemantics e]
+    ([], Just e) -> descend listSemantics e
+    (l, Just e) -> CExprCall "append" [CExprList $ map listSemantics l, descend listSemantics e]
+

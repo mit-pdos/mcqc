@@ -152,7 +152,7 @@ namespace list {
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, List<T>>>>
     static nat::Nat length(L&& l) {
-        return static_cast<nat::Nat>(FWD(l.length()));
+        return static_cast<nat::Nat>(FWD(l.size()));
     }
 }
 #endif

@@ -17,7 +17,6 @@ toCTBase s
 
 -- String rewriting for low-level translation of Gallina names to C++ names
 toCName :: Text -> Text
-toCName "Datatypes.Coq_nil" = "List<T>()" -- TODO: Infer T
 toCName "Nat.modulo" = "mod"
 toCName "Datatypes.Some" = "some"
 toCName "Datatypes.None" = "none"

@@ -35,6 +35,7 @@ instance Pretty CExpr where
   pretty CExprStr    { .. } = "String(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
+  -- TODO: Fix <T> to be specialized when possible
   pretty CExprList   { .. } = "List<T>{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mkTuple" <> (parens . commatize $ map pretty _items)
   pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
