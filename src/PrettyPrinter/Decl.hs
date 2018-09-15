@@ -1,7 +1,7 @@
 {-# LANGUAGE  OverloadedStrings, RecordWildCards  #-}
 module PrettyPrinter.Decl where
 import Common.Utils
-import Common.Flatten
+import Common.Inference
 import CIR.Decl
 import CIR.Expr
 import PrettyPrinter.Expr()

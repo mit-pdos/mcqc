@@ -7,13 +7,14 @@ import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 
 instance Pretty CType where
-  pretty CTFunc { .. } = group $ pretty _fret <> (parens . commatize $ map pretty _fins)
-  pretty CTExpr { .. } = pretty _tbase <> "<" <> commatize (map pretty _tins) <> ">"
-  pretty CTVar  { .. } = "PLACEHOLDER for CTVar:"  <+> pretty _vname <> "<" <> (pretty _vargs) <> ">"
-  pretty CTBase { .. } = pretty _base
+  pretty CTFunc  { .. } = group $ pretty _fret <> (parens . commatize $ map pretty _fins)
+  pretty CTExpr  { .. } = pretty _tbase <> "<" <> commatize (map pretty _tins) <> ">"
+  pretty CTVar   { .. } = "PLACEHOLDER for CTVar:"  <+> pretty _vname <> "<" <> (pretty _vargs) <> ">"
+  pretty CTBase  { .. } = pretty _base
   -- Use template letters starting at T as is custom in C++
-  pretty CTFree { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
-  pretty CTAuto {}     = "auto" :: Doc ann
+  pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
+  pretty CTAuto  {}     = "auto" :: Doc ann
+  pretty CTUndef {}     = error "Undef type found in the end, internal error"
 
 instance Pretty CExpr where
   pretty CExprLambda { _lbody = CExprSeq { .. }, .. } =
@@ -35,8 +36,7 @@ instance Pretty CExpr where
   pretty CExprStr    { .. } = "String(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
-  -- TODO: Fix <T> to be specialized when possible
-  pretty CExprList   { .. } = "List<T>{" <> commatize (map pretty _elems) <> "}"
+  pretty CExprList   { .. } = "List<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mkTuple" <> (parens . commatize $ map pretty _items)
   pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
   pretty CExprStmt   { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody

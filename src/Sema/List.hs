@@ -27,9 +27,9 @@ deconstruct other = ([], Just other)
 listSemantics :: CExpr -> CExpr
 listSemantics c = case deconstruct c of
     -- All of list unrolled successfully
-    (l, Nothing) -> CExprList $ map listSemantics l
+    (l, Nothing) -> CExprList freeT $ map listSemantics l
     -- Some expression remained, do not use append haphazardly
     ([a], Just e) -> CExprCall "cons" [listSemantics a, descend listSemantics e]
     ([], Just e) -> descend listSemantics e
-    (l, Just e) -> CExprCall "append" [CExprList $ map listSemantics l, descend listSemantics e]
-
+    (l, Just e) -> CExprCall "append" [CExprList freeT $ map listSemantics l, descend listSemantics e]
+    where freeT = CTFree 1 --CTUndef -- Not optimal, gotta infer the binder

@@ -1,7 +1,9 @@
+(**
+    RUN: %coqc %s
+*)
 Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Init.Nat.
-
 
 (** String equality *)
 Module Utils.

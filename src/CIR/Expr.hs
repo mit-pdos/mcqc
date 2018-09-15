@@ -13,6 +13,7 @@ data CType =
     | CTBase { _base :: Text }
     | CTFree { _idx :: Int }
     | CTAuto {}
+    | CTUndef {} -- Should never output this type, means type inference failed
     deriving (Show, Eq, Generic, ToJSON)
 
 -- C++ Expressions
@@ -21,13 +22,13 @@ data CExpr =
             CExprLambda { _largs :: [Text], _lbody :: CExpr }
           | CExprCall { _fname :: Text, _fparams :: [CExpr] }
           -- C++ statament for monadic unrolling
-          | CExprStmt { _stype :: CType, _sname :: Text, _sbody :: CExpr } 
+          | CExprStmt { _stype :: CType, _sname :: Text, _sbody :: CExpr }
           -- Reduced forms
           | CExprVar { _var :: Text }
           | CExprStr { _str :: Text }
           | CExprNat { _nat :: Int }
           | CExprBool { _bool :: Bool }
-          | CExprList { _elems :: [CExpr] }
+          | CExprList { _etype :: CType, _elems :: [CExpr] }
           | CExprTuple { _items :: [CExpr] }
           -- Continuations
           | CExprSeq { _left :: CExpr, _right :: CExpr }

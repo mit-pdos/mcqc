@@ -3,6 +3,7 @@ module Codegen.Expr where
 import CIR.Expr
 import Codegen.Rewrite
 import Common.Flatten
+import Common.Inference
 import Parser.Pattern
 import Control.Monad.State
 import Parser.Expr

@@ -1,3 +1,6 @@
+(**
+    RUN: true
+*)
 Require Import Coq.Strings.String.
 Require Import Coq.Lists.List.
 Require Import Coq.Init.Nat.
@@ -28,7 +31,7 @@ Notation "x <- p1 ; p2" := (bind p1 (fun x => p2 x))
 Fixpoint subE (db befr: list (string * nat)) (user: string) (zb: nat) :=
   match db with
     | [] => ([], false)   (** failure *)
-    | (u, dep) :: ts => 
+    | (u, dep) :: ts =>
       if Utils.streq u user
       then if zb <=? dep
            then (befr ++ [ (u, dep - zb) ] ++ ts, true) (** success *)
@@ -40,7 +43,7 @@ Fixpoint subE (db befr: list (string * nat)) (user: string) (zb: nat) :=
 Fixpoint addM (db befr: list (string * nat)) (user: string) (zb: nat) :=
   match db with
     | [] => []
-    | (u, dep) :: ts => 
+    | (u, dep) :: ts =>
       if Utils.streq u user
       then befr ++ [ (u, dep + zb) ] ++ ts
       else addM ts (befr ++ [(u, dep)]) user zb

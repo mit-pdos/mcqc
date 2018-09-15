@@ -1,3 +1,6 @@
+(**
+    RUN: true
+*)
 Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Arith.Arith.
@@ -75,9 +78,9 @@ Module Requests.
   Definition reqparser (req: string) : option (string * string * nat) :=
     let reqlen := String.length req in
     match (get 0 req), (get (reqlen - 1) req) with
-    | Some "(", Some ")" => 
+    | Some "(", Some ")" =>
       match tokenize (substring 1 (reqlen - 2) req) with
-      | from::to::zoostr::[] => 
+      | from::to::zoostr::[] =>
         match NatSerializer.atoi zoostr with
         | Some zoobars => Some (from, to, zoobars)
         | None => None

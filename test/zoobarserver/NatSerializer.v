@@ -1,3 +1,6 @@
+(**
+    RUN: %coqc %s
+*)
 Require Import Ascii.
 Require Import String.
 Require Import Nat.
@@ -49,15 +52,15 @@ Module NatSerializer.
     let len := length s -1 in
     match s with
     | EmptyString => None
-    | String h "" => digitToNat h 
-    | String h ts => 
+    | String h "" => digitToNat h
+    | String h ts =>
       match digitToNat h with
       | None => None
-      | Some n => 
+      | Some n =>
         match atoi ts with
         | None => None
         | Some ns => Some (n* (pow 10 len) + ns)
-        end  
+        end
       end
     end.
 
