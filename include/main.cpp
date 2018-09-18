@@ -47,8 +47,10 @@ int main() {
         [](int m) { std::cout << "Some " << m << std::endl; },
         []()      { std::cout << "Empty" << std::endl; });
 
-    // Random
-    proc::print(proc::random());
+    // Async
+    proc::spawn([](String s) { proc::prints(s); }, String("Not necessarily"));
+    proc::spawn([](Nat n) { proc::printn(n); }, proc::random());
+    proc::spawn([](String s) { proc::prints(s); }, String("In order"));
 
     // Bools
     match((bool)false,
@@ -56,10 +58,10 @@ int main() {
         []() { std::cout << "Bool matching works" << std::endl; });
 
     // Lists with initializer_list
-    proc::print(rev(List<int>{1,2,3}));
+    proc::printl(rev(List<int>{1,2,3}));
 
     // High order logic (map)
-    proc::print(mapl([](int n) { return n * 2; }, List<int>{1,2,3}));
+    proc::printl(mapl([](int n) { return n * 2; }, List<int>{1,2,3}));
 
     // Lists benchmark
     List<int> bar;
@@ -79,9 +81,9 @@ int main() {
 
     String foo = "foo";
     String baz = "baz";
-    proc::print(append(String(foo),baz));
-    proc::print(append(String(foo),baz));
-    proc::print(foo);
+    proc::prints(append(String(foo),baz));
+    proc::prints(append(String(foo),baz));
+    proc::prints(foo);
 
     // Tuples
     auto t = mkTuple(1, 'b', "foo");
@@ -90,8 +92,8 @@ int main() {
             std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;
         });
     std::cout << "snd(t): " << snd(t) << std::endl;
-    std::cout << "fst(t): "; proc::print(fst(t));
-    std::cout << "fst(fst(t)): "; proc::print(fst(fst(t)));
+    std::cout << "fst(t): "; proc::printt(fst(t));
+    std::cout << "fst(fst(t)): "; proc::printn(fst(fst(t)));
     return 0;
 }
 

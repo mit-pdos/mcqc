@@ -6,7 +6,7 @@
 #include "optional.hpp"
 #include "type_checks.h"
 
-// Private, helper metafunc for getting fst
+// Private, helper metafunc for getting fst using index_sequence
 template <class... Args, std::size_t... Is>
 constexpr auto _fst_helper(std::tuple<Args...> tp, std::index_sequence<Is...>)
 {
@@ -17,6 +17,7 @@ namespace tuple {
     template<class ...Args>
     using Tuple = std::tuple<Args...>;
 
+    // Tuple constructor
     template<class ...Args>
     inline static const std::tuple<Args...> mkTuple(Args... a) {
         return std::make_tuple(a...);
@@ -33,7 +34,7 @@ namespace tuple {
     constexpr Ret match(Tuple<Args...>& tp, Func f) {
         return match(std::forward<Tuple<Args...>>(tp), f);
     }
-    
+
     // First of tuple
     // fst (1,2) = 1%nat
     // fst (1,2,3) = (1,2)%(nat * nat)

@@ -1,6 +1,7 @@
 #ifndef PROC_H
 #define PROC_H
 #include <iostream>
+#include <future>
 #include "string.hpp"
 #include "list.hpp"
 #include "exception.h"
@@ -90,20 +91,29 @@ namespace proc {
         return rand();
     }
 
+    // Spawn an async process
+    // TODO: Wait on return type
+    template<typename Func,
+             typename ...Args,
+             typename = std::enable_if_t<CallableWith<Func, Args...> && "Argument not callable with argument types">>
+    static inline void spawn(Func f, Args... args) {
+		std::async(std::launch::async, f, args...);
+    }
+
     // print Nat
-    static inline void print(nat::Nat n) {
+    static inline void printn(nat::Nat n) {
         std::cout << n << std::endl;
     }
 
     // print string to standard output
     template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static void print(S&& s) {
+    static void prints(S&& s) {
         std::cout << s << std::endl;
     }
 
     // print list to standard output, cannot use universal reference as print(T&&) is defined twice
     template<typename T>
-    static void print(list::List<T> l) {
+    static void printl(list::List<T> l) {
         std::cout << "{";
         for(auto i = l.begin(); i != l.end(); ++i) {
             if (i != l.begin())
@@ -115,14 +125,14 @@ namespace proc {
 
     // print optional to standard output
     template<typename T>
-    static void print(optional::Optional<T> o) {
+    static void printo(optional::Optional<T> o) {
         match(o,
             []() { std::cout << "None" << std::endl; },
             [](T c) { std::cout << "Some " << c << std::endl; });
      }
 
      template<class TupType, size_t... I>
-     static void print(const TupType& t, std::index_sequence<I...>)
+     static void printt(const TupType& t, std::index_sequence<I...>)
      {
          std::cout << "(";
          (..., (std::cout << (I == 0? "" : ", ") << std::get<I>(t)));
@@ -130,9 +140,9 @@ namespace proc {
      }
 
      template<class ...Args>
-     static void print (const std::tuple<Args...>& t)
+     static void printt(const std::tuple<Args...>& t)
      {
-         print(t, std::make_index_sequence<sizeof...(Args)>());
+         printt(t, std::make_index_sequence<sizeof...(Args)>());
      }
 
 }
