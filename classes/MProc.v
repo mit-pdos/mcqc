@@ -1,7 +1,9 @@
 Require Import Coq.Strings.String.
 Require Import Coq.Lists.List.
 
-Module MProc.
+Set Implicit Arguments.
+
+Module Proc.
   Definition Fd := nat.
   Inductive Proc: Type -> Type :=
   (** Open filepath to Fd *)
@@ -27,6 +29,7 @@ Module MProc.
   | ret: forall T, T -> Proc T
   | bind: forall T T', Proc T -> (T -> Proc T') -> Proc T'.
 
-  Notation "x <- p1 ; p2" := (bind p1 (fun x => p2 x))
-                              (at level 60, right associativity).
-End MProc.
+  Notation "x <- p1 ; p2" := (Proc.bind p1 (fun x => p2))
+                               (at level 60, right associativity) : proc_scope.
+End Proc.
+

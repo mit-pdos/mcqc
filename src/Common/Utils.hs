@@ -36,7 +36,7 @@ commatize args = concatWith (\x y -> x <> "," <+> y) args
 --     "bar" -> "foobar" -> "foobar"
 safeStripPrefix :: Text -> Text -> Text
 safeStripPrefix pre s = case T.stripPrefix (T.append pre ".") s of
-    (Just stripped) -> stripped                               
+    (Just stripped) -> stripped
     (Nothing) -> case T.stripPrefix pre s of
         (Just stripped) -> stripped
         (Nothing) -> s
@@ -48,6 +48,8 @@ next = T.pack . reverse . incrementText . reverse . T.unpack
           incrementText ('z':xs)    = 'a' : incrementText xs
           incrementText (x:xs)      = succ x : xs
 
+-- Add a tab
 tab :: Doc ann -> Doc ann
 tab d = indent 2 d
+
 

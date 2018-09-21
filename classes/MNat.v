@@ -1,8 +1,8 @@
-(** Matches include/Nat.hpp *)
+(** Matches include/nat.hpp *)
 Require Coq.Init.Nat.
 
-Module MNat.
-  Class NativeNat A: Type :=
+Module Nat.
+  Class NativeNat A :=
     {
       succ: A -> A;
       pred: A -> A;
@@ -19,27 +19,30 @@ Module MNat.
       ltb: A -> A -> bool;
     }.
 
-  Instance native: NativeNat nat :=
+  Instance nativeNat : NativeNat nat :=
     {
       succ := S;
-      pred := Nat.pred;
-      even := Nat.even;
-      odd := Nat.odd;
-      add := Nat.add;
-      sub := Nat.sub;
-      mul := Nat.mul;
-      div := Nat.div;
-      mod := Nat.modulo;
-      pow := Nat.pow;
-      eqb := Nat.eqb;
-      leb := Nat.leb;
-      ltb := Nat.ltb;
+      pred := Coq.Init.Nat.pred;
+      even := Coq.Init.Nat.even;
+      odd := Coq.Init.Nat.odd;
+      add := Coq.Init.Nat.add;
+      sub := Coq.Init.Nat.sub;
+      mul := Coq.Init.Nat.mul;
+      div := Coq.Init.Nat.div;
+      mod := Coq.Init.Nat.modulo;
+      pow := Coq.Init.Nat.pow;
+      eqb := Coq.Init.Nat.eqb;
+      leb := Coq.Init.Nat.leb;
+      ltb := Coq.Init.Nat.ltb;
     }.
 
-  Infix "<=?" := leb (at level 70).
-  Infix "<?" := ltb (at level 70).
-  Infix "^" := Nat.pow.
-  Infix "/" := Nat.div.
-  Infix "mod" := Nat.modulo (at level 40, no associativity).
-
-End MNat.
+  Infix "=?" := eqb (at level 70) : nat_scope.
+  Infix "<=?" := leb (at level 70) : nat_scope.
+  Infix "<?" := ltb (at level 70) : nat_scope.
+  Infix "+" := Nat.add : nat_scope.
+  Infix "-" := Nat.sub : nat_scope.
+  Infix "*" := Nat.mul : nat_scope.
+  Infix "/" := Nat.div : nat_scope.
+  Infix "^" := Nat.pow : nat_scope.
+  Infix "%" := Nat.modulo (at level 40, no associativity) : nat_scope.
+End Nat.

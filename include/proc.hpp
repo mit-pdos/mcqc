@@ -23,6 +23,9 @@ namespace proc {
     template<class T>
     using Proc = T;
 
+    // Filedescriptor type
+    using Fd = nat::Nat;
+
     // open file
     template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
     static inline nat::Nat open(S&& s) noexcept(false) {
@@ -71,11 +74,17 @@ namespace proc {
     }
 
     // until: Loop by closure passing
-    // TODO: More strict typechecking
-    template<typename FuncCmp, typename Func, typename T>
+    // until :: (T -> B) -> (optional T -> T) -> option T -> T
+    template<typename FuncCmp, typename Func, typename T,
+             typename = std::enable_if_t<CallableWith<FuncCmp, T>
+                && "1st argument func not callable with T">,
+             typename = std::enable_if_t<CallableWith<Func, optional::Optional<T>>
+                && "2nd argument func not callable with Optional<T>">,
+             typename = std::enable_if_t<std::is_same_v<bool, std::invoke_result_t<FuncCmp, T>>
+                && "Return type of FuncCmp is not bool">,
+             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, optional::Optional<T>>>
+                && "Return type of Func is not T">>
     static inline T until(FuncCmp fcmp, Func f, optional::Optional<T> init) {
-        // static_assert(std::is_function<typename std::remove_pointer<FuncCmp>::type>::value, "Compare func needs to be a lambda");
-        // static_assert(std::is_function<typename std::remove_pointer<Func>::type>::value, "Argument func needs to be a lambda");
         optional::Optional<T> base = init;
         T result;
         do {

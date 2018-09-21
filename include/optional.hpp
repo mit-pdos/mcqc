@@ -20,13 +20,14 @@ namespace optional {
     constexpr Ret match(O&& o, Func f, Func2 g) {
         if (o.has_value()) {
             return f(o.value());
-        } 
+        }
         return g();
     }
 
     // None
-    constexpr inline static Optional<std::monostate> none() {
-        return {};
+    template<typename T>
+    constexpr inline static Optional<T> none() {
+        return Optional<T>{};
     }
 
     // Constructive cons, copies t so t can be referenced again

@@ -31,5 +31,5 @@ listSemantics c = case deconstruct c of
     -- Some expression remained, do not use append haphazardly
     ([a], Just e) -> CExprCall "cons" [listSemantics a, descend listSemantics e]
     ([], Just e) -> descend listSemantics e
-    (l, Just e) -> CExprCall "append" [CExprList freeT $ map listSemantics l, descend listSemantics e]
-    where freeT = CTFree 1 --CTUndef -- Not optimal, gotta infer the binder
+    (l, Just e) -> CExprCall "app" [CExprList freeT $ map listSemantics l, descend listSemantics e]
+    where freeT = CTUndef -- TODO: Infer the type

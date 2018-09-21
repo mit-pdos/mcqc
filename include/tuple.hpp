@@ -19,13 +19,16 @@ namespace tuple {
 
     // Tuple constructor
     template<class ...Args>
-    inline static const std::tuple<Args...> mkTuple(Args... a) {
+    inline static const std::tuple<Args...> mktuple(Args... a) {
         return std::make_tuple(a...);
     }
 
     // constructive match
-    template<typename Func, class ...Args, typename Ret = std::invoke_result_t<Func, Args...>,
-             typename = std::enable_if_t<CallableWith<Func, Args...> && "Argument not callable with tuple types">>
+    template<typename Func,
+             class ...Args,
+             typename Ret = std::invoke_result_t<Func, Args...>,
+             typename = std::enable_if_t<CallableWith<Func, Args...>
+               && "Argument not callable with tuple types">>
     constexpr Ret match(Tuple<Args...>&& tp, Func f) {
         static_assert(CallableWith<Func, Args...>, "Tuple match closure not callable with element types");
         return std::apply(f, tp);

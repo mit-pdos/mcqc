@@ -5,6 +5,8 @@ cabal-dev
 *.json
 *.o
 *~
+*.vo
+*.glob
 *.hi
 *.chi
 *.chs.h

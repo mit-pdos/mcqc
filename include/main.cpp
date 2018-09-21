@@ -86,7 +86,7 @@ int main() {
     proc::prints(foo);
 
     // Tuples
-    auto t = mkTuple(1, 'b', "foo");
+    auto t = mktuple(1, 'b', "foo");
     match(t,
         [](int a, char b, const char* c) {
             std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;

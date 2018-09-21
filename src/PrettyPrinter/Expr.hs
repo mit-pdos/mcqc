@@ -25,7 +25,6 @@ instance Pretty CExpr where
                             group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
                             <+> "return" <+> pretty _lbody <> ";"
                             <+> "}"
-  pretty CExprCall   { _fname = "Coq_ret", _fparams = [a] } = "return" <+> pretty a
   pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a
   pretty CExprCall   { _fname = "eqb", _fparams = [a, b] } = (pretty a) <+> "==" <+> (pretty b)
   pretty CExprCall   { _fname = "ltb", _fparams = [a, b] } = (pretty a) <+> "<"  <+> (pretty b)
@@ -37,7 +36,7 @@ instance Pretty CExpr where
   pretty CExprNat    { .. } = "(Nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
   pretty CExprList   { .. } = "List<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
-  pretty CExprTuple  { .. } = "mkTuple" <> (parens . commatize $ map pretty _items)
+  pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
   pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
   pretty CExprStmt   { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
   pretty CExprSeq    { .. } = pretty _left <> ";" <> line <> pretty _right

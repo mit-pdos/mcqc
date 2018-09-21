@@ -10,6 +10,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Common.Config as Conf
 import Control.Lens
+import Debug.Trace
 
 -- Traverse Declarations for libraries
 getLibs :: CDecl -> [Text]

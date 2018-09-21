@@ -2,32 +2,31 @@
 module Codegen.Rewrite where
 import Common.Utils
 import Data.Text (Text)
-import Data.Text as T
+import qualified Data.Text as T
 
 -- String rewriting for low-level translation of Gallina base types to C++ base types
 toCTBase :: Text -> Text
-toCTBase "Datatypes.nat" = "Nat"
+toCTBase "MNat.Nat.nat" = "Nat"
 toCTBase "Datatypes.bool" = "bool"
-toCTBase "Datatypes.list" = "List"
-toCTBase "String.string" = "String"
+toCTBase "MList.List.list" = "List"
+toCTBase "MString.String.string" = "String"
 toCTBase "Datatypes.unit" = "void"
 toCTBase s
-    | T.isPrefixOf "coq_" s = safeStripPrefix "coq_" s
-    | otherwise = s
+    | T.isPrefixOf "coq_" ss = safeStripPrefix "coq_" ss
+    | otherwise = ss
+    where ss = last $ T.splitOn "." s
 
--- String rewriting for low-level translation of Gallina names to C++ names
+-- String rewriting for low-level translation of Gallina function names to C++ names
 toCName :: Text -> Text
-toCName "Nat.modulo" = "mod"
 toCName "Datatypes.Some" = "some"
 toCName "Datatypes.None" = "none"
-toCName "Coq_ret" = "Coq_ret"
-toCName "Coq_bind" = "Coq_bind"
 toCName s
-    | T.isPrefixOf "Nat" s = safeStripPrefix "Nat" s
-    | T.isPrefixOf "String" s = safeStripPrefix "String" s
-    | T.isPrefixOf "Coq_" s = safeStripPrefix "Coq_" s
-    | T.isPrefixOf "Datatypes" s = safeStripPrefix "Coq_" $ safeStripPrefix "Datatypes" s
-    | T.isInfixOf "'" s = error "Symbol not allowed in C names: '"
-    | T.isInfixOf "\"" s = error "Symbol not allowed in C names: \""
-    | otherwise = s
-
+    | T.isPrefixOf "Nat" ss = safeStripPrefix "Nat" ss
+    | T.isPrefixOf "String" ss = safeStripPrefix "String" ss
+    | T.isPrefixOf "Coq_" ss = stripcoq ss
+    | T.isPrefixOf "Datatypes" ss = stripcoq $ safeStripPrefix "Datatypes" ss
+    | T.isInfixOf "'" ss = error "Symbol not allowed in C names: '"
+    | T.isInfixOf "\"" ss = error "Symbol not allowed in C names: \""
+    | otherwise = ss
+    where stripcoq = safeStripPrefix "Coq_"
+          ss = last $ T.splitOn "." s

@@ -6,7 +6,7 @@ CXXFLAGS?=-g -O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I..
 all: cat
 
 Cat.json: Cat.v
-	coqc $<
+	coqc -Q ../../classes "" $<
 
 Cat.cpp: Cat.json
 	stack exec machcoq -- $<
