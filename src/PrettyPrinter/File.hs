@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards  #-}
+{-# LANGUAGE OverloadedStrings  #-}
 module PrettyPrinter.File where
 import CIR.File
 import PrettyPrinter.Decl()

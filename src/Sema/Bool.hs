@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings  #-}
 module Sema.Bool where
 import Common.Flatten
 import CIR.Expr

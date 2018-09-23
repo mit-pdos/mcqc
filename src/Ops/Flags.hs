@@ -12,7 +12,7 @@ data Flag
     deriving (Eq,Ord,Show)
 
 flags =
-   [Option ['o'] []       (ReqArg (\arg -> Output arg) "FILE")
+   [Option ['o'] []       (ReqArg Output "FILE")
         "Redirect output to specified file."
    ,Option ['d'] []       (NoArg Debug)
         "Does not generate C++ output but prints the final IR as Json."
@@ -25,7 +25,7 @@ flags =
 -- Get output filename if exists
 getOutput :: [Flag] -> Maybe String
 getOutput [] = Nothing
-getOutput ((Output fn):fs) = Just fn
+getOutput (Output fn:fs) = Just fn
 getOutput (f:fs) = getOutput fs
 
 getFlags argv = case getOpt Permute flags argv of
@@ -33,7 +33,7 @@ getFlags argv = case getOpt Permute flags argv of
         let files = if null fs then ["-"] else fs
         if Help `elem` args
             then do hPutStrLn stderr (usageInfo header flags)
-                    exitWith ExitSuccess
+                    exitSuccess
             else return (nub args, files)
 
     (_,_,errs)      -> do

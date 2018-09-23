@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Common.Utils where
 import qualified Data.Text as T
 import qualified Data.Char as C
@@ -9,7 +9,7 @@ import Data.Word (Word8)
 -- Utility function
 -- Add parenteses if the argument needs them
 maybeParens :: Doc ann -> Doc ann
-maybeParens x = if (show x) == "" then mempty else parens x
+maybeParens x = if show x == "" then mempty else parens x
 
 -- Word to Character cast
 w2c :: Word8 -> Char
@@ -37,9 +37,9 @@ commatize args = concatWith (\x y -> x <> "," <+> y) args
 safeStripPrefix :: Text -> Text -> Text
 safeStripPrefix pre s = case T.stripPrefix (T.append pre ".") s of
     (Just stripped) -> stripped
-    (Nothing) -> case T.stripPrefix pre s of
+    Nothing -> case T.stripPrefix pre s of
         (Just stripped) -> stripped
-        (Nothing) -> s
+        Nothing -> s
 
 -- Define a succ for Texts
 next :: Text -> Text
@@ -50,6 +50,6 @@ next = T.pack . reverse . incrementText . reverse . T.unpack
 
 -- Add a tab
 tab :: Doc ann -> Doc ann
-tab d = indent 2 d
+tab = indent 2
 
 

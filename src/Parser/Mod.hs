@@ -1,4 +1,4 @@
-{-# LANGUAGE DuplicateRecordFields, DeriveGeneric, DeriveAnyClass, OverloadedStrings  #-}
+{-# LANGUAGE DuplicateRecordFields, DeriveGeneric, DeriveAnyClass  #-}
 module Parser.Mod where
 import GHC.Generics
 import Parser.Decl

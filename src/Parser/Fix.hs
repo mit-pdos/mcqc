@@ -11,10 +11,10 @@ data Fix = Fix { name :: Maybe Text, ftyp :: Typ, value :: Expr }
 
 instance FromJSON Fix where
   parseJSON (Object v) =
-      case (v ! "what") of
+      case v ! "what" of
         "fixgroup:item" -> Fix <$> v .:? "name"
                                <*> v .:  "type"
                                <*> v .:  "value"
-        _               -> fail ("Unknown declaration type: " ++ (show v))
+        _               -> error $ "Unknown declaration type " ++ show v
 
 

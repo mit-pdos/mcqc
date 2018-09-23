@@ -13,10 +13,10 @@ import Debug.Trace
 toCExpr :: Expr -> CExpr
 -- toCExpr d | trace ("=== DBG Expr.hs/toCExpr " ++ show d) False = undefined
 toCExpr ExprLambda      { .. } = CExprLambda argnames $ toCExpr body
-toCExpr ExprCase        { .. } = CExprCall "match" $ (toCExpr expr):(map mkLambda cases)
+toCExpr ExprCase        { .. } = CExprCall "match" $ toCExpr expr:map mkLambda cases
     where mkLambda Case    { .. } = CExprLambda (getArgs pat) (toCExpr body)
           getArgs PatCtor  { .. } = argnames
-          getArgs PatTuple { .. } = concat $ map getArgs items
+          getArgs PatTuple { .. } = concatMap getArgs items
           getArgs PatRel   { .. } = [name]
           getArgs PatWild  {}     = ["_"]
 toCExpr ExprConstructor { .. } = CExprCall name $ map toCExpr args
@@ -40,7 +40,7 @@ toCType TypVaridx  { .. }             = CTFree idx
 toCType TypDummy   {}                 = CTBase "void"
 toCType TypUnknown {}                 = CTAuto
 toCType t          {- TypArrow -}     = CTFunc (last typelist) (init typelist)
-    where flattenType TypArrow { .. } = (toCType left):(flattenType right)
+    where flattenType TypArrow { .. } = toCType left:flattenType right
           flattenType t               = [toCType t]
           nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
           typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars

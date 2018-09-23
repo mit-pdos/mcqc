@@ -13,10 +13,10 @@ data Pattern = PatCtor { name :: Text,  argnames :: [Text] }
 
 instance FromJSON Pattern where
   parseJSON (Object v) =
-      case (v ! "what") of
+      case v ! "what" of
         "pat:constructor" -> PatCtor          <$> v .:  "name"
                                               <*> v .:? "argnames" .!= []
         "pat:tuple"       -> PatTuple         <$> v .:? "items" .!= []
         "pat:rel"         -> PatRel           <$> v .:  "name"
         "pat:wild"        -> return PatWild
-        s                 -> fail ("Unknown declaration type: " ++ (show v) ++ " because " ++ (show s))
+        s                 -> error $ "Unknown declaration type: " ++ show v ++ " : " ++ show s

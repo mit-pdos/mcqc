@@ -14,7 +14,7 @@ instance Pretty CDecl where
           <> line <> (tab . pretty) _fbody
           <> line <> "}"
     where typedargs = [ pretty (fst t) <+> pretty (snd t) | t <- zip _fins _fargs ]
-          argtemplates = concat $ map getTemplates _fins
+          argtemplates = concatMap getTemplates _fins
           templates = [ "class" <+> pretty a | a <- nub $ getTemplates _fret ++ argtemplates ]
           templateline = if null templates then mempty else "template<" <> commatize templates <> ">"
   pretty CDType  { .. } = "using" <+> pretty _tname <+> "=" <+> pretty _tval <> ";"

@@ -34,9 +34,8 @@ main = do
   let pipeline = if Debug `elem` as then debug
                  else transpile
   let givefn = case getOutput as of
-                (Nothing) -> (\arg -> 
-                    addExtension ((dropExtension . takeFileName) arg) "cpp")
-                (Just fn) -> (\_ -> fn)
+                Nothing -> \arg -> addExtension (dropExtension . takeFileName $ arg) "cpp"
+                (Just fn) -> const fn
   mapM_ (\arg -> B.readFile arg >>=
     (\json -> cppWritter (givefn arg) (eitherDecode json >>=
       pipeline))) fs

@@ -10,11 +10,11 @@ import Data.Bits
 -- Ascii as byte semantics
 asciiSemantics :: CExpr -> CExpr
 asciiSemantics CExprCall { _fname = "Ascii.Ascii", _fparams = fp }
-    | (length fp) == 8 = CExprStr $ T.pack [w2c (makeByte (map _bool fp))]
-    | otherwise        = error "Ascii char is not 8 bytes"
-    where fromBool b      = if b then fromInteger 1 else zeroBits
+    | length fp == 8 = CExprStr $ T.pack [w2c (makeByte (map _bool fp))]
+    | otherwise      = error "Ascii char is not 8 bytes"
+    where fromBool b      = if b then 1 else zeroBits
           makeByte []     = zeroBits
-          makeByte (b:bs) = (fromBool b) `shift` (7 - (length bs)) .|. (makeByte bs)
+          makeByte (b:bs) = fromBool b `shift` (7 - length bs) .|. makeByte bs
 asciiSemantics CExprCall { .. } = CExprCall _fname (map asciiSemantics _fparams)
 asciiSemantics other = descend asciiSemantics other
 
