@@ -17,15 +17,17 @@ instance Pretty CType where
   pretty CTUndef {}     = error "Undef type found in the end, internal error"
 
 instance Pretty CExpr where
-  pretty CExprLambda { _lbody = CExprSeq { .. }, .. } =
+  pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =
                             group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
-                            <> line <> tab (pretty _left <> ";" <> line <> pretty _right) <> ";"
-                            <> line <> "}"
+                            <> line
+                            <> tab (pretty s)
+                            <> line
+                            <> "}"
   pretty CExprLambda { .. } =
                             group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
                             <+> "return" <+> pretty _lbody <> ";"
                             <+> "}"
-  pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a
+  pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a <> ";"
   pretty CExprCall   { _fname = "eqb", _fparams = [a, b] } = (pretty a) <+> "==" <+> (pretty b)
   pretty CExprCall   { _fname = "ltb", _fparams = [a, b] } = (pretty a) <+> "<"  <+> (pretty b)
   pretty CExprCall   { _fname = "leb", _fparams = [a, b] } = (pretty a) <+> "<=" <+> (pretty b)
@@ -37,6 +39,12 @@ instance Pretty CExpr where
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
   pretty CExprList   { .. } = "List<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
+  pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") initexpr)
+                            <> line
+                            <> "return" <+> pretty retexpr <> ";"
+    where seqexpr CExprSeq { .. } = _left:(seqexpr _right)
+          seqexpr other           = [other]
+          retexpr                 = last . seqexpr $ s
+          initexpr                = init . seqexpr $ s
   pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
   pretty CExprStmt   { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
-  pretty CExprSeq    { .. } = pretty _left <> ";" <> line <> pretty _right

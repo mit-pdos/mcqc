@@ -6,7 +6,7 @@ CXXFLAGS?=-O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I../..
 all: fib
 
 Fib.json: Fib.v
-	coqc $<
+	coqc -Q ../../classes "" $<
 
 Fib.cpp: Fib.json
 	stack exec machcoq -- $<

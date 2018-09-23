@@ -32,4 +32,4 @@ listSemantics c = case deconstruct c of
     ([a], Just e) -> CExprCall "cons" [listSemantics a, descend listSemantics e]
     ([], Just e) -> descend listSemantics e
     (l, Just e) -> CExprCall "app" [CExprList freeT $ map listSemantics l, descend listSemantics e]
-    where freeT = CTUndef -- TODO: Infer the type
+    where freeT = CTFree 1 -- CTUndef -- TODO: Infer the type

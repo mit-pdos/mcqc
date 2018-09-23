@@ -6,7 +6,7 @@ CXXFLAGS?=-g -O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I..
 all: rev
 
 Rev.json: Rev.v
-	coqc $<
+	coqc -Q ../../classes "" $<
 
 Rev.cpp: Rev.json
 	stack exec machcoq -- $<

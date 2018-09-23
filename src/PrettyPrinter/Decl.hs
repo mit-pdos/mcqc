@@ -11,7 +11,7 @@ import Data.Text.Prettyprint.Doc
 instance Pretty CDecl where
   pretty CDFunc  { _ftype = CTFunc { .. }, .. } = templateline
           <> line <> pretty _fret <+> pretty _fn <> "(" <> commatize typedargs <> ") {"
-          <> line <> (tab . pretty) _fbody <> ";"
+          <> line <> (tab . pretty) _fbody
           <> line <> "}"
     where typedargs = [ pretty (fst t) <+> pretty (snd t) | t <- zip _fins _fargs ]
           argtemplates = concat $ map getTemplates _fins

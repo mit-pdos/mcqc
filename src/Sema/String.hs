@@ -18,13 +18,14 @@ asciiSemantics CExprCall { _fname = "Ascii.Ascii", _fparams = fp }
 asciiSemantics CExprCall { .. } = CExprCall _fname (map asciiSemantics _fparams)
 asciiSemantics other = descend asciiSemantics other
 
-makeStr :: CExpr -> Text
-makeStr CExprStr  { .. } = _str
-makeStr CExprCall { _fname = "String.EmptyString", _fparams = [] } = mempty
-makeStr CExprCall { _fname = "String.EmptyString", .. } = error "EmptyString takes no arguments"
-
 stringSemantics :: CExpr -> CExpr
 stringSemantics CExprCall { _fname = "String.String", .. } =
-    CExprStr $ T.concat $ map makeStr _fparams
-stringSemantics s@CExprCall { _fname = "String.EmptyString" } = CExprStr $ makeStr s
+    CExprStr . T.concat $ map makeStr _fparams
+    where makeStr CExprStr  { .. } = _str
+          makeStr CExprCall { _fname = "String.EmptyString", .. } = ""
+stringSemantics CExprCall { _fname = "String.EmptyString", _fparams = [] } =
+    CExprStr mempty
+stringSemantics CExprCall { _fname = "String.EmptyString", .. } =
+    error "EmptyString takes no arguments"
 stringSemantics other = descend stringSemantics other
+

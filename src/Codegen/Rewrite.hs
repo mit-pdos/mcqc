@@ -10,6 +10,9 @@ toCTBase "MNat.Nat.nat" = "Nat"
 toCTBase "Datatypes.bool" = "bool"
 toCTBase "MList.List.list" = "List"
 toCTBase "MString.String.string" = "String"
+toCTBase "Datatypes.nat" = "Nat"
+toCTBase "Datatypes.list" = "List"
+toCTBase "String.string" = "String"
 toCTBase "Datatypes.unit" = "void"
 toCTBase s
     | T.isPrefixOf "coq_" ss = safeStripPrefix "coq_" ss

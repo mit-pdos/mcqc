@@ -9,9 +9,11 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Common.Config as Conf
 import Control.Lens
+import Debug.Trace
 
 -- Traverse Type-tree for all typenames
 getTypesT :: CType -> [Text]
+getTypesT d | trace ("DBG type " ++ show d) False = undefined
 getTypesT CTFunc { .. } = getTypesT _fret ++ concatMap getTypesT _fins
 getTypesT CTExpr { .. } = getTypesT _tbase ++ concatMap getTypesT _tins
 getTypesT CTVar  { .. } = concatMap getTypes _vargs
@@ -43,7 +45,7 @@ getTypes CExprSeq   { .. } = "proc":(getTypes _left ++ getTypes _right)
 getTypes CExprCall  { _fname  = "some", .. } = "optional" : concatMap getTypes _fparams
 getTypes CExprCall  { _fname  = "none", .. } = "optional" : concatMap getTypes _fparams
 getTypes CExprCall  { .. } = _fname : concatMap getTypes _fparams
-getTypes CExprStr   { .. } = ["string"]
+getTypes CExprStr   { .. } = ["String"]
 getTypes CExprNat   { .. } = ["nat"]
 getTypes CExprTuple { .. } = "tuple" : concatMap getTypes _items
 getTypes CExprStmt  { .. } = "proc" : getTypesT _stype ++ getTypes _sbody
