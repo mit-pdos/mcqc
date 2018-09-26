@@ -12,6 +12,8 @@ Module Proc.
   | sopen: nat -> Proc Fd
   (** Read from Fd *)
   | read: Fd -> nat -> Proc string
+  (** Write to Fd *)
+  | write: Fd -> string -> Proc unit
   (** Close Fd *)
   | close : Fd -> Proc unit
   (** Get random number *)
