@@ -19,6 +19,7 @@ bindSemantics other                                                 =
 removeInstances :: CExpr -> CExpr
 removeInstances CExprCall { _fparams = (v@CExprVar { .. }:ts), .. }
     | T.isPrefixOf "native" lastthing = CExprCall _fname $ map removeInstances ts
+    | T.isPrefixOf "show" lastthing = CExprCall _fname $ map removeInstances ts
     | otherwise = CExprCall _fname $ map removeInstances (v:ts)
     where lastthing = last $ T.splitOn "." _var
 removeInstances other = descend removeInstances other

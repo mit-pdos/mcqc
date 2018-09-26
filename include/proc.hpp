@@ -116,43 +116,8 @@ namespace proc {
 
     // print string to standard output
     template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static void prints(S&& s) {
+    static void print(S&& s) {
         std::cout << s << std::endl;
     }
-
-    // print list to standard output, cannot use universal reference as print(T&&) is defined twice
-    template<typename T>
-    static void printl(list::List<T> l) {
-        std::cout << "{";
-        for(auto i = l.begin(); i != l.end(); ++i) {
-            if (i != l.begin())
-                std::cout << ", ";
-            std::cout << *i;
-        }
-        std::cout << "}" << std::endl;
-    }
-
-    // print optional to standard output
-    template<typename T>
-    static void printo(optional::Optional<T> o) {
-        match(o,
-            []() { std::cout << "None" << std::endl; },
-            [](T c) { std::cout << "Some " << c << std::endl; });
-     }
-
-     template<class TupType, size_t... I>
-     static void printt(const TupType& t, std::index_sequence<I...>)
-     {
-         std::cout << "(";
-         (..., (std::cout << (I == 0? "" : ", ") << std::get<I>(t)));
-         std::cout << ")\n";
-     }
-
-     template<class ...Args>
-     static void printt(const std::tuple<Args...>& t)
-     {
-         printt(t, std::make_index_sequence<sizeof...(Args)>());
-     }
-
 }
 #endif

@@ -21,10 +21,7 @@ Module Proc.
   (** Spawn async future *)
   | spawn: forall T, (T -> unit) -> T -> Proc unit
   (** Print to stdout *)
-  | prints : string -> Proc unit
-  | printl : forall T, list T -> Proc unit
-  | printn : nat -> Proc unit
-  | printo : forall T, option T -> Proc unit
+  | print : string -> Proc unit
   (** Monad implementation *)
   | ret: forall T, T -> Proc T
   | bind: forall T T', Proc T -> (T -> Proc T') -> Proc T'.

@@ -2,6 +2,7 @@
 #include <ctime>
 #include <cassert>
 #include "optional.hpp"
+#include "shows.hpp"
 #include "list.hpp"
 #include "bool.hpp"
 #include "proc.hpp"
@@ -19,7 +20,7 @@ using namespace list;
 using namespace string;
 using namespace tuple;
 using namespace boolean;
-
+using namespace shows;
 
 template<typename T, typename Func>
 List<T> mapl(Func f, List<T> l) {
@@ -47,10 +48,13 @@ int main() {
         [](int m) { std::cout << "Some " << m << std::endl; },
         []()      { std::cout << "Empty" << std::endl; });
 
+	// Optional print
+	proc::print(show(some<Nat>(41)));
+	proc::print(show(none<Nat>()));
     // Async
-    proc::spawn([](String s) { proc::prints(s); }, String("Not necessarily"));
-    proc::spawn([](Nat n) { proc::printn(n); }, proc::random());
-    proc::spawn([](String s) { proc::prints(s); }, String("In order"));
+    proc::spawn([](String s) { proc::print(s); }, String("Not necessarily"));
+    proc::spawn([](Nat n) { proc::print(show(n)); }, proc::random());
+    proc::spawn([](String s) { proc::print(s); }, String("In order"));
 
     // Bools
     match((bool)false,
@@ -58,10 +62,10 @@ int main() {
         []() { std::cout << "Bool matching works" << std::endl; });
 
     // Lists with initializer_list
-    proc::printl(rev(List<int>{1,2,3}));
+    proc::print(show(rev(List<int>{1,2,3})));
 
     // High order logic (map)
-    proc::printl(mapl([](int n) { return n * 2; }, List<int>{1,2,3}));
+    proc::print(show(mapl([](int n) { return n * 2; }, List<int>{1,2,3})));
 
     // Lists benchmark
     List<int> bar;
@@ -81,9 +85,9 @@ int main() {
 
     String foo = "foo";
     String baz = "baz";
-    proc::prints(append(String(foo),baz));
-    proc::prints(append(String(foo),baz));
-    proc::prints(foo);
+    proc::print(append(String(foo),baz));
+    proc::print(append(String(foo),baz));
+    proc::print(foo);
 
     // Tuples
     auto t = mktuple(1, 'b', "foo");
@@ -92,8 +96,8 @@ int main() {
             std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;
         });
     std::cout << "snd(t): " << snd(t) << std::endl;
-    std::cout << "fst(t): "; proc::printt(fst(t));
-    std::cout << "fst(fst(t)): "; proc::printn(fst(fst(t)));
+    std::cout << "fst(t): "; proc::print(show(fst(t)));
+    std::cout << "fst(fst(t)): "; proc::print(show(fst(fst(t))));
     return 0;
 }
 

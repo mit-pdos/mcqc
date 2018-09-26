@@ -44,6 +44,7 @@ getTypes :: CExpr -> [Text]
 getTypes CExprSeq   { .. } = "proc":(getTypes _left ++ getTypes _right)
 getTypes CExprCall  { _fname  = "some", .. } = "optional" : concatMap getTypes _fparams
 getTypes CExprCall  { _fname  = "none", .. } = "optional" : concatMap getTypes _fparams
+getTypes CExprCall  { _fname  = "show", .. } = "shows" : concatMap getTypes _fparams
 getTypes CExprCall  { .. } = _fname : concatMap getTypes _fparams
 getTypes CExprStr   { .. } = ["String"]
 getTypes CExprNat   { .. } = ["nat"]

@@ -15,10 +15,12 @@ Require MNat.
 Require MList.
 Require MProc.
 Require MString.
+Require MShow.
 Import MNat.Nat.
 Import MList.List.
 Import MProc.Proc.
 Import MString.String.
+Import MShow.Show.
 
 Local Open Scope string_scope.
 Local Open Scope proc_scope.
@@ -39,7 +41,7 @@ Definition cat (path: string) (fn : string) :=
   f <- open (path ++ "/" ++ fn);
   contents <- read_loop f;
   _ <- close f;
-  _ <- prints contents;
+  _ <- print (show contents);
   ret unit.
 
 Require Extraction.
