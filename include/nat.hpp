@@ -5,16 +5,16 @@
 #include "exception.h"
 #include "type_checks.h"
 
-namespace nat {
-    // Nat definition
-    using Nat = unsigned int;
+namespace Nat {
+    // nat definition
+    using nat = unsigned int;
 
-    // Pattern matching Nat
+    // Pattern matching nat
     template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>,
              typename = std::enable_if_t<CallableWith<Func>          && "1st argument not callable with void">,
-             typename = std::enable_if_t<CallableWith<Func2, Nat>    && "2nd argument not callable with Nat">,
-		     typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, Nat>> && "Arg function return types must match">>
-    constexpr Ret match(Nat a, Func f, Func2 g){
+             typename = std::enable_if_t<CallableWith<Func2, nat>    && "2nd argument not callable with nat">,
+		     typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, nat>> && "Arg function return types must match">>
+    constexpr Ret match(nat a, Func f, Func2 g){
         switch(a) {
         case 0:  return f();     // Call function with no argument
         default: return g(a-1);  // Call function with m, where S m = a
@@ -22,7 +22,7 @@ namespace nat {
     }
 
 	// Successor function (adds one)
-    constexpr Nat succ(Nat a) {
+    constexpr nat succ(nat a) {
         // Boundary check
         if (a >= UINT_MAX) {
 			throw new OverflowException("Out of UINT_MAX limit");
@@ -31,7 +31,7 @@ namespace nat {
     }
 
 	// Predecessor function (minus one, total)
-    constexpr Nat pred(Nat a) {
+    constexpr nat pred(nat a) {
         // static_assert(a > 0 , "Out of UINT_MAX limit");
         if (a == 0) {
             return 0; // This is what coq does, but maybe we want to throw
@@ -41,16 +41,16 @@ namespace nat {
 
     // Utility functions
     // Boolean
-    constexpr bool even(Nat a) {
+    constexpr bool even(nat a) {
         return ~(a & 1);
     }
-    constexpr bool odd(Nat a) {
+    constexpr bool odd(nat a) {
         return (a & 1);
     }
 
     // Arithmetic
 	// Add
-    constexpr Nat add(Nat a, Nat b) {
+    constexpr nat add(nat a, nat b) {
         if (UINT_MAX - a < b || UINT_MAX - b < a) {
 			throw new OverflowException("add: Out of UINT_MAX limit");
 		}
@@ -58,7 +58,7 @@ namespace nat {
     }
 
 	// Subtract
-    constexpr Nat sub(Nat a, Nat b) {
+    constexpr nat sub(nat a, nat b) {
         if (a < b) {
             return 0;
         }
@@ -66,7 +66,7 @@ namespace nat {
     }
 
 	// Multiply
-    constexpr Nat mul(Nat a, Nat b) {
+    constexpr nat mul(nat a, nat b) {
         if (a == 0 || b == 0) {
             return 0;
         } else if (UINT_MAX/a < b || UINT_MAX/b < a) {
@@ -76,7 +76,7 @@ namespace nat {
     }
 
 	// total division, does not fail when /0
-    constexpr Nat div(Nat a, Nat b) {
+    constexpr nat div(nat a, nat b) {
         if (b == 0) {
             return 0;
         }
@@ -84,7 +84,7 @@ namespace nat {
     }
 
 	// total division, does not fail when /0
-    constexpr Nat mod(Nat a, Nat b) {
+    constexpr nat mod(nat a, nat b) {
         if (b == 0) {
             return 0;
         }

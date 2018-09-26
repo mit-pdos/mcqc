@@ -7,11 +7,11 @@
 
     CPP: #include "list.{{(h|hpp|cpp)}}"
     CPP: template<{{typename|class}} T>
-    CPP: List<T> rev(List<T> l)
+    CPP: list<T> rev(list<T> l)
     CPP: return match{{.*}}l{{.*}}
-    CPP: () { return List<T>{}; }
+    CPP: () { return list<T>{}; }
     CPP: (auto h, auto ts) { return app{{.*}}rev(ts)
-    CPP: List<T>{h}
+    CPP: list<T>{h}
 *)
 
 Require Import Coq.Lists.List.

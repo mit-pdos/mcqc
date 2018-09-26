@@ -34,10 +34,10 @@ instance Pretty CExpr where
   pretty CExprCall   { _fname = "match", .. } = "match" <> (parens . breakcommatize $ _fparams)
   pretty CExprCall   { .. } = pretty (toCName _fname) <> (parens . commatize $ map pretty _fparams)
   pretty CExprVar    { .. } = pretty _var
-  pretty CExprStr    { .. } = "String(\"" <> pretty _str <> "\")"
-  pretty CExprNat    { .. } = "(Nat)" <> pretty _nat
+  pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
+  pretty CExprNat    { .. } = "(nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
-  pretty CExprList   { .. } = "List<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
+  pretty CExprList   { .. } = "list<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
   pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") initexpr)
                             <> line

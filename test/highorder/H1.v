@@ -7,7 +7,7 @@
 
     CPP: #include "nat.hpp"
     CPP: template<{{typename|class}} [[TT:.?]]>
-    CPP: Nat onEvens([[TT]] f, Nat n)
+    CPP: nat onEvens([[TT]] f, nat n)
 *)
 
 Fixpoint isEven(n: nat) :=

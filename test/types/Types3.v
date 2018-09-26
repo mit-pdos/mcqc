@@ -7,8 +7,8 @@
 
     CPP: #include "list.hpp"
     CPP: #include "nat.hpp"
-    CPP: using fn = Nat;
-    CPP: using pathname = List<List<List<fn>>>;
+    CPP: using fn = nat;
+    CPP: using pathname = list<list<list<fn>>>;
 *)
 
 Definition fn := nat.

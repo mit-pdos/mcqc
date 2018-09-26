@@ -7,7 +7,7 @@
 
     CPP: #include "nat.hpp"
     CPP: template<{{typename|class}} [[TT:.?]], {{typename|class}} [[TT2:.?]]>
-    CPP: Nat onOddEven([[TT]] fo, [[TT2]] fe, Nat n)
+    CPP: nat onOddEven([[TT]] fo, [[TT2]] fe, nat n)
 *)
 
 Fixpoint isEven(n: nat) :=

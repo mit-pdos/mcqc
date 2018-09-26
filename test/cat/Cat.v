@@ -25,7 +25,7 @@ Import MShow.Show.
 Local Open Scope string_scope.
 Local Open Scope proc_scope.
 
-Definition read_loop (f: Fd) :=
+Definition read_loop (f: fd) :=
   tup <- until
       (fun prev => (snd prev) =? 0)
       (fun prev => s <- read f 4096;

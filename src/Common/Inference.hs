@@ -13,7 +13,7 @@ import Debug.Trace
 
 -- Traverse Type-tree for all typenames
 getTypesT :: CType -> [Text]
-getTypesT d | trace ("DBG type " ++ show d) False = undefined
+-- getTypesT d | trace ("DBG type " ++ show d) False = undefined
 getTypesT CTFunc { .. } = getTypesT _fret ++ concatMap getTypesT _fins
 getTypesT CTExpr { .. } = getTypesT _tbase ++ concatMap getTypesT _tins
 getTypesT CTVar  { .. } = concatMap getTypes _vargs
@@ -44,7 +44,7 @@ getTypes :: CExpr -> [Text]
 getTypes CExprSeq   { .. } = "proc":(getTypes _left ++ getTypes _right)
 getTypes CExprCall  { _fname  = "some", .. } = "optional" : concatMap getTypes _fparams
 getTypes CExprCall  { _fname  = "none", .. } = "optional" : concatMap getTypes _fparams
-getTypes CExprCall  { _fname  = "show", .. } = "shows" : concatMap getTypes _fparams
+getTypes CExprCall  { _fname  = "show", .. } = "show" : concatMap getTypes _fparams
 getTypes CExprCall  { .. } = _fname : concatMap getTypes _fparams
 getTypes CExprStr   { .. } = ["String"]
 getTypes CExprNat   { .. } = ["nat"]

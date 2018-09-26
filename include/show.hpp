@@ -9,27 +9,28 @@
 #include "type_checks.h"
 #include "tuple.hpp"
 
-using namespace nat;
-using namespace string;
-using namespace list;
-using namespace optional;
+using namespace Nat;
+using namespace String;
+using namespace List;
+using namespace Optional;
+using namespace Tuple;
 
-namespace shows {
+namespace Show {
 
-    // Nat -> String
-    static inline String show(nat::Nat n) {
+    // nat -> string
+    static inline string show(nat n) {
         return std::to_string(n);
     }
 
-    // String -> String
-    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static String show(S&& s) {
+    // string -> string
+    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
+    static string show(S&& s) {
         return FWD(s);
     }
 
-    // List<T> -> String
+    // list<T> -> string
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type>
-	typename std::enable_if<is_same_kind_v<L, List<T>>, String>::type
+	typename std::enable_if<is_same_kind_v<L, list<T>>, string>::type
 	show(L&& l) {
         std::stringstream ss;
         ss << "[";
@@ -42,19 +43,19 @@ namespace shows {
 		return ss.str();
     }
 
-    // Optional<T> -> String
+    // Optional<T> -> string
     template<typename O, typename T = typename std::remove_reference_t<O>::value_type>
-    typename std::enable_if<is_same_kind_v<O, Optional<T>>, String>::type
+    typename std::enable_if<is_same_kind_v<O, optional<T>>, string>::type
     show(O&& o) {
         if (o.has_value()) {
-            return append(String("Some "), show(o.value()));
+            return append(string("Some "), show(o.value()));
         }
-        return String("None");
+        return string("None");
     }
 
-    // tuple -> String
+    // tuple -> string
     template<class TupType, size_t... I>
-    static String show(const TupType& t, std::index_sequence<I...>)
+    static string show(const TupType& t, std::index_sequence<I...>)
     {
         std::stringstream ss;
         ss<< "(";
@@ -63,7 +64,7 @@ namespace shows {
         return ss.str();
     }
     template<class ...Args>
-    static String show(const std::tuple<Args...>& t)
+    static string show(const tuple<Args...>& t)
     {
         return show(t, std::make_index_sequence<sizeof...(Args)>());
     }

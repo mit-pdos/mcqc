@@ -2,7 +2,7 @@
 #include <ctime>
 #include <cassert>
 #include "optional.hpp"
-#include "shows.hpp"
+#include "show.hpp"
 #include "list.hpp"
 #include "bool.hpp"
 #include "proc.hpp"
@@ -14,26 +14,27 @@
 
 #define BMAX 1000
 
-using namespace optional;
-using namespace nat;
-using namespace list;
-using namespace string;
-using namespace tuple;
-using namespace boolean;
-using namespace shows;
+using namespace Optional;
+using namespace Nat;
+using namespace List;
+using namespace String;
+using namespace Tuple;
+using namespace Bool;
+using namespace Show;
+using namespace Proc;
 
 template<typename T, typename Func>
-List<T> mapl(Func f, List<T> l) {
+list<T> mapl(Func f, list<T> l) {
     return match(l,
-        [=]()    { return List<T>(); },
+        [=]()    { return list<T>(); },
         [=](auto h, auto ls) { return cons(f(h), mapl(f, ls)); });
 }
 
 template<typename T>
-static inline List<T> rev(List<T> l) {
+static inline list<T> rev(list<T> l) {
     return match(l,
-        []()    { return List<T>(); },
-        [](auto h, auto ls) { return app(rev(ls), List<T>(1, h)); });
+        []()    { return list<T>(); },
+        [](auto h, auto ls) { return app(rev(ls), list<T>(1, h)); });
 }
 
 int main() {
@@ -49,12 +50,12 @@ int main() {
         []()      { std::cout << "Empty" << std::endl; });
 
 	// Optional print
-	proc::print(show(some<Nat>(41)));
-	proc::print(show(none<Nat>()));
+	print(show(some<nat>(41)));
+	print(show(none<nat>()));
     // Async
-    proc::spawn([](String s) { proc::print(s); }, String("Not necessarily"));
-    proc::spawn([](Nat n) { proc::print(show(n)); }, proc::random());
-    proc::spawn([](String s) { proc::print(s); }, String("In order"));
+    spawn([](string s) { print(s); }, string("Not necessarily"));
+    spawn([](nat n) { print(show(n)); }, random());
+    spawn([](string s) { print(s); }, string("In order"));
 
     // Bools
     match((bool)false,
@@ -62,32 +63,32 @@ int main() {
         []() { std::cout << "Bool matching works" << std::endl; });
 
     // Lists with initializer_list
-    proc::print(show(rev(List<int>{1,2,3})));
+    print(show(rev(list<int>{1,2,3})));
 
     // High order logic (map)
-    proc::print(show(mapl([](int n) { return n * 2; }, List<int>{1,2,3})));
+    print(show(mapl([](int n) { return n * 2; }, list<int>{1,2,3})));
 
     // Lists benchmark
-    List<int> bar;
+    list<int> bar;
     for(int i = 0; i < BMAX; ++i)
         bar.push_back(i);
     tic();
     assert(rev(rev(bar)) == bar);
     toc();
 
-    // Strings
-    match(append(String("foo"), String("bar")),
+    // strings
+    match(append(string("foo"), string("bar")),
         []() { throw IOException("Should never be matched, since the str is non-empty"); },
         [](auto h, auto ts) {
             assert(h == 'f' && ts == "oobar");
-            std::cout << "String matching works" << std::endl;
+            std::cout << "string matching works" << std::endl;
         });
 
-    String foo = "foo";
-    String baz = "baz";
-    proc::print(append(String(foo),baz));
-    proc::print(append(String(foo),baz));
-    proc::print(foo);
+    string foo = "foo";
+    string baz = "baz";
+    print(append(string(foo),baz));
+    print(append(string(foo),baz));
+    print(foo);
 
     // Tuples
     auto t = mktuple(1, 'b', "foo");
@@ -96,8 +97,8 @@ int main() {
             std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;
         });
     std::cout << "snd(t): " << snd(t) << std::endl;
-    std::cout << "fst(t): "; proc::print(show(fst(t)));
-    std::cout << "fst(fst(t)): "; proc::print(show(fst(fst(t))));
+    std::cout << "fst(t): "; print(show(fst(t)));
+    std::cout << "fst(fst(t)): "; print(show(fst(fst(t))));
     return 0;
 }
 

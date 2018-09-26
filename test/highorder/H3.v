@@ -7,7 +7,7 @@
 
     CPP: #include "nat.hpp"
     CPP: template<{{typename|class}} [[TF:.?]]>
-    CPP: List<Nat> mapOnEvens([[TF]] f, List<Nat> l)
+    CPP: list<nat> mapOnEvens([[TF]] f, list<nat> l)
 *)
 
 Require Export Coq.Lists.List.

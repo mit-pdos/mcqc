@@ -6,7 +6,7 @@
 
     CPP: #include "list.hpp"
     CPP: using filename = auto;
-    CPP: using pathname = List<filename>;
+    CPP: using pathname = list<filename>;
 *)
 
 Parameter filename : Type.

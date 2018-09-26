@@ -15,49 +15,51 @@ namespace sys {
     #include <unistd.h>
 }
 
-using namespace string;
+using namespace String;
+using namespace Optional;
+using namespace Nat;
 
-namespace proc {
+namespace Proc {
 
     // Make proc an alias for the enclosing type
     template<class T>
-    using Proc = T;
+    using proc = T;
 
     // Filedescriptor type
-    using Fd = nat::Nat;
+    using fd = nat;
 
     // open file
-    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static inline nat::Nat open(S&& s) noexcept(false) {
+    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
+    static inline nat open(S&& s) noexcept(false) {
         if (int o = sys::open(FWD(s).c_str(), O_RDWR | O_CREAT | O_EXLOCK)) {
-            return static_cast<nat::Nat>(o);
+            return static_cast<nat>(o);
         }
         throw IOException("File not found");
     }
 
     // read file
-    static inline String read(nat::Nat fd, nat::Nat size) {
-        auto dp = string::String(size, '\0' );
+    static inline string read(nat fd, nat size) {
+        auto dp = string(size, '\0' );
         sys::read(fd, &(dp[0]), sizeof(char)*size);
         return dp;
     }
 
     // write file
-    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static inline void write(nat::Nat fd, S&& s) {
+    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
+    static inline void write(nat fd, S&& s) {
         sys::write(fd, &s[0], sizeof(char)*s.size());
     }
 
     // close file
-    static inline void close(nat::Nat f) noexcept(false) {
+    static inline void close(nat f) noexcept(false) {
         if(sys::close(f)) {
             throw IOException("Could not close file");
         }
     }
 
     // Create hardlink
-    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static inline Bool link(S&& src, S&& dest) {
+    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
+    static inline bool link(S&& src, S&& dest) {
         if(sys::link(FWD(src.c_str()), FWD(dest.c_str()))) {
             return true;
         }
@@ -65,8 +67,8 @@ namespace proc {
     }
 
     // Remove link from directory
-    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
-    static inline Bool unlink(S&& path) {
+    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
+    static inline bool unlink(S&& path) {
         if(sys::unlink(FWD(path.c_str()))) {
             return true;
         }
@@ -78,25 +80,25 @@ namespace proc {
     template<typename FuncCmp, typename Func, typename T,
              typename = std::enable_if_t<CallableWith<FuncCmp, T>
                 && "1st argument func not callable with T">,
-             typename = std::enable_if_t<CallableWith<Func, optional::Optional<T>>
-                && "2nd argument func not callable with Optional<T>">,
+             typename = std::enable_if_t<CallableWith<Func, optional<T>>
+                && "2nd argument func not callable with optional<T>">,
              typename = std::enable_if_t<std::is_same_v<bool, std::invoke_result_t<FuncCmp, T>>
                 && "Return type of FuncCmp is not bool">,
-             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, optional::Optional<T>>>
+             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, optional<T>>>
                 && "Return type of Func is not T">>
-    static inline T until(FuncCmp fcmp, Func f, optional::Optional<T> init) {
-        optional::Optional<T> base = init;
+    static inline T until(FuncCmp fcmp, Func f, optional<T> init) {
+        optional<T> base = init;
         T result;
         do {
             result = f(base);
-            base = optional::some(result);
+            base = some(result);
 
         } while (fcmp(result));
         return result;
     };
 
     // random number
-    static inline nat::Nat random() {
+    static inline nat nrand() {
         return rand();
     }
 
@@ -110,12 +112,12 @@ namespace proc {
     }
 
     // print Nat
-    static inline void printn(nat::Nat n) {
+    static inline void printn(nat n) {
         std::cout << n << std::endl;
     }
 
     // print string to standard output
-    template<typename S=String, typename = std::enable_if_t<is_same_kind_v<String, S>>>
+    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static void print(S&& s) {
         std::cout << s << std::endl;
     }

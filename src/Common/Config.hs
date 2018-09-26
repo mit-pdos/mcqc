@@ -3,4 +3,4 @@ module Common.Config where
 import Data.Text (Text)
 
 libs :: [Text]
-libs = [ "nat", "optional", "list", "proc", "shows", "string", "tuple" ]
+libs = [ "nat", "optional", "list", "proc", "show", "string", "tuple" ]

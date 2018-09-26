@@ -7,11 +7,11 @@
     RUN: FileCheck %s -check-prefix=LLVM < %t.ll
 
     CPP: #include "nat.hpp"
-    CPP: Nat fib(Nat n)
+    CPP: nat fib(nat n)
     CPP: return match{{.*}}n{{.*}}
-    CPP: return (Nat)1;
+    CPP: return (nat)1;
     CPP: return match{{.*}}sm{{.*}}
-    CPP: return (Nat)1;
+    CPP: return (nat)1;
     CPP: add{{.*}}fib(m){{.*}}fib(sm)
 
     LLVM: define i32 @{{.*}}fib{{.*}}
@@ -24,7 +24,7 @@
 *)
 Require MNat.
 Import Nat.
-  
+
 Fixpoint fib(n: nat) :=
   match n with
     | 0 => 1

@@ -7,7 +7,7 @@
 
     CPP: #include "list.hpp"
     CPP: #include "nat.hpp"
-    CPP: using pathname = List<Nat>;
+    CPP: using pathname = list<nat>;
 *)
 
 Definition pathname := list nat.
