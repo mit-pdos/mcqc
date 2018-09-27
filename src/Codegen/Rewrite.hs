@@ -23,6 +23,6 @@ toCName s
     | T.isInfixOf "'" s  = error "Symbol not allowed in C names: '"
     | T.isInfixOf "\"" s = error "Symbol not allowed in C names: \""
     | otherwise = rewrite s
-    where prefixes = "Datatypes.":"Coq_": map mkmodule libs
+    where prefixes = "Datatypes.":"Coq_":map mkmodule libs ++ map T.toTitle libs
           mkmodule m = T.concat ["M", T.toTitle m, ".", T.toTitle m, "."]
           rewrite  = foldr (.) id $ map (\m -> safeStripPrefix m) prefixes

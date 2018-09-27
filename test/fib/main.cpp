@@ -3,7 +3,7 @@
 #include "Fib.cpp"
 
 #define N 35
-using namespace nat;
+using namespace Nat;
 
 // For benchmarking against autogen version
 unsigned int fib2(unsigned int n) {

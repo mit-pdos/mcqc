@@ -61,9 +61,11 @@ namespace List {
     }
 
     // Fully constructive app, both l1, l2 are immutable and will be copied.
-    template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    inline static list<T> app(L&& l1, L&& l2) {
+    template<typename L1, typename L2,
+             typename T = typename std::remove_reference_t<L1>::value_type,
+             typename = std::enable_if_t<is_same_kind_v<L1, list<T>>>,
+             typename = std::enable_if_t<is_same_kind_v<L2, list<T>>>>
+    inline static list<T> app(L1&& l1, L2&& l2) {
         list<T> l3 = list<T>(l1);
         l3.splice(l3.end(), FWD(l2));
         return l3;
