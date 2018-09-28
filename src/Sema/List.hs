@@ -25,6 +25,6 @@ listSemantics c = case deconstruct c of
                 (ls, Nothing) -> (a:ls, Nothing)
           deconstruct CExprCall { _fname = "Datatypes.Coq_nil", _fparams = [] } = ([], Nothing)
           deconstruct CExprCall { .. }
-              | _fname == "Datatypes.Coq_nil" ||
-                _fname == "Datatypes.Coq_cons" = error "List constructors with the wrong number of arguments"
+		  	  | _fname == "Datatypes.Coq_nil" ||
+				_fname == "Datatypes.Coq_cons" = error "List constructors with the wrong number of arguments"
           deconstruct other = ([], Just other)
