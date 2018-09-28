@@ -17,9 +17,10 @@ using namespace Tuple;
 
 namespace Copy {
 
-    // Doesn't actually copy, just an id
-    constexpr nat& copy(nat&& n) noexcept {
-        return n;
+    // Should be a nop
+    template<typename N, typename = std::enable_if_t<is_same_kind_v<nat, N>>>
+    constexpr N& copy(N&& n) noexcept {
+        return FWD(n);
     }
 
     // copy due to the return value being a non-ref

@@ -11,7 +11,7 @@ namespace Bool {
              typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2>> && "Arg function return types must match">>
     constexpr Ret match(bool a, Func f, Func2 g){
         if(a) { return f(); }
-		return g();
+        return g();
     }
 }
 #endif

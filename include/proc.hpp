@@ -108,7 +108,7 @@ namespace Proc {
              typename ...Args,
              typename = std::enable_if_t<CallableWith<Func, Args...> && "Argument not callable with argument types">>
     static inline void spawn(Func f, Args... args) {
-		std::async(std::launch::async, f, args...);
+        std::async(std::launch::async, f, args...);
     }
 
     // print Nat

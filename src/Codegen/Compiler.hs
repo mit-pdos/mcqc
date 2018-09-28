@@ -10,6 +10,7 @@ import CIR.Expr
 import Codegen.Expr
 import Codegen.Rewrite
 import Common.Flatten
+import Sema.Copy
 import Sema.Pipeline
 import Data.Text (Text)
 import Data.List (sort, nub)
@@ -19,7 +20,7 @@ compilexpr :: Expr -> CExpr
 compilexpr e
     | isSeq ce  = ce
     | otherwise = CExprCall "return" [ce]
-    where ce    = renames . semantics . toCExpr $ e
+    where ce    = copySemantics . renames . semantics . toCExpr $ e
           isSeq CExprSeq { .. } = True
           isSeq _               = False
 

@@ -21,7 +21,9 @@ data CExpr =
           -- High level C++ expressions
             CExprLambda { _largs :: [Text], _lbody :: CExpr }
           | CExprCall { _fname :: Text, _fparams :: [CExpr] }
-          -- C++ statament for monadic unrolling
+          -- Continuations
+          | CExprSeq { _left :: CExpr, _right :: CExpr }
+          -- C++ statament
           | CExprStmt { _stype :: CType, _sname :: Text, _sbody :: CExpr }
           -- Reduced forms
           | CExprVar { _var :: Text }
@@ -30,8 +32,6 @@ data CExpr =
           | CExprBool { _bool :: Bool }
           | CExprList { _etype :: CType, _elems :: [CExpr] }
           | CExprTuple { _items :: [CExpr] }
-          -- Continuations
-          | CExprSeq { _left :: CExpr, _right :: CExpr }
     deriving (Eq, Generic, ToJSON, Show)
 
 -- Generate lenses
