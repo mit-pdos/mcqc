@@ -19,7 +19,7 @@ rev: main.cpp Rev.cpp ../../include/*
 prof: rev
 	@echo --------------------------------------------------------------------------------
 	@echo Profiling $@ ...
-	valgrind --leak-check=full ./$<
+	valgrind --tool=massif ./$<
 
 clean:
 	-rm -rf rev Rev.cpp *.dSYM *.glob *.vo *.json *.o

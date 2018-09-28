@@ -1,4 +1,6 @@
-{-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE RecordWildCards #-}
 module Codegen.Expr where
 import CIR.Expr
 import Codegen.Rewrite
@@ -33,9 +35,9 @@ toCExpr ExprDummy       {}     = CExprVar ""
 
 -- Type compiling, from Coq to C++
 toCType :: Typ -> CType
-toCType TypVar     { .. }             = CTVar name $ map toCExpr args
 toCType TypGlob    { targs = [], .. } = CTBase $ toCTBase name
 toCType TypGlob    { .. }             = CTExpr (CTBase $ toCTBase name) (map toCType targs)
+toCType TypVar     { .. }             = CTVar name $ map toCExpr args
 toCType TypVaridx  { .. }             = CTFree idx
 toCType TypDummy   {}                 = CTBase "void"
 toCType TypUnknown {}                 = CTAuto
@@ -44,3 +46,7 @@ toCType t          {- TypArrow -}     = CTFunc (last typelist) (init typelist)
           flattenType t               = [toCType t]
           nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
           typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
+          -- raise CTFuncs to template functions
+          raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
+          raiseCTFunc CTExpr { .. }   = do { c <- raiseCTFunc _tbase; cargs <- mapM raiseCTFunc _tins; return $ CTExpr c cargs }
+          raiseCTFunc o               = return o

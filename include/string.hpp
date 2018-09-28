@@ -56,7 +56,7 @@ namespace String {
         return none<char>();
     }
 
-    // Get substring based on begin index and length
+    // Constructive, get substring based on begin index and length
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static string substring(nat begin, nat len, S&& s) {

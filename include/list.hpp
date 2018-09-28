@@ -67,7 +67,7 @@ namespace List {
              typename = std::enable_if_t<is_same_kind_v<L2, list<T>>>>
     inline static list<T> app(L1&& l1, L2&& l2) {
         list<T> l3 = list<T>(l1);
-        l3.splice(l3.end(), FWD(l2));
+        l3.insert(l3.end(), l2.begin(), l2.end());
         return l3;
     }
 
