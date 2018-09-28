@@ -31,8 +31,9 @@ namespace String {
         if(s.empty()) {
             return f();
         } else {
-            auto head = FWD(s.begin());
-            return g(*head, string(head++, FWD(s.end())));
+            char head = *s.begin();
+            s.erase(s.begin());
+            return g(head, s);
         }
     }
 
@@ -40,18 +41,17 @@ namespace String {
     template<typename L=string, typename R=string,
              typename = std::enable_if_t<is_same_kind_v<string, L>>,
              typename = std::enable_if_t<is_same_kind_v<string, R>>>
-    static string append(L&& l, R&& r) {
-        string s = string(l);
-        s.append(FWD(r));
-        return s;
+    static string& append(L&& l, R&& r) noexcept {
+        l.insert(l.end(), r.begin(), r.end());
+        return l;
     }
 
     // Get characater in given index of string
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static optional<char> get(nat index, S&& s) {
-		if (index < FWD(s.length())) {
-			return some(FWD(s[index]));
+    static optional<char> get(nat index, S&& s) noexcept {
+		if (index < s.length()) {
+			return some<char>(s[index]);
         }
         return none<char>();
     }
@@ -59,22 +59,22 @@ namespace String {
     // Get substring based on begin index and length
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static string substring(nat begin, nat len, S&& s) {
-		if (begin < FWD(s.length()) && (begin + len) < FWD(s.length())) {
+    static string substring(nat begin, nat len, S&& s) noexcept {
+		if (begin < s.length() && (begin + len) < s.length()) {
             // Copy inside substr
-			return FWD(s.substr(begin, len));
+			return s.substr(begin, len);
         }
         return string();
     }
 
-	 // Concat a list of strings around the given separator
+	 // Constructive, concat a list of strings around the given separator
     template<typename S=string, typename L,
              typename = std::enable_if_t<is_same_kind_v<string, S>>,
              typename = std::enable_if_t<is_same_kind_v<list<string>, L>>>
-    static string concat(S&& sep, L&& l) {
+    static string concat(S&& sep, L&& l) noexcept {
         std::stringstream ss;
-        for (auto it = FWD(l.begin()); it != FWD(l.end()); ++it) {
-			if (it != FWD(l.begin())) {
+        for (auto it = l.begin(); it != l.end(); ++it) {
+			if (it != l.begin()) {
 				ss << FWD(sep);
             }
             ss << *it;
@@ -89,11 +89,11 @@ namespace String {
              typename = std::enable_if_t<is_same_kind_v<string, L>>>
     static bool prefix(S&& s, L&& l) {
         // If prefix is longer than string, cannot be prefix
-        if (FWD(l.length()) < FWD(s.length())) {
+        if (l.length() < s.length()) {
 			return false;
 		}
         // Else compare
-		for (auto its = FWD(s.begin()), itl = FWD(l.begin()); its != FWD(s.end()); ++its, ++itl) {
+		for (auto its = s.begin(), itl = l.begin(); its != s.end(); ++its, ++itl) {
 			if (*its != *itl) {
 				return false;
 			}
@@ -105,7 +105,7 @@ namespace String {
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static nat length(S&& l) {
-        return static_cast<nat>(FWD(l.length()));
+        return static_cast<nat>(l.length());
     }
 }
 #endif
