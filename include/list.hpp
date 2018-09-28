@@ -15,6 +15,7 @@ namespace List {
     template<typename T>
     using list = std::list<T>;
 
+	// Destructive match, modifies l
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename Func, typename Func2,
              typename Ret = std::invoke_result_t<Func>,
@@ -23,41 +24,40 @@ namespace List {
              typename = std::enable_if_t<CallableWith<Func2, T, L>   && "2nd argument not callable with (T, list<T>)">,
              typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, T, L>> && "Arg function return types must match">>
     static Ret match(L&& l, Func f, Func2 g) {
-        switch(FWD(l.empty())) {
+        switch(l.empty()) {
         case true:  return f();
         default: {
-            auto head = FWD(l.begin());
-            return g(*head, list<T>(++head, FWD(l.end())));
+            auto head = l.begin();
+            l.pop_front();
+            return g(*head, FWD(l));
         }
         }
     }
 
-    // TODO: Make not copy
-    // Constructive cons, copies l so l can be referenced again
+    // Destructive cons, modifies l and appends an element
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    inline static list<T> cons(T t, L&& l) {
-        auto l2 = list<T>(l);
-        l2.push_front(t);
-        return l2;
+    inline static list<T>& cons(T t, L&& l) noexcept {
+        l.push_front(t);
+        return l;
     }
 
-    // Utility functions
+    // Get first element of list
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static optional<T> head(L&& l) {
-        if (FWD(l.empty())) {
+    static optional<T> head(L&& l) noexcept {
+        if (l.empty()) {
             return none<T>();
         }
         return some<T>(FWD(l.front()));
     }
 
-    // Constructive tail, l is considered immutable and will be copied safely
+    // Destructive tail, l is considered mutable
  	template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static list<T> tail(L&& l) {
-        auto head = FWD(l.begin());
-        return list<T>(++head, FWD(l.end()));
+    static list<T>& tail(L&& l) noexcept {
+        l.pop_front();
+        return l;
     }
 
     // Fully constructive app, both l1, l2 are immutable and will be copied.
@@ -65,24 +65,28 @@ namespace List {
              typename T = typename std::remove_reference_t<L1>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L1, list<T>>>,
              typename = std::enable_if_t<is_same_kind_v<L2, list<T>>>>
-    inline static list<T> app(L1&& l1, L2&& l2) {
-        list<T> l3 = list<T>(l1);
-        l3.insert(l3.end(), l2.begin(), l2.end());
-        return l3;
+    static list<T>& app(L1&& l1, L2&& l2) noexcept {
+        // If l2 is lvalue, do not mutate it (TODO: or maybe do and it has to be copied explicitly)
+		if constexpr (std::is_rvalue_reference_v<L2&&>) {
+        	l1.splice(l1.end(), l2);
+		} else {
+			l1.insert(l1.end(), l2.begin(), l2.end());
+		}
+        return l1;
     }
 
     // Boolean
-    template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static bool empty(L&& l) {
-        return FWD(l.empty());
+    template<typename L,
+             typename = std::enable_if_t<is_same_kind_v<L, list>>>
+    static bool empty(L&& l) noexcept {
+        return l.empty();
     }
 
     /// Arithmetic
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static nat length(L&& l) {
-        return static_cast<nat>(FWD(l.size()));
+    static nat length(L&& l) noexcept {
+        return static_cast<nat>(l.size());
     }
 }
 #endif
