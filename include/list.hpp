@@ -15,7 +15,7 @@ namespace List {
     template<typename T>
     using list = std::list<T>;
 
-	// Destructive match, modifies l
+    // Destructive match, modifies l
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename Func, typename Func2,
              typename Ret = std::invoke_result_t<Func>,
@@ -53,7 +53,7 @@ namespace List {
     }
 
     // Destructive tail, l is considered mutable
- 	template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
+    template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
     static list<T>& tail(L&& l) noexcept {
         l.pop_front();
@@ -67,11 +67,11 @@ namespace List {
              typename = std::enable_if_t<is_same_kind_v<L2, list<T>>>>
     static list<T>& app(L1&& l1, L2&& l2) noexcept {
         // If l2 is lvalue, do not mutate it (TODO: or maybe do and it has to be copied explicitly)
-		if constexpr (std::is_rvalue_reference_v<L2&&>) {
-        	l1.splice(l1.end(), l2);
-		} else {
-			l1.insert(l1.end(), l2.begin(), l2.end());
-		}
+        if constexpr (std::is_rvalue_reference_v<L2&&>) {
+            l1.splice(l1.end(), l2);
+        } else {
+            l1.insert(l1.end(), l2.begin(), l2.end());
+        }
         return l1;
     }
 

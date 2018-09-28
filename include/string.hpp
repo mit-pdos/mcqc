@@ -20,13 +20,13 @@ namespace String {
     template<typename S=string, typename Func, typename Func2,
              typename Ret = std::invoke_result_t<Func>,
              typename = std::enable_if_t<is_same_kind_v<S, string>
-				&& "Only match on string types">,
+                && "Only match on string types">,
              typename = std::enable_if_t<CallableWith<Func>
-				&& "1st argument not nullary function">,
+                && "1st argument not nullary function">,
              typename = std::enable_if_t<CallableWith<Func2, char, S>
-				&& "2nd argument not callable with (char, string)">,
+                && "2nd argument not callable with (char, string)">,
              typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, char, S>>
-				&& "Argument function return types must match">>
+                && "Argument function return types must match">>
     static const Ret match(S&& s, Func f, Func2 g) {
         if(s.empty()) {
             return f();
@@ -50,8 +50,8 @@ namespace String {
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static optional<char> get(nat index, S&& s) noexcept {
-		if (index < s.length()) {
-			return some<char>(s[index]);
+        if (index < s.length()) {
+            return some<char>(s[index]);
         }
         return none<char>();
     }
@@ -60,22 +60,22 @@ namespace String {
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static string substring(nat begin, nat len, S&& s) noexcept {
-		if (begin < s.length() && (begin + len) < s.length()) {
+        if (begin < s.length() && (begin + len) < s.length()) {
             // Copy inside substr
-			return s.substr(begin, len);
+            return s.substr(begin, len);
         }
         return string();
     }
 
-	 // Constructive, concat a list of strings around the given separator
+     // Constructive, concat a list of strings around the given separator
     template<typename S=string, typename L,
              typename = std::enable_if_t<is_same_kind_v<string, S>>,
              typename = std::enable_if_t<is_same_kind_v<list<string>, L>>>
     static string concat(S&& sep, L&& l) noexcept {
         std::stringstream ss;
         for (auto it = l.begin(); it != l.end(); ++it) {
-			if (it != l.begin()) {
-				ss << FWD(sep);
+            if (it != l.begin()) {
+                ss << FWD(sep);
             }
             ss << *it;
         }
@@ -90,14 +90,14 @@ namespace String {
     static bool prefix(S&& s, L&& l) {
         // If prefix is longer than string, cannot be prefix
         if (l.length() < s.length()) {
-			return false;
-		}
+            return false;
+        }
         // Else compare
-		for (auto its = s.begin(), itl = l.begin(); its != s.end(); ++its, ++itl) {
-			if (*its != *itl) {
-				return false;
-			}
-	    }
+        for (auto its = s.begin(), itl = l.begin(); its != s.end(); ++its, ++itl) {
+            if (*its != *itl) {
+                return false;
+            }
+        }
         return true;
     }
 

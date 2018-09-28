@@ -44,7 +44,7 @@ namespace Tuple {
     template <class... Args>
     constexpr auto fst(tuple<Args...>&& tp) {
         if constexpr (sizeof...(Args) == 1)
-			throw "Attempting to call fst on a unary tuple, undefined behavior";
+            throw "Attempting to call fst on a unary tuple, undefined behavior";
         else if constexpr (sizeof...(Args) == 2)
             return std::get<0>(std::forward<tuple<Args...>>(tp));
         else
@@ -52,18 +52,18 @@ namespace Tuple {
     }
     template <class... Args>
     constexpr auto fst(tuple<Args...>& tp) {
-		return fst(std::forward<tuple<Args...>>(tp));
+        return fst(std::forward<tuple<Args...>>(tp));
     }
 
     // Second of tuple
-	// snd (1,2,3) = 3%nat
+    // snd (1,2,3) = 3%nat
     template<class ...Args>
     constexpr auto snd(tuple<Args...>&& tp) {
         return std::get<sizeof...(Args) - 1>(std::forward<tuple<Args...>>(tp));
     }
     template<class ...Args>
     constexpr auto snd(tuple<Args...>& tp) {
-		return snd(std::forward<tuple<Args...>>(tp));
+        return snd(std::forward<tuple<Args...>>(tp));
     }
 }
 #endif

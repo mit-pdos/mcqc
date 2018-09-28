@@ -46,19 +46,19 @@ int main() {
         return a  * b * c * d;
     };
 
-	list<nat> lval = list<nat>{2,4,6,8};
+    list<nat> lval = list<nat>{2,4,6,8};
     list<nat> rval = list<nat>{1,3,5};
 
 
-	// Move some lists around to test rval references
-	print(show(app(copy(lval), list<nat>{1,3,5})));
-	print(show(app(list<nat>{2,4,6,8}, list<nat>{1,3,5})));
-	print(show(app(copy(lval), rval)));
-	print(show(app(list<nat>{2,4,6,8}, rval)));
-	print(show(tail(list<nat>{2,4,6,8})));
-	print(show(tail(copy(lval))));
-	print(show(tail(copy(lval))));
-	print(show(tail(copy(lval))));
+    // Move some lists around to test rval references
+    print(show(app(copy(lval), list<nat>{1,3,5})));
+    print(show(app(list<nat>{2,4,6,8}, list<nat>{1,3,5})));
+    print(show(app(copy(lval), rval)));
+    print(show(app(list<nat>{2,4,6,8}, rval)));
+    print(show(tail(list<nat>{2,4,6,8})));
+    print(show(tail(copy(lval))));
+    print(show(tail(copy(lval))));
+    print(show(tail(copy(lval))));
 
     std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
@@ -66,9 +66,9 @@ int main() {
         [](int m) { std::cout << "Some " << m << std::endl; },
         []()      { std::cout << "Empty" << std::endl; });
 
-	// Optional print
-	print(show(some<nat>(41)));
-	print(show(none<nat>()));
+    // Optional print
+    print(show(some<nat>(41)));
+    print(show(none<nat>()));
     // Async
     spawn([](string s) { print(s); }, string("Not necessarily"));
     spawn([](nat n) { print(show(n)); }, random());
