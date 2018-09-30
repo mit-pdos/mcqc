@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE RecordWildCards  #-}
 {-# LANGUAGE FlexibleContexts  #-}
-module Memory.Copy (annotate, copySemantics) where
+module Memory.Copy (copyannotate, copyopt) where
 import Common.Flatten
 import Common.Config (mutables)
 import CIR.Expr
@@ -11,31 +11,31 @@ import Debug.Trace
 
 -- Count occurences of a specific binder, increases state
 copyAnalysis :: Text -> CExpr -> State Int ()
-copyAnalysis name CExprCall { _fparams = CExprVar {..}:ps, .. }
+copyAnalysis name CExprCall   { _fparams = CExprVar {..}:ps, .. }
     -- If the function mutates, increase references by 1 always
     | (_fname `elem` mutables) && (name == _var) = get >>= \n -> put (n+1) >>= continue nextarg
-    | otherwise                                  = continue nextarg ()
+    | otherwise                                  = continue (CExprVar _var) () >>= continue nextarg
     where continue = \e _ -> copyAnalysis name e
           nextarg  = CExprCall _fname ps
 -- Recurse in two directions, parallel to the next argument and down, into the argument h
-copyAnalysis name CExprCall { _fparams = h:ps, .. } = do { copyAnalysis name h; copyAnalysis name nextarg }
+copyAnalysis name CExprCall   { _fparams = h:ps, .. } = do { copyAnalysis name h; copyAnalysis name nextarg }
     where nextarg  = CExprCall _fname ps
 copyAnalysis name CExprLambda { .. }
     -- Shadowing can happen in a lambda arg, stop
     | name `elem` _largs = return ()
     | otherwise          = copyAnalysis name _lbody
-copyAnalysis name CExprSeq  { .. } = do { copyAnalysis name _left; copyAnalysis name _right }
-copyAnalysis name CExprStmt { .. }
+copyAnalysis name CExprSeq    { .. } = do { copyAnalysis name _left; copyAnalysis name _right }
+copyAnalysis name CExprStmt   { .. }
     -- Shadowing can happen in a statement, stop
     | name == _sname = return ()
     | otherwise      = copyAnalysis name _sbody
-copyAnalysis name CExprTuple { .. } = mapM_ (copyAnalysis name) _items
+copyAnalysis name CExprTuple  { .. } = mapM_ (copyAnalysis name) _items
 -- If the function does not mutate, increase references only if a mutating reference has been seen already
-copyAnalysis name CExprVar  { .. }
+copyAnalysis name CExprVar    { .. }
     | name == _var = get >>= \n -> if n > 0 then put (n+1) else return ()
     | otherwise    = return ()
 -- Call with no parameters, stop
-copyAnalysis _ CExprCall { .. } = return ()
+copyAnalysis _ CExprCall      { .. } = return ()
 copyAnalysis _ _ = return ()
 
 -- Annotate all occurences of a binder, decreases state
@@ -56,12 +56,12 @@ copyAnnotate name CExprCall { .. }
 copyAnnotate name e = descendM (copyAnnotate name) e
 
 -- Top level, to annotate, pass a list of binders and an expression to be annotated with copy()
-annotate :: [Text] -> CExpr -> CExpr
-annotate (name:ns) e = annotate ns $ evalState runstate 0
+copyannotate :: [Text] -> CExpr -> CExpr
+copyannotate (name:ns) e = copyannotate ns $ evalState runstate 0
     where runstate = copyAnalysis name e >>= (\_ -> copyAnnotate name e)
-annotate []        e = e
+copyannotate []        e = e
 
 -- Top level copy pass
-copySemantics :: CExpr -> CExpr
-copySemantics CExprLambda { .. } = CExprLambda _largs $ annotate _largs _lbody
-copySemantics o = descend copySemantics o
+copyopt :: CExpr -> CExpr
+copyopt CExprLambda { .. } = CExprLambda _largs $ copyannotate _largs _lbody
+copyopt o = descend copyopt o

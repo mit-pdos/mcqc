@@ -37,8 +37,8 @@ namespace List {
     // Destructive cons, modifies l and appends an element
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    inline static list<T>&& cons(T t, L&& l) noexcept {
-        l.push_front(t);
+    inline static list<T>&& cons(T&& t, L&& l) noexcept {
+        l.push_front(FWD(t));
         return FWD(l);
     }
 
@@ -56,6 +56,9 @@ namespace List {
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
     static list<T>&& tail(L&& l) noexcept {
+        if (FWD(l.empty())) {
+            return FWD(l);
+        }
         l.pop_front();
         return FWD(l);
     }
