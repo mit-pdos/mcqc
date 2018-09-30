@@ -1,4 +1,5 @@
-{-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE RecordWildCards #-}
 module Codegen.Compiler (compile) where
 import Parser.Mod
 import Parser.Decl
@@ -20,7 +21,7 @@ compilexpr :: Expr -> CExpr
 compilexpr e
     | isSeq ce  = ce
     | otherwise = CExprCall "return" [ce]
-    where ce    = copySemantics . renames . semantics . toCExpr $ e
+    where ce    = copyopt . renames . semantics . toCExpr $ e
           isSeq CExprSeq { .. } = True
           isSeq _               = False
 
@@ -35,12 +36,12 @@ toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
     CDFunc n funcT argnames cbody
-    where cbody = annotate argnames $ compilexpr body
+    where cbody = copyannotate argnames . compilexpr $ body
           funcT = toCType ftyp
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     CDFunc name funcT argnames cbody
-    where cbody = annotate argnames $ compilexpr body
+    where cbody = copyannotate argnames . compilexpr $ body
           funcT = toCType typ
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType (toCTBase name) $ toCType tval
