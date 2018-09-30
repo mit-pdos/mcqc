@@ -49,7 +49,12 @@ int main() {
     list<nat> lval = list<nat>{2,4,6,8};
     list<nat> rval = list<nat>{1,3,5};
 
+    list<nat> zeros = list<nat>{0,0,0};
+    list<list<nat>> llval = list<list<nat>>{lval, rval, lval, rval};
+    list<list<nat>> zzval = list<list<nat>>{zeros, zeros};
 
+    print(show(app(app(copy(llval), zzval), copy(llval))));
+    print(show(head(llval)));
     // Move some lists around to test rval references
     print(show(app(copy(lval), list<nat>{1,3,5})));
     print(show(app(list<nat>{2,4,6,8}, list<nat>{1,3,5})));

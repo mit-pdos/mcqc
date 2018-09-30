@@ -36,7 +36,7 @@ executable machcoq
       Sema.Nat
       Sema.Proc
       Sema.Tuple
-      Sema.Copy
+      Memory.Copy
       Sema.Pipeline
       CIR.File
       CIR.Decl

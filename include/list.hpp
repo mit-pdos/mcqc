@@ -37,16 +37,16 @@ namespace List {
     // Destructive cons, modifies l and appends an element
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    inline static list<T>& cons(T t, L&& l) noexcept {
+    inline static list<T>&& cons(T t, L&& l) noexcept {
         l.push_front(t);
-        return l;
+        return FWD(l);
     }
 
     // Get first element of list
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
     static optional<T> head(L&& l) noexcept {
-        if (l.empty()) {
+        if (FWD(l.empty())) {
             return none<T>();
         }
         return some<T>(FWD(l.front()));
@@ -55,24 +55,19 @@ namespace List {
     // Destructive tail, l is considered mutable
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static list<T>& tail(L&& l) noexcept {
+    static list<T>&& tail(L&& l) noexcept {
         l.pop_front();
-        return l;
+        return FWD(l);
     }
 
-    // Fully constructive app, both l1, l2 are immutable and will be copied.
+    // Fully destructive app, both l1, l2 are mutable
     template<typename L1, typename L2,
              typename T = typename std::remove_reference_t<L1>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L1, list<T>>>,
              typename = std::enable_if_t<is_same_kind_v<L2, list<T>>>>
-    static list<T>& app(L1&& l1, L2&& l2) noexcept {
-        // If l2 is lvalue, do not mutate it (TODO: or maybe do and it has to be copied explicitly)
-        if constexpr (std::is_rvalue_reference_v<L2&&>) {
-            l1.splice(l1.end(), l2);
-        } else {
-            l1.insert(l1.end(), l2.begin(), l2.end());
-        }
-        return l1;
+    static list<T>&& app(L1&& l1, L2&& l2) noexcept {
+        l1.splice(l1.end(), l2);
+        return FWD(l1);
     }
 
     // Boolean

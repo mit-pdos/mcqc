@@ -31,6 +31,18 @@ descend f   CExprLambda { .. } = CExprLambda _largs $ f _lbody
 -- If it doesn't match anything, then it's a normal form, ignore
 descend _   other              = other
 
+-- Monadic, propagate to children expr
+descendM :: Monad m => (CExpr -> m CExpr) -> CExpr -> m CExpr
+descendM f   CExprCall   { .. } = mapM f _fparams >>= \ps -> return $ CExprCall _fname ps
+descendM f   CExprStmt   { .. } = f _sbody >>= \b -> return $ CExprStmt _stype _sname b
+descendM f   CExprLambda { .. } = f _lbody >>= \b -> return $ CExprLambda _largs b
+descendM f   CExprSeq    { .. } = do { l <- f _left; r <- f _right; return $ CExprSeq l r }
+descendM f   CExprTuple  { .. } = mapM f _items >>= \items -> return $ CExprTuple items
+descendM f   CExprList   { .. } = mapM f _elems >>= \elems -> return $ CExprList _etype elems
+-- If it doesn't match anything, then it's a normal form, ignore
+descendM _   other              = return other
+
+
 -- Apply toCName to a CExpr
 renames :: CExpr -> CExpr
 renames =
