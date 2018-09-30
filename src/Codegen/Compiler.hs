@@ -10,7 +10,7 @@ import CIR.Expr
 import Codegen.Expr
 import Codegen.Rewrite
 import Common.Flatten
-import Sema.Copy
+import Memory.Copy
 import Sema.Pipeline
 import Data.Text (Text)
 import Data.List (sort, nub)
@@ -35,12 +35,12 @@ toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
     CDFunc n funcT argnames cbody
-    where cbody = compilexpr body
+    where cbody = annotate argnames $ compilexpr body
           funcT = toCType ftyp
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     CDFunc name funcT argnames cbody
-    where cbody = compilexpr body
+    where cbody = annotate argnames $ compilexpr body
           funcT = toCType typ
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType (toCTBase name) $ toCType tval

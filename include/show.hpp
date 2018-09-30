@@ -37,7 +37,7 @@ namespace Show {
         for(auto i = FWD(l.begin()); i != FWD(l.end()); ++i) {
             if (i != l.begin())
                 ss << ", ";
-            ss << *i;
+            ss << show(*i);
         }
         ss << "]";
 		return ss.str();
