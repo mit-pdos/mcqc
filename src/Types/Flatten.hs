@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-module Common.Inference where
+module Types.Flatten where
 import CIR.Expr
 import CIR.Decl
+import Common.Flatten
 import Codegen.Rewrite
 import Data.List (nub)
 import Data.Text (Text)
@@ -28,23 +29,31 @@ getMaxVaridx t = foldl max 0 $ getVaridxs t
           getVaridxs other         = []
 
 -- Traverse type, look for all C++ template free variables and return them
--- ie: (List<T>,Optional<Q>) -> [T, Q]
+-- ie: (List<T>,Option<Q>) -> [T, Q]
 getTemplates :: CType -> String
 getTemplates t = take (getMaxVaridx t) ['T'..'Z']
 
 -- Traverse AST for all typenames
 getTypes :: CExpr -> [Text]
-getTypes CExprSeq   { .. } = "proc":(getTypes _left ++ getTypes _right)
-getTypes CExprCall  { _fname  = "some", .. } = "optional" : concatMap getTypes _fparams
-getTypes CExprCall  { _fname  = "none", .. } = "optional" : concatMap getTypes _fparams
-getTypes CExprCall  { _fname  = "show", .. } = "show" : concatMap getTypes _fparams
-getTypes CExprCall  { .. } = _fname : concatMap getTypes _fparams
-getTypes CExprStr   { .. } = ["String"]
-getTypes CExprNat   { .. } = ["nat"]
-getTypes CExprTuple { .. } = "tuple" : concatMap getTypes _items
-getTypes CExprStmt  { .. } = "proc" : getTypesT _stype ++ getTypes _sbody
+getTypes CExprSeq    { .. } = "proc":(getTypes _left ++ getTypes _right)
+getTypes CExprOption { _val = Just a }  = "option" : getTypes a
+getTypes CExprOption { _val = Nothing } = ["option"]
+getTypes CExprCall   { _fname  = "show", .. } = "show" : concatMap getTypes _fparams
+getTypes CExprCall   { .. } = _fname : concatMap getTypes _fparams
+getTypes CExprStr    { .. } = ["String"]
+getTypes CExprNat    { .. } = ["nat"]
+getTypes CExprTuple  { .. } = "tuple" : concatMap getTypes _items
+getTypes CExprStmt   { .. } = "proc" : getTypesT _stype ++ getTypes _sbody
 getTypes CExprList   { .. } = "list" : concatMap getTypes _elems
 getTypes CExprLambda { .. } = _largs ++ getTypes _lbody
 getTypes CExprBool   { .. } = ["bool"]
 getTypes CExprVar    { .. } = []
+
+-- Traverse Declarations for libraries
+getLibs :: CDecl -> [Text]
+getLibs CDEmpty {}     = []
+getLibs CDType  { .. } = filter (`elem` Conf.libs) $ getTypesT _tval
+getLibs CDFunc  { .. } = filter (`elem` Conf.libs) $ typargs ++ bodyargs
+    where typargs = getTypesT _ftype
+          bodyargs = getTypes _fbody
 

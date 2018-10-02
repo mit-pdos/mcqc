@@ -36,15 +36,15 @@ Module Show.
         | 0 => acc'
         | n' => itoaT time' n' acc'
         end
-      end.  
+      end.
     Import ListNotations.
     Fixpoint list2str {T} {showT : Show.Show T} (l: list T) : string :=
       match l with
       | [] => ""
       | [h] => Show.show h
       | h :: ts => (Show.show h) ++ ", " ++ (list2str ts)
-      end. 
-    Local Close Scope list_scope.    
+      end.
+    Local Close Scope list_scope.
   End _Private.
   (** End private functions *)
 
@@ -69,7 +69,7 @@ Module Show.
     {
       show l := "[" ++ (_Private.list2str l) ++ "]";
     }.
-  Instance showOptional {T} {showT: Show T} : Show (option T) :=
+  Instance showOption {T} {showT: Show T} : Show (option T) :=
     {
       show o := match o with
                   | Some v => "Some " ++ (show v)

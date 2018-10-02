@@ -3,7 +3,6 @@
 #include <tuple>
 #include <utility>
 #include "nat.hpp"
-#include "optional.hpp"
 #include "type_checks.h"
 
 // Private, helper metafunc for getting fst using index_sequence

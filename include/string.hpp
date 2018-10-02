@@ -5,11 +5,11 @@
 #include <sstream>
 #include "type_checks.h"
 #include "nat.hpp"
-#include "optional.hpp"
+#include "option.hpp"
 #include "list.hpp"
 
 using namespace Nat;
-using namespace Optional;
+using namespace Option;
 using namespace List;
 
 namespace String {
@@ -49,7 +49,7 @@ namespace String {
     // Get characater in given index of string
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static optional<char> get(nat index, S&& s) noexcept {
+    static option<char> get(nat index, S&& s) noexcept {
         if (index < s.length()) {
             return some<char>(s[index]);
         }

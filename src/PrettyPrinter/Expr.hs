@@ -13,7 +13,7 @@ instance Pretty CType where
   -- Use template letters starting at T as is custom in C++
   pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
-  pretty CTUndef {}     = error "Undef type found in the end, internal error"
+  pretty CTUndef {}     = "UNDEF" -- error "Undef type found in the end, internal error"
   pretty o = error $ "Unknown type found " ++ show o
 
 instance Pretty CExpr where
@@ -37,6 +37,9 @@ instance Pretty CExpr where
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
+  pretty CExprOption { .. } = case _val of
+                                (Just a)  -> "some<" <> pretty _otype <> ">(" <> pretty a <> ")"
+                                (Nothing) -> "none<" <> pretty _otype <> ">()"
   pretty CExprList   { .. } = "list<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
   pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") initexpr)

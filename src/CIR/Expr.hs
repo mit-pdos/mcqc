@@ -4,6 +4,7 @@ import GHC.Generics
 import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
+import Data.Maybe
 
 -- C++ Types
 data CType =
@@ -31,6 +32,7 @@ data CExpr =
           | CExprNat { _nat :: Int }
           | CExprBool { _bool :: Bool }
           | CExprList { _etype :: CType, _elems :: [CExpr] }
+          | CExprOption { _otype :: CType, _val :: Maybe CExpr }
           | CExprTuple { _items :: [CExpr] }
     deriving (Eq, Generic, ToJSON, Show)
 
