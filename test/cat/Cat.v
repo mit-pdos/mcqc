@@ -6,7 +6,7 @@
     RUN: %clang %t.cpp -emit-llvm -g -S -o %t.ll %s
 
     CPP: #include "nat.hpp"
-    CPP: #include "optional.hpp"
+    CPP: #include "option.hpp"
     CPP: #include "proc.hpp"
     CPP: #include "string.hpp"
     CPP: #include "tuple.hpp"

@@ -3,11 +3,11 @@
 #include <list>
 #include "nat.hpp"
 #include "bool.hpp"
-#include "optional.hpp"
+#include "option.hpp"
 #include "type_checks.h"
 
 using namespace Bool;
-using namespace Optional;
+using namespace Option;
 using namespace Nat;
 
 namespace List {
@@ -45,7 +45,7 @@ namespace List {
     // Get first element of list
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static optional<T> head(L&& l) noexcept {
+    static option<T> head(L&& l) noexcept {
         if (FWD(l.empty())) {
             return none<T>();
         }

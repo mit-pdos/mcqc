@@ -12,8 +12,7 @@ bindSemantics CExprCall { _fname = "MProc.Proc.Coq_ret", _fparams = [a] } = a
 bindSemantics CExprCall { _fname = "MProc.Proc.Coq_bind", _fparams = [call, CExprLambda { _largs = [varname], .. }] } =
     CExprSeq statement $ bindSemantics _lbody
     where statement = CExprStmt CTAuto varname $ bindSemantics call
-bindSemantics other                                                 =
-    descend bindSemantics other
+bindSemantics other = descend bindSemantics other
 
 -- Remove native type instances (since Coq extracts them as arguments)
 removeInstances :: CExpr -> CExpr

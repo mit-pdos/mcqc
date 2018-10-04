@@ -32,6 +32,7 @@ executable machcoq
       Parser.Fix
       Sema.Bool
       Sema.String
+      Sema.Option
       Sema.List
       Sema.Nat
       Sema.Proc
@@ -47,7 +48,8 @@ executable machcoq
       Common.Config
       Common.Utils
       Common.Flatten
-      Common.Inference
+      Types.Flatten
+      Types.Inference
       PrettyPrinter.Expr
       PrettyPrinter.File
       PrettyPrinter.Decl

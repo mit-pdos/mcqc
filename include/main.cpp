@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include <cassert>
-#include "optional.hpp"
+#include "option.hpp"
 #include "show.hpp"
 #include "copy.hpp"
 #include "list.hpp"
@@ -15,7 +15,7 @@
 
 #define BMAX 1000
 
-using namespace Optional;
+using namespace Option;
 using namespace Nat;
 using namespace List;
 using namespace String;

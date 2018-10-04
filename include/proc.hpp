@@ -5,7 +5,7 @@
 #include "string.hpp"
 #include "list.hpp"
 #include "exception.h"
-#include "optional.hpp"
+#include "option.hpp"
 #include "nat.hpp"
 #include "tuple.hpp"
 
@@ -16,7 +16,7 @@ namespace sys {
 }
 
 using namespace String;
-using namespace Optional;
+using namespace Option;
 using namespace Nat;
 
 namespace Proc {
@@ -76,18 +76,18 @@ namespace Proc {
     }
 
     // until: Loop by closure passing
-    // until :: (T -> B) -> (optional T -> T) -> option T -> T
+    // until :: (T -> B) -> (option T -> T) -> option T -> T
     template<typename FuncCmp, typename Func, typename T,
              typename = std::enable_if_t<CallableWith<FuncCmp, T>
                 && "1st argument func not callable with T">,
-             typename = std::enable_if_t<CallableWith<Func, optional<T>>
-                && "2nd argument func not callable with optional<T>">,
+             typename = std::enable_if_t<CallableWith<Func, option<T>>
+                && "2nd argument func not callable with option<T>">,
              typename = std::enable_if_t<std::is_same_v<bool, std::invoke_result_t<FuncCmp, T>>
                 && "Return type of FuncCmp is not bool">,
-             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, optional<T>>>
+             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, option<T>>>
                 && "Return type of Func is not T">>
-    static inline T until(FuncCmp fcmp, Func f, optional<T> init) {
-        optional<T> base = init;
+    static inline T until(FuncCmp fcmp, Func f, option<T> init) {
+        option<T> base = init;
         T result;
         do {
             result = f(base);

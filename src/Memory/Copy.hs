@@ -11,10 +11,10 @@ import Debug.Trace
 
 -- Count occurences of a specific binder, increases state
 copyAnalysis :: Text -> CExpr -> State Int ()
-copyAnalysis name CExprCall   { _fparams = CExprVar {..}:ps, .. }
+copyAnalysis name CExprCall   { _fparams = v@CExprVar {..}:ps, .. }
     -- If the function mutates, increase references by 1 always
     | (_fname `elem` mutables) && (name == _var) = get >>= \n -> put (n+1) >>= continue nextarg
-    | otherwise                                  = continue (CExprVar _var) () >>= continue nextarg
+    | otherwise                                  = continue v () >>= continue nextarg
     where continue = \e _ -> copyAnalysis name e
           nextarg  = CExprCall _fname ps
 -- Recurse in two directions, parallel to the next argument and down, into the argument h
