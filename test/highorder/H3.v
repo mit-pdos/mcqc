@@ -5,9 +5,29 @@
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 
+    CPP: #include "list.hpp"
     CPP: #include "nat.hpp"
+    CPP: bool isEven(nat n)
+    CPP: return match(n,
+    CPP: return true
+    CPP: return match(sm,
+    CPP: return false
+    CPP: return isEven(m)
+
+    CPP: template<{{typename|class}} [[TF:.?]]>
+    CPP: list<nat> mapOnEvensM([[TF]] f, nat n, list<nat> l)
+    CPP: return match(l,
+    CPP: return list<nat>{}
+    CPP: return match(isEven(n),
+    CPP: return cons(f(h), mapOnEvensM(f, {{.*}}, ts
+    CPP: return cons(h, mapOnEvensM(f, {{.*}}, ts
+
     CPP: template<{{typename|class}} [[TF:.?]]>
     CPP: list<nat> mapOnEvens([[TF]] f, list<nat> l)
+    CPP: len = length(l)
+    CPP: return match(len,
+    CPP: return list<nat>{}
+    CPP: return mapOnEvensM(f, n, l)
 *)
 
 Require Export Coq.Lists.List.

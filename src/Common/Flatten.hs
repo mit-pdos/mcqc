@@ -36,6 +36,18 @@ descendM f   CExprOption { _val = Just a, .. } = f a >>= \b -> return $ CExprOpt
 -- If it doesn't match anything, then it's a normal form, ignore
 descendM _   other              = return other
 
+
+-- Convert sequence to list
+seqToList :: CExpr -> [CExpr]
+seqToList CExprSeq { .. } = _left:seqToList _right
+seqToList other           = [other]
+
+-- Convert a list of expressions to a sequence
+listToSeq :: [CExpr] -> CExpr
+listToSeq []     = error "Empty sequence list given, unable to convert to expression"
+listToSeq [a]    = a
+listToSeq (a:ts) = CExprSeq a $ listToSeq ts
+
 -- Apply toCName to a CExpr
 renames :: CExpr -> CExpr
 renames =

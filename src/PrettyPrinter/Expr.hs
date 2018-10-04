@@ -1,8 +1,10 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module PrettyPrinter.Expr where
 import CIR.Expr
+import Common.Flatten
 import Common.Utils
 import Codegen.Rewrite
+import Debug.Trace
 import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 
@@ -13,7 +15,7 @@ instance Pretty CType where
   -- Use template letters starting at T as is custom in C++
   pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
-  pretty CTUndef {}     = "UNDEF" -- error "Undef type found in the end, internal error"
+  pretty CTUndef {}     = trace ("Warning: Undefined type found") "UNDEF" -- error "Undef type found in the end, internal error"
   pretty o = error $ "Unknown type found " ++ show o
 
 instance Pretty CExpr where
@@ -37,17 +39,17 @@ instance Pretty CExpr where
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
+  pretty CExprOption { _otype = CTUndef, .. } = case _val of
+                                (Just a)  -> "some(" <> pretty a <> ")"
+                                (Nothing) -> trace ("Warning: type inference failed for none()") $ "none()"
   pretty CExprOption { .. } = case _val of
                                 (Just a)  -> "some<" <> pretty _otype <> ">(" <> pretty a <> ")"
                                 (Nothing) -> "none<" <> pretty _otype <> ">()"
+  pretty CExprList   { _etype = CTUndef, .. } = "list {" <> commatize (map pretty _elems) <> "}"
   pretty CExprList   { .. } = "list<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
-  pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") initexpr)
+  pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") (init . seqToList $ s))
                             <> line
-                            <> "return" <+> pretty retexpr <> ";"
-    where seqexpr CExprSeq { .. } = _left:seqexpr _right
-          seqexpr other           = [other]
-          retexpr                 = last . seqexpr $ s
-          initexpr                = init . seqexpr $ s
+                            <> "return" <+> pretty (last . seqToList $ s) <> ";"
   pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
   pretty CExprStmt   { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
