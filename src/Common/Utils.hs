@@ -5,6 +5,7 @@ import qualified Data.Char as C
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
 import Data.Word (Word8)
+import Debug.Trace
 
 -- Utility function
 -- Add parenteses if the argument needs them
@@ -52,4 +53,7 @@ next = T.pack . reverse . incrementText . reverse . T.unpack
 tab :: Doc ann -> Doc ann
 tab = indent 2
 
+-- Print warning
+warn :: String -> a -> a
+warn s = trace ("Warning: " ++ s)
 

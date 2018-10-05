@@ -1,7 +1,5 @@
 #ifndef COPY_H
 #define COPY_H
-#include <iostream>
-#include <future>
 #include "string.hpp"
 #include "list.hpp"
 #include "option.hpp"

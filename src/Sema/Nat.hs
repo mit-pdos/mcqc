@@ -2,6 +2,7 @@
 module Sema.Nat where
 import Common.Flatten
 import CIR.Expr
+import Debug.Trace
 
 -- Natural semantics
 natSemantics :: CExpr -> CExpr

@@ -17,10 +17,12 @@ import Memory.Copy
 import Sema.Pipeline
 import Data.Text (Text)
 import Data.List (sort, nub)
+import Debug.Trace
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
 compilexpr e
+    -- | trace ("DBG compiling " ++ show ce) False = undefined
     | isSeq ce  = ce
     | otherwise = CExprCall "return" [ce]
     where ce    = copyopt . renames . semantics . toCExpr $ e

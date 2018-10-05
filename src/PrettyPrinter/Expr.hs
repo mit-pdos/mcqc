@@ -4,7 +4,6 @@ import CIR.Expr
 import Common.Flatten
 import Common.Utils
 import Codegen.Rewrite
-import Debug.Trace
 import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 
@@ -15,8 +14,7 @@ instance Pretty CType where
   -- Use template letters starting at T as is custom in C++
   pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
-  pretty CTUndef {}     = trace ("Warning: Undefined type found") "UNDEF" -- error "Undef type found in the end, internal error"
-  pretty o = error $ "Unknown type found " ++ show o
+  pretty CTUndef {}     = warn ("Undefined type found") "" -- error "Undef type found in the end, internal error"
 
 instance Pretty CExpr where
   pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =
@@ -41,7 +39,7 @@ instance Pretty CExpr where
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
   pretty CExprOption { _otype = CTUndef, .. } = case _val of
                                 (Just a)  -> "some(" <> pretty a <> ")"
-                                (Nothing) -> trace ("Warning: type inference failed for none()") $ "none()"
+                                (Nothing) -> warn ("type inference failed for none()") "none()"
   pretty CExprOption { .. } = case _val of
                                 (Just a)  -> "some<" <> pretty _otype <> ">(" <> pretty a <> ")"
                                 (Nothing) -> "none<" <> pretty _otype <> ">()"

@@ -15,12 +15,15 @@ struct is_callable
 // Is the type A the same as B, regardless of const and references
 template <typename A, typename B>
 struct is_same_kind {
-	static constexpr auto value = std::is_same_v<std::remove_cv_t<std::remove_reference_t<A>>, 
+	static constexpr auto value = std::is_same_v<std::remove_cv_t<std::remove_reference_t<A>>,
                                                  std::remove_cv_t<std::remove_reference_t<B>>>;
 };
 
 template <typename A, typename B>
 static constexpr auto is_same_kind_v = is_same_kind<A,B>::value;
+
+template <typename T>
+static constexpr auto is_constr_v = std::is_const_v<typename std::remove_reference<T>::type>;
 
 #define FWD(a) std::forward<decltype(a)>(a)
 

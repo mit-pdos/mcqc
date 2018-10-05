@@ -53,6 +53,7 @@ int main() {
     list<list<nat>> llval = list<list<nat>>{lval, rval, lval, rval};
     list<list<nat>> zzval = list<list<nat>>{zeros, zeros};
 
+    print(mkstring('c',string("elo")));
     print(show(app(app(copy(llval), zzval), copy(llval))));
     print(show(head(llval)));
     // Move some lists around to test rval references

@@ -37,13 +37,36 @@ namespace String {
         }
     }
 
+    template<typename L=string,
+             typename = std::enable_if_t<is_same_kind_v<string, L>>>
+    static string& mkstring(char c, L&& l) {
+        if constexpr (is_constr_v<L>) {
+            auto cp = std::make_unique<string>(l);
+            cp->insert(l.begin(), 1, c);
+            return *cp;
+        } else {
+            l.insert(l.begin(), 1, c);
+            return l;
+        }
+    }
+
     // Constructive append, creates string
     template<typename L=string, typename R=string,
              typename = std::enable_if_t<is_same_kind_v<string, L>>,
              typename = std::enable_if_t<is_same_kind_v<string, R>>>
     static string& append(L&& l, R&& r) noexcept {
-        l.insert(l.end(), r.begin(), r.end());
-        return l;
+        // If constant, create a unique ptr
+        if constexpr (is_constr_v<L> && is_constr_v<R>) {
+            auto cp = std::make_unique<string>(l);
+            cp->insert(l.end(), r.begin(), r.end());
+            return *cp;
+        } else if constexpr (is_constr_v<L>) {
+            r.insert(r.begin(), l.begin(), l.end());
+            return r;
+        } else {
+            l.insert(l.end(), r.begin(), r.end());
+            return l;
+        }
     }
 
     // Get characater in given index of string
