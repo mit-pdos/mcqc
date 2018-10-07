@@ -11,6 +11,7 @@ import qualified Data.Char as C
 toCTBase :: Text -> Text
 toCTBase "Datatypes.prod" = "tuple"
 toCTBase "Datatypes.unit" = "void"
+toCTBase "Ascii.ascii" = "char"
 toCTBase s = rewrite s
     where prefixes   = "String":"Datatypes":"coq_":map mkmodule libs
           mkmodule m = T.concat ["M", T.toTitle m, ".", T.toTitle m, "."]

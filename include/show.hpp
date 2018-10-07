@@ -18,8 +18,25 @@ using namespace Tuple;
 namespace Show {
 
     // nat -> string
-    static inline string show(nat n) {
+    template<typename N=nat>
+    typename std::enable_if<is_same_kind_v<N, nat>, string>::type
+    show(N&& n) {
         return std::to_string(n);
+    }
+
+    // bool -> string
+    template<typename B=bool>
+    typename std::enable_if<is_same_kind_v<B, bool>, string>::type
+    show(B&& b) {
+        if (b) { return string("true"); }
+        return string("false");;
+    }
+
+    // char -> string
+    template<typename C=char>
+    typename std::enable_if<is_same_kind_v<C, char>, string>::type
+    show(C&& c) {
+        return string(1, c);
     }
 
     // string -> string

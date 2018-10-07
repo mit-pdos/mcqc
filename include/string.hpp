@@ -25,7 +25,7 @@ namespace String {
                 && "1st argument not nullary function">,
              typename = std::enable_if_t<CallableWith<Func2, char, S>
                 && "2nd argument not callable with (char, string)">,
-             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, char, S>>
+             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func>>
                 && "Argument function return types must match">>
     static const Ret match(S&& s, Func f, Func2 g) {
         if(s.empty()) {
@@ -37,6 +37,7 @@ namespace String {
         }
     }
 
+    // Destructive ctor, modifies l and appends an element
     template<typename L=string,
              typename = std::enable_if_t<is_same_kind_v<string, L>>>
     static string& mkstring(char c, L&& l) {

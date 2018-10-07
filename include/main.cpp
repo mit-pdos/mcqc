@@ -53,6 +53,7 @@ int main() {
     list<list<nat>> llval = list<list<nat>>{lval, rval, lval, rval};
     list<list<nat>> zzval = list<list<nat>>{zeros, zeros};
 
+    print(show(true));
     print(mkstring('c',string("elo")));
     print(show(app(app(copy(llval), zzval), copy(llval))));
     print(show(head(llval)));
@@ -86,14 +87,14 @@ int main() {
         []() { std::cout << "Bool matching works" << std::endl; });
 
     // Lists with initializer_list
-    print(show(rev(list<int>{1,2,3})));
+    print(show(rev(list<nat>{1,2,3})));
 
     // High order logic (map)
-    print(show(mapl([](int n) { return n * 2; }, list<int>{1,2,3})));
+    print(show(mapl([](nat n) { return n * 2; }, list<nat>{1,2,3})));
 
     // Lists benchmark
-    list<int> bar;
-    for(int i = 0; i < BMAX; ++i)
+    list<nat> bar;
+    for(nat i = 0; i < BMAX; ++i)
         bar.push_back(i);
     tic();
     assert(rev(rev(bar)) == bar);
@@ -114,9 +115,9 @@ int main() {
     print(foo);
 
     // Tuples
-    auto t = mktuple(1, 'b', "foo");
+    auto t = mktuple((nat)1, 'b', "foo");
     match(t,
-        [](int a, char b, const char* c) {
+        [](nat a, char b, const char* c) {
             std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;
         });
     std::cout << "snd(t): " << snd(t) << std::endl;
