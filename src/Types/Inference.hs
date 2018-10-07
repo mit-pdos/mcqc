@@ -2,12 +2,13 @@
 module Types.Inference where
 import CIR.Expr
 import CIR.Decl
-import Common.Flatten
 import Codegen.Rewrite
+import Common.Utils
 import Data.List (nub)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Common.Config as Conf
+import Data.MonoTraversable
 import Control.Lens
 import Debug.Trace
 
@@ -47,5 +48,5 @@ maxinsert CTExpr { _tbase = CTBase { _base = "option" }, _tins = [t] } CExprOpti
 maxinsert t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
     where retexpr = maxinsert t . last . seqToList $ s
           first   = init . seqToList $ s
-maxinsert t o = descend (maxinsert t) o
+maxinsert t o = omap (maxinsert t) o
 

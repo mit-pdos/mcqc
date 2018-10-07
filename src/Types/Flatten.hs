@@ -2,7 +2,6 @@
 module Types.Flatten where
 import CIR.Expr
 import CIR.Decl
-import Common.Flatten
 import Codegen.Rewrite
 import Data.List (nub)
 import Data.Text (Text)

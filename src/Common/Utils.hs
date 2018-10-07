@@ -7,7 +7,6 @@ import Data.Text.Prettyprint.Doc
 import Data.Word (Word8)
 import Debug.Trace
 
--- Utility function
 -- Add parenteses if the argument needs them
 maybeParens :: Doc ann -> Doc ann
 maybeParens x = if show x == "" then mempty else parens x

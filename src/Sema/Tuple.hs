@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings  #-}
 module Sema.Tuple where
-import Common.Flatten
+import Data.MonoTraversable
 import CIR.Expr
 
 -- Tuple semantics
@@ -10,5 +10,5 @@ tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = [a] }  =
 tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = args } =
     CExprTuple $ map tupleSemantics args -- TODO: Type inference
 tupleSemantics other =
-    descend tupleSemantics other
+    omap tupleSemantics other
 

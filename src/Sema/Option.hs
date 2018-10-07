@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE RecordWildCards  #-}
 module Sema.Option where
-import Common.Flatten
 import CIR.Expr
 import Data.Maybe
+import Data.MonoTraversable
 
 -- Option semantics
 optionSemantics :: CExpr -> CExpr
@@ -12,5 +12,5 @@ optionSemantics CExprCall { _fname = "Datatypes.None", _fparams = [] }  = CExprO
 optionSemantics c@CExprCall { .. }
     | _fname == "Datatypes.Some" ||
       _fname == "Datatypes.None" = error $ "Option constructors with the wrong number of args" ++ show c
-optionSemantics other = descend optionSemantics other
+optionSemantics other = omap optionSemantics other
 

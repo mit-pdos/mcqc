@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Nat where
-import Common.Flatten
 import CIR.Expr
+import Data.MonoTraversable
 import Debug.Trace
 
 -- Natural semantics
@@ -12,5 +12,5 @@ natSemantics CExprCall { _fname = "Datatypes.O", _fparams = [args] } = error "Da
 natSemantics CExprCall { _fname = "Datatypes.S", _fparams = [a] }    = CExprNat $ (_nat . natSemantics $ a) + 1
 natSemantics CExprCall { _fname = "Datatypes.S", _fparams = a:arg }  = error "Datatypes.S with more than one args found!"
 -- Propagate to children expr
-natSemantics other                                                   = descend natSemantics other
+natSemantics other                                                   = omap natSemantics other
 

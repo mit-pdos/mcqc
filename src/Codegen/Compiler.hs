@@ -12,7 +12,6 @@ import Codegen.Expr
 import Codegen.Rewrite
 import Types.Inference
 import Types.Flatten
-import Common.Flatten
 import Memory.Copy
 import Sema.Pipeline
 import Data.Text (Text)

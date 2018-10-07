@@ -2,10 +2,10 @@
 {-# LANGUAGE RecordWildCards  #-}
 {-# LANGUAGE FlexibleContexts  #-}
 module Memory.Copy (copyannotate, copyopt) where
-import Common.Flatten
 import Common.Config (mutables)
 import CIR.Expr
 import Control.Monad.State
+import Data.MonoTraversable (omap)
 import Data.Text (Text)
 import Debug.Trace
 
@@ -53,7 +53,7 @@ copyAnnotate name CExprCall { .. }
                    }
               | otherwise = copyAnnotate name v
           replaceVar e = copyAnnotate name e
-copyAnnotate name e = descendM (copyAnnotate name) e
+copyAnnotate name e = omapM (copyAnnotate name) e
 
 -- Top level, to annotate, pass a list of binders and an expression to be annotated with copy()
 copyannotate :: [Text] -> CExpr -> CExpr
@@ -64,4 +64,4 @@ copyannotate []        e = e
 -- Top level copy pass
 copyopt :: CExpr -> CExpr
 copyopt CExprLambda { .. } = CExprLambda _largs $ copyannotate _largs _lbody
-copyopt o = descend copyopt o
+copyopt o = omap copyopt o

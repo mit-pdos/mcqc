@@ -47,7 +47,6 @@ executable machcoq
       Codegen.Rewrite
       Common.Config
       Common.Utils
-      Common.Flatten
       Types.Flatten
       Types.Inference
       PrettyPrinter.Expr
@@ -68,6 +67,7 @@ executable machcoq
       filepath,
       logict,
       transformers,
+      mono-traversable,
       mtl,
       lens,
       generic-deriving,

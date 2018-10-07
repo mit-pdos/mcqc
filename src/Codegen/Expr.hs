@@ -5,7 +5,6 @@
 module Codegen.Expr where
 import CIR.Expr
 import Codegen.Rewrite
-import Common.Flatten
 import Types.Flatten
 import Parser.Pattern
 import Control.Monad.State

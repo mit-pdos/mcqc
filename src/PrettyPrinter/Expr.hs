@@ -1,7 +1,6 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module PrettyPrinter.Expr where
 import CIR.Expr
-import Common.Flatten
 import Common.Utils
 import Codegen.Rewrite
 import qualified Data.Text as T

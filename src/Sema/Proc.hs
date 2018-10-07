@@ -1,8 +1,8 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Proc where
-import Common.Flatten
 import qualified Data.Text as T
 import CIR.Expr
+import Data.MonoTraversable
 import Debug.Trace
 
 -- Proc semantics (monadic)
@@ -12,7 +12,7 @@ bindSemantics CExprCall { _fname = "MProc.Proc.Coq_ret", _fparams = [a] } = a
 bindSemantics CExprCall { _fname = "MProc.Proc.Coq_bind", _fparams = [call, CExprLambda { _largs = [varname], .. }] } =
     CExprSeq statement $ bindSemantics _lbody
     where statement = CExprStmt CTAuto varname $ bindSemantics call
-bindSemantics other = descend bindSemantics other
+bindSemantics other = omap bindSemantics other
 
 -- Remove native type instances (since Coq extracts them as arguments)
 removeInstances :: CExpr -> CExpr
@@ -21,7 +21,7 @@ removeInstances CExprCall { _fparams = (v@CExprVar { .. }:ts), .. }
     | T.isPrefixOf "show" lastthing = CExprCall _fname $ map removeInstances ts
     | otherwise = CExprCall _fname $ map removeInstances (v:ts)
     where lastthing = last $ T.splitOn "." _var
-removeInstances other = descend removeInstances other
+removeInstances other = omap removeInstances other
 
 procSemantics :: CExpr -> CExpr
 procSemantics = removeInstances . bindSemantics

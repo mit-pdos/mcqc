@@ -1,9 +1,9 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.String where
-import Common.Flatten
 import CIR.Expr
 import Common.Utils
 import Data.Text (Text)
+import Data.MonoTraversable
 import qualified Data.Text as T
 import Data.Bits
 import Debug.Trace
@@ -16,7 +16,7 @@ asciiSemantics CExprCall { _fname = "Ascii.Ascii", _fparams = fp }
     where fromBool b      = if b then 1 else zeroBits
           makeByte []     = zeroBits
           makeByte (b:bs) = fromBool b `shift` (7 - length bs) .|. makeByte bs
-asciiSemantics other = descend asciiSemantics other
+asciiSemantics other = omap asciiSemantics other
 
 stringSemantics :: CExpr -> CExpr
 -- Handle String(char c, string s) constructor
@@ -29,5 +29,5 @@ stringSemantics CExprCall { _fname = "String.EmptyString", _fparams = [] } =
     CExprStr mempty
 stringSemantics CExprCall { _fname = "String.EmptyString", .. } =
     error "EmptyString takes no arguments"
-stringSemantics other = descend stringSemantics other
+stringSemantics other = omap stringSemantics other
 

@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
 module Codegen.Rewrite where
+import CIR.Expr
 import Common.Config
 import Common.Utils
+import Control.Lens
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Char as C
@@ -30,3 +32,24 @@ toCName s
           rewrite  = foldr (.) id $ map (\m -> safeStripPrefix m) prefixes
           -- "foo'" -> "fooM"
           unquote = T.map (\c -> if c == '\"' || c == '\'' then 'M' else c)
+
+-- Apply toCName to a CExpr
+renames :: CExpr -> CExpr
+renames =
+ -- single step lenses
+ over fname toCName
+ . over str toCName
+ . over var toCName
+ -- nested definition lenses
+ . over (largs . traverse) toCName
+ -- recursive lenses
+ . over lbody renames
+ . over sbody renames
+ . over left renames
+ . over right renames
+ . over (items . traverse) renames
+ . over (fparams . traverse) renames
+ . over (items . traverse) renames
+ . over (elems . traverse) renames
+ . over (val . traverse) renames
+
