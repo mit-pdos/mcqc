@@ -37,7 +37,11 @@ toCExpr ExprDummy       {}     = CExprVar ""
 -- Type compiling, from Coq to C++
 toCType :: Typ -> CType
 toCType TypGlob    { targs = [], .. } = CTBase $ toCTBase name
-toCType TypGlob    { .. }             = CTExpr (CTBase $ toCTBase name) (map toCType targs)
+toCType TypGlob    { .. }
+    | name == "Datatypes.prod" = CTExpr (CTBase $ toCTBase name) $ concatMap prodlist targs
+    | otherwise = CTExpr (CTBase $ toCTBase name) $ map toCType targs
+    where prodlist TypGlob { name = "Datatypes.prod", targs = [a,b] } = prodlist a ++ prodlist b
+          prodlist o = [toCType o]
 toCType TypVar     { .. }             = CTVar name $ map toCExpr args
 toCType TypVaridx  { .. }             = CTFree idx
 toCType TypDummy   {}                 = CTBase "void"

@@ -45,6 +45,32 @@ namespace Show {
         return FWD(s);
     }
 
+    // tuple -> string
+    template<class TupType, size_t... I>
+    static string show(const TupType& t, std::index_sequence<I...>)
+    {
+        std::stringstream ss;
+        ss<< "(";
+        (..., (ss << (I == 0? "" : ", ") << show(std::get<I>(t))));
+        ss << ")";
+        return ss.str();
+    }
+    template<class ...Args>
+    static string show(const tuple<Args...>& t)
+    {
+        return show(t, std::make_index_sequence<sizeof...(Args)>());
+    }
+
+    // Optional<T> -> string
+    template<typename O, typename T = typename std::remove_reference_t<O>::value_type>
+    typename std::enable_if<is_same_kind_v<O, option<T>>, string>::type
+    show(O&& o) {
+        if (o.has_value()) {
+            return append(string("Some "), show(o.value()));
+        }
+        return string("None");
+    }
+
     // list<T> -> string
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type>
 	typename std::enable_if<is_same_kind_v<L, list<T>>, string>::type
@@ -60,30 +86,5 @@ namespace Show {
 		return ss.str();
     }
 
-    // Optional<T> -> string
-    template<typename O, typename T = typename std::remove_reference_t<O>::value_type>
-    typename std::enable_if<is_same_kind_v<O, option<T>>, string>::type
-    show(O&& o) {
-        if (o.has_value()) {
-            return append(string("Some "), show(o.value()));
-        }
-        return string("None");
-    }
-
-    // tuple -> string
-    template<class TupType, size_t... I>
-    static string show(const TupType& t, std::index_sequence<I...>)
-    {
-        std::stringstream ss;
-        ss<< "(";
-        (..., (ss << (I == 0? "" : ", ") << std::get<I>(t)));
-        ss << ")";
-        return ss.str();
-    }
-    template<class ...Args>
-    static string show(const tuple<Args...>& t)
-    {
-        return show(t, std::make_index_sequence<sizeof...(Args)>());
-    }
 }
 #endif

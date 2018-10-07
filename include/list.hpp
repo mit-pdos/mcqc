@@ -29,15 +29,15 @@ namespace List {
         }
         auto head = l.begin();
         l.pop_front();
-        return g(*head, FWD(l));
+        return g(FWD(*head), FWD(l));
     }
 
     // Destructive cons, modifies l and appends an element
     template<typename L,
              typename T = typename std::remove_reference_t<L>::value_type,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    inline static list<T>&& cons(T&& t, L&& l) noexcept {
-        l.push_front(t);
+    static list<T>&& cons(T&& t, L&& l) noexcept {
+        l.push_front(FWD(t));
         return FWD(l);
     }
 
@@ -65,13 +65,23 @@ namespace List {
     }
 
     // Fully destructive app, both l1, l2 are mutable
-    template<typename L1, typename L2,
-             typename T = typename std::remove_reference_t<L1>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L1, list<T>>>,
-             typename = std::enable_if_t<is_same_kind_v<L2, list<T>>>>
-    static list<T>&& app(L1&& l1, L2&& l2) noexcept {
-        l1.splice(l1.end(), l2);
-        return FWD(l1);
+    template<typename L, typename R,
+             typename T = typename std::remove_reference_t<L>::value_type,
+             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>,
+             typename = std::enable_if_t<is_same_kind_v<R, list<T>>>>
+    static list<T>&& app(L&& l, R&& r) noexcept {
+        // If constant, create a unique ptr
+        if constexpr (is_constr_v<L> && is_constr_v<R>) {
+            auto cp = std::make_unique<L>(l);
+            cp->insert(l.end(), r.begin(), r.end());
+            return *cp;
+        } else if constexpr (is_constr_v<L>) {
+            r.insert(r.begin(), l.begin(), l.end());
+            return FWD(r);
+        } else {
+            l.splice(l.end(), r);
+            return FWD(l);
+        }
     }
 
     // Boolean

@@ -33,7 +33,7 @@ namespace String {
         } else {
             char head = *s.begin();
             s.erase(s.begin());
-            return g(head, s);
+            return g(FWD(head), s);
         }
     }
 
@@ -84,7 +84,7 @@ namespace String {
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static string substring(nat begin, nat len, S&& s) noexcept {
-        if (begin < s.length() && (begin + len) < s.length()) {
+        if (begin < s.length() && (begin + len) <= s.length()) {
             // Copy inside substr
             return s.substr(begin, len);
         }
@@ -104,6 +104,20 @@ namespace String {
             ss << *it;
         }
         return ss.str();
+    }
+
+    // Opposite of concat, split a string (constructive obviously)
+    template<typename S=string,
+             typename = std::enable_if_t<is_same_kind_v<string, S>>>
+    static list<string> split(S&& s, char c = ' ') {
+        std::stringstream ss(s);
+        string buf;
+
+        list<string> l = list<string>{};
+        while (getline(ss, buf, c)) {
+            l.push_back(buf);
+        }
+        return l;
     }
 
     // Is the given string a prefix of the second string

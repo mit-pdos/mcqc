@@ -18,7 +18,7 @@ namespace Tuple {
 
     // tuple constructor
     template<class ...Args>
-    inline static const std::tuple<Args...> mktuple(Args... a) {
+    inline static std::tuple<Args...> mktuple(Args... a) {
         return std::make_tuple(a...);
     }
 

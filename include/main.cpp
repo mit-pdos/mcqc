@@ -53,6 +53,7 @@ int main() {
     list<list<nat>> llval = list<list<nat>>{lval, rval, lval, rval};
     list<list<nat>> zzval = list<list<nat>>{zeros, zeros};
 
+    print(show(split(string("hello world of c++"))));
     print(show(true));
     print(mkstring('c',string("elo")));
     print(show(app(app(copy(llval), zzval), copy(llval))));
@@ -66,6 +67,8 @@ int main() {
     print(show(tail(copy(lval))));
     print(show(tail(copy(lval))));
     print(show(tail(copy(lval))));
+
+    print(show(mktuple((nat)1,(nat)2, string("foo"))));
 
     std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
