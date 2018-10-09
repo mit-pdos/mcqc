@@ -111,11 +111,6 @@ namespace Proc {
         std::async(std::launch::async, f, args...);
     }
 
-    // print Nat
-    static inline void printn(nat n) {
-        std::cout << n << std::endl;
-    }
-
     // print string to standard output
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static void print(S&& s) {
