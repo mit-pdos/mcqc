@@ -10,7 +10,11 @@ Coq to functional C++17 extractor
 Alternative extractor to C++, no GC no RTS, pure static.
 
 # Building
-With stack , run the following in the source root:
+
+First, cd into `classes` and run `make`.
+This will generate the object files for Coq typeclasses used.
+
+Then with stack , run the following in the source root:
 ```
 stack build
 ```
@@ -19,6 +23,11 @@ stack build
 Uses `llvm-lit` for testing, installable from `pip`.
 ```
 lit test
+```
+
+To enable property based testing with RapidCheck of the C++ library, run:
+```
+RC=on lit test/rc
 ```
 
 # Maintainer

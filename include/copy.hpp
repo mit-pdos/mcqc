@@ -16,8 +16,9 @@ using namespace Tuple;
 namespace Copy {
 
     // Should be a nop
-    template<typename N, typename = std::enable_if_t<is_same_kind_v<nat, N>>>
-    constexpr N& copy(N&& n) noexcept {
+    template<typename N>
+    typename std::enable_if_t<is_same_kind_v<nat, N>, N&>
+    constexpr copy(N&& n) noexcept {
         return FWD(n);
     }
 

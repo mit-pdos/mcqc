@@ -81,3 +81,7 @@ Module Show.
       show t := "(" ++ (show (fst t)) ++ ", " ++ (show (snd t)) ++ ")"
     }.
 End Show.
+
+Require Extraction.
+Extraction Language JSON.
+Separate Extraction Show.showAscii Show.showString Show.showNat Show.showBool Show.showList Show.showOption Show.showTuple.

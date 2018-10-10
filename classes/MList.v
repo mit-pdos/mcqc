@@ -27,3 +27,7 @@ Module List.
     length := @Coq.Lists.List.length T;
   }.
 End List.
+
+Require Extraction.
+Extraction Language JSON.
+Separate Extraction List.nativeList.

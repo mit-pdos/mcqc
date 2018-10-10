@@ -19,3 +19,4 @@ instance Pretty CDecl where
           templateline = if null templates then mempty else "template<" <> commatize templates <> ">"
   pretty CDType  { .. } = "using" <+> pretty _tname <+> "=" <+> pretty _tval <> ";"
   pretty CDEmpty {} = mempty
+  pretty e = error $ "Unhandled declaration " ++ show e

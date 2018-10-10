@@ -84,3 +84,7 @@ Module String.
   Notation "x ++ y" := (String.append x y) (right associativity, at level 60) : string_scope.
   Notation "x !! n" := (String.get n x) (left associativity, at level 40) : string_scope.
 End String.
+
+Require Extraction.
+Extraction Language JSON.
+Separate Extraction String.nativeString.

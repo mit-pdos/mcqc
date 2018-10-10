@@ -6,4 +6,4 @@ all: *.v
 	coqc MShow.v
 
 clean:
-	-rm -f *.vo *.glob
+	-rm -f *.vo *.glob *.json

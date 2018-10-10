@@ -21,7 +21,7 @@ Module Nat.
 
   Instance nativeNat : NativeNat nat :=
     {
-      succ := S;
+      succ := Coq.Init.Nat.succ;
       pred := Coq.Init.Nat.pred;
       even := Coq.Init.Nat.even;
       odd := Coq.Init.Nat.odd;
@@ -46,3 +46,7 @@ Module Nat.
   Infix "^" := Nat.pow : nat_scope.
   Infix "%" := Nat.modulo (at level 40, no associativity) : nat_scope.
 End Nat.
+
+Require Extraction.
+Extraction Language JSON.
+Separate Extraction Nat.nativeNat.
