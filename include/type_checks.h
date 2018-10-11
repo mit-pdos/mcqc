@@ -12,16 +12,15 @@ struct is_callable
     static constexpr auto value = decltype(test<T>(nullptr))::value;
 };
 
+// Remove constant, volatile and reference, return base type
+template<typename T>
+using remove_cvref_t = std::remove_cv_t<typename std::remove_reference<T>::type>;
+
 // Is the type A the same as B, regardless of const and references
 template <typename A, typename B>
-struct is_same_kind {
-	static constexpr auto value = std::is_same_v<std::remove_cv_t<std::remove_reference_t<A>>,
-                                                 std::remove_cv_t<std::remove_reference_t<B>>>;
-};
+static constexpr auto is_same_kind_v = std::is_same_v<remove_cvref_t<A>, remove_cvref_t<B>>;
 
-template <typename A, typename B>
-static constexpr auto is_same_kind_v = is_same_kind<A,B>::value;
-
+// Is constant reference
 template <typename T>
 static constexpr auto is_constr_v = std::is_const_v<typename std::remove_reference<T>::type>;
 

@@ -16,72 +16,147 @@ namespace List {
     using list = std::list<T>;
 
     // Destructive match, modifies l
-    template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
+    // Arguments:
+    //   list<T> l : a list to pattern match on
+    //   Func  f   : Lambda to call if l is empty
+    //   Func2 g   : Lambda to call if l is not empty, takes two arguments: (T head, list<T> tail)
+    template<typename T,
              typename Func, typename Func2,
-             typename Ret = std::invoke_result_t<Func>,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>  && "Only match on list<T> types">,
-             typename = std::enable_if_t<CallableWith<Func>          && "1st argument not callable with void">,
-             typename = std::enable_if_t<CallableWith<Func2, T, L>   && "2nd argument not callable with (T, list<T>)">,
-             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, T, L>> && "Arg function return types must match">>
-    static Ret match(L&& l, Func f, Func2 g) {
+             typename Ret = std::invoke_result_t<Func2, T&&, list<T>&&>,
+             typename = std::enable_if_t<CallableWith<Func>
+                    && "1st argument not callable with void">,
+             typename = std::enable_if_t<CallableWith<Func2, T&&, list<T>&&>
+                    && "2nd argument not callable with (T, list<T>)">,
+             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func>>
+                    && "Arg function return types must match">>
+    static Ret&& match(list<T>&& l, Func f, Func2 g) noexcept {
         if(l.empty()) {
-            return f();
+            return FWD(f());
         }
-        auto head = l.begin();
+        T head = l.front();
         l.pop_front();
-        return g(FWD(*head), FWD(l));
+        return FWD(g(std::move(head), std::move(l)));
     }
-
-    // Destructive cons, modifies l and appends an element
-    template<typename L,
-             typename T = typename std::remove_reference_t<L>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static list<T>&& cons(T&& t, L&& l) noexcept {
-        l.push_front(FWD(t));
-        return FWD(l);
-    }
-
-    // Get first element of list
-    template<typename L,
-             typename T = typename std::remove_reference_t<L>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static option<T> head(L&& l) noexcept {
-        if (FWD(l.empty())) {
-            return none<T>();
+    template<typename T,
+             typename Func, typename Func2,
+             typename Ret = std::invoke_result_t<Func2, T&&, list<T>&&>,
+             typename = std::enable_if_t<CallableWith<Func>
+                    && "1st argument not callable with void">,
+             typename = std::enable_if_t<CallableWith<Func2, T&&, list<T>&&>
+                    && "2nd argument not callable with (T, list<T>)">,
+             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func>>
+                    && "Arg function return types must match">>
+    static Ret&& match(list<T>& l, Func f, Func2 g) noexcept {
+        if(l.empty()) {
+            return std::move(f());
         }
-        return some<T>(FWD(l.front()));
+        T head = l.front();
+        l.pop_front();
+        return std::move(g(FWD(head), std::move(l)));
     }
 
-    // Destructive tail, l is considered mutable
-    template<typename L,
-             typename T = typename std::remove_reference_t<L>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>>
-    static list<T>&& tail(L&& l) noexcept {
-        if (FWD(l.empty())) {
-            return FWD(l);
+    /*
+    template<typename T, typename Func, typename Func2>
+    static auto match(const list<T>& l, Func f, Func2 g) {
+        // Can never be called with a const list, use copy semantics instead
+        static_assert(false && "The argument l is `const` qualified and not allowed, use `copy` semantics instead");
+    }
+    */
+    // Destructive cons, modifies l, creates prvalue of t with a unique pointer
+    // for garbage collection if needed
+    // Arguments:
+    //   T t       : element to append to head of list
+    //   list<T> l : a list that represents the tail of the returned list
+    template<typename T>
+    static list<T>&& cons(T&& t, list<T>& l) noexcept {
+        // Create a T so list does not end up being list<T&>
+        auto tptr = std::make_unique<remove_cvref_t<T>>(std::move(t));
+        l.push_front(*tptr);
+        return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& cons(T&& t, list<T>&& l) noexcept {
+        auto tptr = std::make_unique<remove_cvref_t<T>>(std::move(t));
+        l.push_front(*tptr);
+        return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& cons(T& t, list<T>& l) noexcept {
+        // Create a T so list does not end up being list<T&>
+        auto tptr = std::make_unique<remove_cvref_t<T>>(std::move(t));
+        l.push_front(*tptr);
+        return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& cons(T& t, list<T>&& l) noexcept {
+        auto tptr = std::make_unique<remove_cvref_t<T>>(std::move(t));
+        l.push_front(*tptr);
+        return std::move(l);
+    }
+
+
+
+    // Destructive head, modifies l
+    // Arguments:
+    //   list<T> l : a list to pop the head from
+    template<typename T>
+    static option<T>&& head(list<T>& l) noexcept {
+        if (l.empty()) {
+            return std::move(none<T>());
+        }
+        return std::move(some<T>(std::move(l.front())));
+    }
+    template<typename T>
+    static option<T>&& head(list<T>&& l) noexcept {
+        if (l.empty()) {
+            return std::move(none<T>());
+        }
+        return std::move(some<T>(std::move(l.front())));
+    }
+
+    // Destructive tail, modifies l
+    // Arguments:
+    //   list<T> l : a list to pop the head and return the tail
+    template<typename T>
+    static list<T>&& tail(list<T>& l) noexcept {
+        if (l.empty()) {
+            return std::move(FWD(l));
         }
         l.pop_front();
-        return FWD(l);
+        return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& tail(list<T>&& l) noexcept {
+        if (l.empty()) {
+            return std::move(l);
+        }
+        l.pop_front();
+        return std::move(l);
     }
 
-    // Fully destructive app, both l1, l2 are mutable
-    template<typename L, typename R,
-             typename T = typename std::remove_reference_t<L>::value_type,
-             typename = std::enable_if_t<is_same_kind_v<L, list<T>>>,
-             typename = std::enable_if_t<is_same_kind_v<R, list<T>>>>
-    static list<T>&& app(L&& l, R&& r) noexcept {
-        // If constant, create a unique ptr
-        if constexpr (is_constr_v<L> && is_constr_v<R>) {
-            auto cp = std::make_unique<L>(l);
-            cp->insert(l.end(), r.begin(), r.end());
-            return *cp;
-        } else if constexpr (is_constr_v<L>) {
-            r.insert(r.begin(), l.begin(), l.end());
-            return FWD(r);
-        } else {
-            l.splice(l.end(), r);
-            return FWD(l);
-        }
+    // Destructive app, modifies both l and r
+    // Arguments:
+    //   list<T> l : a list to append to
+    //   list<T> r : a list that becomes empty after being moved from
+    template<typename T>
+    static list<T>&& app(list<T>& l, list<T>& r) noexcept {
+        l.splice(l.end(), std::move(r));
+        return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& app(list<T>&& l, list<T>& r) noexcept {
+            l.splice(l.end(), std::move(r));
+            return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& app(list<T>& l, list<T>&& r) noexcept {
+            l.splice(l.end(), std::move(r));
+            return std::move(l);
+    }
+    template<typename T>
+    static list<T>&& app(list<T>&& l, list<T>&& r) noexcept {
+            l.splice(l.end(), std::move(r));
+            return std::move(l);
     }
 
     // Boolean

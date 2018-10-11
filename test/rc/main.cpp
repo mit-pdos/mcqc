@@ -3,38 +3,63 @@
 // CHECK: OK, passed 100 tests
 #include <rapidcheck.h>
 
+// Ours
+#include <list.hpp>
+#include <string.hpp>
+#include <copy.hpp>
+#include <type_checks.h>
+
 using namespace rc;
 
-enum class Gender { Male, Female };
+// Ours
+using namespace List;
+using namespace String;
+using namespace Copy;
 
-std::ostream &operator<<(std::ostream &os, Gender gender) {
-  os << ((gender == Gender::Male) ? "Male" : "Female");
-  return os;
-}
+#include <proc.hpp>
+#include <show.hpp>
+using namespace Proc;
+using namespace Show;
 
-struct User {
-  std::string username;
-  Gender gender;
-};
-
-namespace rc {
-
-template <>
-struct Arbitrary<User> {
-  static Gen<User> arbitrary() {
-    return gen::build<User>(
-        gen::set(&User::username),
-        gen::set(&User::gender, gen::element(Gender::Male, Gender::Female)));
-  }
-};
-
-} // namespace rc
-
+#include <iostream>
 int main() {
-  rc::check("RC_TAG", [](const User &user) { RC_TAG(user.gender); });
+  // Match and cons cancel out
+  rc::check("List match & cons", [](const list<string>& l) {
+    list<string>& ll = const_cast<list<string>&>(l);
+    return match(copy(ll),
+      [=](){ return empty(ll); },
+      [=](auto &&h, list<string>&& ts) { return cons(h, ts) == ll; });
+  });
 
-  rc::check("RC_CLASSIFY",
-            [](const User &user) { RC_CLASSIFY(user.username.empty()); });
+  // Match and tail cancel out
+  rc::check("List match & tail", [](const list<string>& l) {
+    list<string> ll = const_cast<list<string>&>(l);
+    return match(copy(ll),
+      [=](){ return empty(ll); },
+      [=](auto &&h, list<string>&& ts) { return ts == tail(const_cast<list<string>&>(ll)); });
+  });
+
+
+  // Match and head cancel out
+  rc::check("List match & head", [](const list<string>& l) {
+    list<string>& ll = const_cast<list<string>&>(l);
+    return match(ll,
+      [=](){ return ll.empty(); },
+      [=](auto &&h, list<string>&& ts) {
+        print(show(ll));
+        std::cout << "Tail: ";
+        print(show(ts));
+        bool ret = match(copy(head(const_cast<list<string>&>(ll))),
+            [=](auto&& some){
+                std::cout << h << " ===== VS ===== " << some << std::endl;
+                std::cout << "Comparison " << (h == some ? "true" : "false") << std::endl;
+                return h == some; },
+            []() { return false; });
+        std::cout << "Whole match returned " << (ret ? "true" : "false") << std::endl;
+        return ret;
+      });
+  });
+
 
   return 0;
 }
