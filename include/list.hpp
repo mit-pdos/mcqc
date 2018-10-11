@@ -25,8 +25,6 @@ namespace List {
              typename Ret = std::invoke_result_t<Func2, T&&, list<T>&&>,
              typename = std::enable_if_t<CallableWith<Func>
                     && "1st argument not callable with void">,
-             typename = std::enable_if_t<CallableWith<Func2, T&&, list<T>&&>
-                    && "2nd argument not callable with (T, list<T>)">,
              typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func>>
                     && "Arg function return types must match">>
     static Ret&& match(list<T>&& l, Func f, Func2 g) noexcept {
@@ -35,33 +33,24 @@ namespace List {
         }
         T head = l.front();
         l.pop_front();
-        return FWD(g(std::move(head), std::move(l)));
+        return FWD(g(FWD(head), FWD(l)));
     }
     template<typename T,
              typename Func, typename Func2,
              typename Ret = std::invoke_result_t<Func2, T&&, list<T>&&>,
              typename = std::enable_if_t<CallableWith<Func>
                     && "1st argument not callable with void">,
-             typename = std::enable_if_t<CallableWith<Func2, T&&, list<T>&&>
-                    && "2nd argument not callable with (T, list<T>)">,
              typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func>>
                     && "Arg function return types must match">>
     static Ret&& match(list<T>& l, Func f, Func2 g) noexcept {
         if(l.empty()) {
-            return std::move(f());
+            return FWD(f());
         }
         T head = l.front();
         l.pop_front();
-        return std::move(g(FWD(head), std::move(l)));
+        return FWD(g(FWD(head), std::move(l)));
     }
 
-    /*
-    template<typename T, typename Func, typename Func2>
-    static auto match(const list<T>& l, Func f, Func2 g) {
-        // Can never be called with a const list, use copy semantics instead
-        static_assert(false && "The argument l is `const` qualified and not allowed, use `copy` semantics instead");
-    }
-    */
     // Destructive cons, modifies l, creates prvalue of t with a unique pointer
     // for garbage collection if needed
     // Arguments:
@@ -93,8 +82,6 @@ namespace List {
         l.push_front(*tptr);
         return std::move(l);
     }
-
-
 
     // Destructive head, modifies l
     // Arguments:

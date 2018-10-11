@@ -11,23 +11,23 @@ namespace Option {
     template<typename T>
     using option = std::optional<T>;
 
-    template<typename O, typename T = typename std::remove_reference_t<O>::value_type,
+    // Constructive match, does not modify o
+    // Arguments:
+    //   option<T> o    : an option to pattern match on
+    //   Func2 f(T val) : Lambda to call if o is not empty, takes one arguments: (T val)
+    //   Func  g()      : Lambda to call if o is empty
+    template<typename T,
              typename Func, typename Func2,
              typename Ret = std::invoke_result_t<Func2>,
-             typename = std::enable_if_t<is_same_kind_v<O, option<T>>   && "Only match on option types">,
-             typename = std::enable_if_t<CallableWith<Func, T>          && "1st argument not callable with T">,
-             typename = std::enable_if_t<CallableWith<Func2>            && "2nd argument not callable with void">,
-             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func, T>> && "Arg function return types must match">>
-    constexpr Ret match(O&& o, Func f, Func2 g) {
-
-        if (o.has_value()) {
-            auto v = FWD(o.value());
-            std::cout << "Got " << v << std::endl;
-            return std::move(f(v));
-        } else {
-            std::cout << "Got Nothing" << std::endl;
-            return std::move(g());
+             typename = std::enable_if_t<CallableWith<Func, T&&>
+                    && "1st argument not callable with void">,
+             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func>>
+                    && "Arg function return types must match">>
+    constexpr Ret&& match(option<T>&& o, Func f, Func2 g) noexcept {
+        if(o.has_value()) {
+            return FWD(f(o.value()));
         }
+        return FWD(g());
     }
 
     // None
