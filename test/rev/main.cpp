@@ -12,10 +12,11 @@ using namespace Show;
 
 int main() {
 	// Lists benchmark
-	list<int> bar;
-	for(int i = 0; i < BMAX; ++i)
+	list<unsigned int> bar;
+	for(unsigned int i = 0; i < BMAX; ++i)
 		bar.push_back(i);
 	// benchmark, start
+	print(show(bar));
     tic();
 	print(show(rev(bar)));
 	// benchmark, stop

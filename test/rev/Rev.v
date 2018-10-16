@@ -10,7 +10,7 @@
     CPP: list<T> rev(list<T> l)
     CPP: return match{{.*}}l{{.*}}
     CPP: () { return list<T>{}; }
-    CPP: (auto h, auto ts) { return app{{.*}}rev(ts)
+    CPP: (auto&& h, auto&& ts) { return app{{.*}}rev(ts)
     CPP: list<T>{h}
 *)
 

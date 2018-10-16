@@ -17,13 +17,13 @@ instance Pretty CType where
 
 instance Pretty CExpr where
   pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =
-                            group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
+                            group $ "[=](" <> commatize ["auto&&" <+> pretty a | a <- _largs] <> ") {"
                             <> line
                             <> tab (pretty s)
                             <> line
                             <> "}"
   pretty CExprLambda { .. } =
-                            group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
+                            group $ "[=](" <> commatize ["auto&&" <+> pretty a | a <- _largs] <> ") {"
                             <+> "return" <+> pretty _lbody <> ";"
                             <+> "}"
   pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a <> ";"
