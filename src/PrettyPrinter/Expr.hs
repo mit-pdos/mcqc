@@ -23,7 +23,7 @@ instance Pretty CExpr where
                             <> line
                             <> "}"
   pretty CExprLambda { .. } =
-                            group $ "[=](" <> commatize ["auto&&" <+> pretty a | a <- _largs] <> ") {"
+                            group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
                             <+> "return" <+> pretty _lbody <> ";"
                             <+> "}"
   pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a <> ";"

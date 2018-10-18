@@ -64,6 +64,7 @@ void check_list_match() {
   });
 
   // Match, head
+  /*
   rc::check("List match head", [](const list<nat>& l) {
     list<nat>& ll = const_cast<list<nat>&>(l);
     return match(copy(ll),
@@ -74,6 +75,7 @@ void check_list_match() {
           [=]() { return false; });
       });
     });
+  */
 }
 
 int main() {

@@ -2,7 +2,7 @@
 #include "benchmark.h"
 #include "Fib.cpp"
 
-#define N 35
+#define N 38
 using namespace Nat;
 
 // For benchmarking against autogen version
