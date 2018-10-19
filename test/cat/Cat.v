@@ -3,13 +3,14 @@
     RUN: %clean
     RUN: %machcoq Cat.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
-    RUN: %clang %t.cpp -emit-llvm -g -S -o %t.ll %s
 
     CPP: #include "nat.hpp"
     CPP: #include "option.hpp"
     CPP: #include "proc.hpp"
     CPP: #include "string.hpp"
     CPP: #include "tuple.hpp"
+    CPP: read_loop(fd f)
+    CPP: cat(pathname path, string fn)
 *)
 Require MNat.
 Require MList.
@@ -37,8 +38,11 @@ Definition read_loop (f: fd) :=
       (Some ("", 4096));
     ret (fst tup).
 
-Definition cat (path: string) (fn : string) :=
-  f <- open (path ++ "/" ++ fn);
+Local Close Scope string_scope.
+Require Import Coq.Lists.List.
+Import ListNotations.
+Definition cat (path: pathname) (fn : string) :=
+  f <- open (path ++ [fn]);
   contents <- read_loop f;
   _ <- close f;
   _ <- print (show contents);

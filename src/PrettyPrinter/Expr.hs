@@ -17,7 +17,7 @@ instance Pretty CType where
 
 instance Pretty CExpr where
   pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =
-                            group $ "[=](" <> commatize ["auto&&" <+> pretty a | a <- _largs] <> ") {"
+                            group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
                             <> line
                             <> tab (pretty s)
                             <> line
