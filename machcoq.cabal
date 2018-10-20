@@ -30,6 +30,8 @@ executable machcoq
       Parser.Expr
       Parser.Pattern
       Parser.Fix
+      Classparser.Regex
+      Classparser.Parser
       Sema.Bool
       Sema.String
       Sema.Option
@@ -59,12 +61,16 @@ executable machcoq
       aeson-pretty,
       ansi-wl-pprint,
       base,
+      array,
+      split,
       bytestring,
       prettyprinter,
       containers,
       unordered-containers,
       directory,
       filepath,
+      regex-base,
+      regex-compat-tdfa,
       logict,
       transformers,
       mono-traversable,

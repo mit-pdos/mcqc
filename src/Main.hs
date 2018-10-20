@@ -14,6 +14,7 @@ import Parser.Mod
 import Codegen.Compiler
 import PrettyPrinter.File()
 import Ops.Flags
+import Classparser.Parser
 
 -- Calls codegen and prints errors
 cppWritter :: String -> Either String ByteString -> IO ()
@@ -27,6 +28,13 @@ transpile mod = Right $ B.pack . T.unpack . renderStrict . layoutPretty layoutOp
 
 debug :: Module -> Either String ByteString
 debug mod = Left $ B.unpack . encodePretty . compile $ mod
+
+main2 :: IO ()
+main2 = do
+  [a] <- getArgs
+  cont <- readFile a
+  -- Tokenize
+  mapM_ (putStrLn . show) $ parser cont
 
 main :: IO ()
 main = do
