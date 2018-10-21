@@ -1,9 +1,9 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, FlexibleInstances, TypeSynonymInstances #-}
 module Types.Inference where
 import CIR.Expr
 import CIR.Decl
 import Codegen.Rewrite
-import Common.Utils
+-- import Common.Utils
 import Data.List (nub)
 import Data.Text (Text)
 import Data.Map.Strict (Map)
@@ -12,8 +12,14 @@ import qualified Data.Map      as M
 import qualified Data.Text     as T
 import qualified Common.Config as Conf
 
+-- Named context
 type Context a = Map Text [a]
 
+-- Print key values correctly
+printCtx :: Show a => Context a -> IO ()
+printCtx = putStr . concatMap (++"\n") . M.elems . M.mapWithKey (\k v -> show k ++ " : " ++ show v)
+
+-- Merge two contexts
 merge :: Context CType -> Context CType -> Context CType
 merge = M.unionWith (zipWith unify)
 

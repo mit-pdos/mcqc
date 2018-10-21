@@ -30,7 +30,7 @@ executable machcoq
       Parser.Expr
       Parser.Pattern
       Parser.Fix
-      Classparser.Regex
+      Classparser.Lexer
       Classparser.Parser
       Sema.Bool
       Sema.String
