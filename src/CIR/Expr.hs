@@ -14,7 +14,7 @@ import Data.MonoTraversable
 -- C++ Types
 data CType =
     CTFunc { _fret :: CType, _fins :: [CType] }
-    | CTExpr { _tbase :: CType, _tins :: [CType] }
+    | CTExpr { _tbase :: Text, _tins :: [CType] }
     | CTVar  { _vname :: Text, _vargs :: [CExpr] }
     | CTBase { _base :: Text }
     | CTFree { _idx :: Int }
@@ -45,7 +45,14 @@ data CExpr =
 type instance Element CExpr = CExpr
 type instance Element CType = CType
 
--- CExpr are monomorphic functors and traversables
+-- CTypes are monomorphic functors
+instance MonoFunctor CType where
+    omap f   CTFunc { .. } = CTFunc (f _fret) $ fmap f _fins
+    omap f   CTExpr { .. } = CTExpr _tbase $ fmap f _tins
+    omap f   CTVar  { .. } = error $ "Type:var with CExpr subterm cannot be traversed " ++ show _vname
+    omap f   other         = other
+
+-- CExpr are monomorphic functors
 instance MonoFunctor CExpr where
     omap f   CExprCall   { .. } = CExprCall _fname $ fmap f _fparams
     omap f   CExprStmt   { .. } = CExprStmt _stype _sname $ f _sbody
@@ -57,13 +64,11 @@ instance MonoFunctor CExpr where
     -- If it doesn't match anything, then it's a normal form, ignore
     omap _   other              = other
 
--- Foldable is not possible as CExpr has no mempty, FunctorM will do
+-- Foldable is not possible as CExpr cannot be empty, FunctorM will do
 class MonoFunctorM mono where
     omapM :: Monad m => (Element mono -> m (Element mono)) -> mono -> m mono
 
 instance MonoFunctorM CExpr where
-    -- No foldable instance for CExpr, use omapM out of class
-    -- omapM :: Monad m => (CExpr -> m CExpr) -> CExpr -> m CExpr
     omapM f   CExprCall   { .. } = mapM f _fparams >>= \ps -> return $ CExprCall _fname ps
     omapM f   CExprStmt   { .. } = f _sbody >>= \b -> return $ CExprStmt _stype _sname b
     omapM f   CExprLambda { .. } = f _lbody >>= \b -> return $ CExprLambda _largs b

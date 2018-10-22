@@ -27,12 +27,19 @@ flags =
 -- Take the output of getArgs and return (flags, filenames)
 getFlags :: [String] -> IO ([Flag], String)
 getFlags argv = case getOpt Permute flags argv of
-    (args,fs,[]) -> do
-        let files = if null fs then ["-"] else fs
+    (args,[fn],[]) -> do
         if Help `elem` args
             then do hPutStrLn stderr (usageInfo header flags)
                     exitSuccess
-            else return (nub args, head files)
+            else return (nub args, fn)
+    (args,[],[]) -> do
+        if Help `elem` args
+            then do hPutStrLn stderr (usageInfo header flags)
+                    exitSuccess
+            else return (nub args, "-")
+    (_,_,[]) -> do
+        hPutStrLn stderr ("One input file only allowed" ++ usageInfo header flags)
+        exitWith (ExitFailure 2)
     (_,_,errs)      -> do
         hPutStrLn stderr (concat errs ++ usageInfo header flags)
         exitWith (ExitFailure 1)

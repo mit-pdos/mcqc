@@ -6,8 +6,8 @@ import Codegen.Rewrite
 -- import Common.Utils
 import Data.List (nub)
 import Data.Text (Text)
-import Data.Map.Strict (Map)
 import Data.MonoTraversable
+import Data.Map.Strict (Map)
 import qualified Data.Map      as M
 import qualified Data.Text     as T
 import qualified Common.Config as Conf
@@ -20,22 +20,24 @@ printCtx :: Show a => Context a -> IO ()
 printCtx = putStr . concatMap (++"\n") . M.elems . M.mapWithKey (\k v -> show k ++ " : " ++ show v)
 
 -- Merge two contexts
-merge :: Context CType -> Context CType -> Context CType
-merge = M.unionWith (zipWith unify)
+mergeCtx :: Context CType -> Context CType -> Context CType
+mergeCtx = M.unionWithKey (\k va vb ->
+    error $ "Constructor " ++ show k ++ " has conflicting definitions " ++ show va  ++ "\n" ++ show vb)
 
 -- Unify the second type with the first type
 unify :: CType -> CType -> CType
 -- Any type is better than undefined type
+unify a b | a == b = b
 unify t CTUndef {} = t
 unify CTUndef {} t = t
 unify CTFunc { _fret = a, _fins = ina} CTFunc { _fret = b, _fins = inb}
     | length ina == length inb = CTFunc (unify a b) $ zipWith unify ina inb
     | otherwise = error $ "Attempting to unify func types with different args" ++ show ina ++ " " ++ show inb
 -- Ignore Proc monad wrapped types
-unify CTExpr { _tbase = CTBase { _base = "proc" }, _tins = [a] } t = unify a t
-unify t CTExpr { _tbase = CTBase { _base = "proc" }, _tins = [a] } = unify t a
+unify CTExpr { _tbase = "proc" , _tins = [a] } t = unify a t
+unify t CTExpr { _tbase = "proc" , _tins = [a] } = unify t a
 unify CTExpr { _tbase = a , _tins = ina } CTExpr { _tbase = b , _tins = inb }
-    | length ina == length inb = CTExpr (unify a b) $ zipWith unify ina inb
+    | a == b && length ina == length inb = CTExpr a $ zipWith unify ina inb
     | otherwise = error $ "Attempting to unify list types with different args" ++ show ina ++ " " ++ show inb
 unify CTBase { _base = a } CTBase { _base = b }
     | a == b  = CTBase a
@@ -48,28 +50,25 @@ unify CTFree { .. } t = t
 unify t CTFree { .. } = t
 unify a b = error $ "Unsure how to unify " ++ show a ++ " " ++ show b
 
--- TODO: This is not very smart, does not recurse into lists options etc.
--- Maximally insert return types
-maxinsert :: CType -> CExpr -> CExpr
--- Unwrap proc types to contained type
-maxinsert t CExprCall { .. }
+
+-- Maximally plug a type into an expression
+plugInExpr :: CType -> CExpr -> CExpr
+plugInExpr t CExprCall { .. }
     -- Return preserves the type
-    | _fname == "return" = CExprCall "return" $ map (maxinsert t) _fparams
+    | _fname == "return" = CExprCall "return" $ map (plugInExpr t) _fparams
     -- A match preserves the type if the lambdas return it (omit matched object)
-    | _fname == "match"  = CExprCall "match" $ head _fparams:map (maxinsert t) (tail _fparams)
-    -- An app also preserves the types of its arguments into the return type
-    | _fname == "app"    = CExprCall "app" $ map (maxinsert t) _fparams
+    | _fname == "match"  = CExprCall "match" $ head _fparams:map (plugInExpr t) (tail _fparams)
     -- Function call obfuscate the return type, ignore them
     | otherwise          = CExprCall _fname _fparams
 -- Or explicit if it comes from the first rule handling return calls
-maxinsert CTExpr { _tbase = CTBase { _base = "list" }, _tins = [t] } CExprList { .. } =
+plugInExpr CTExpr { _tbase = "list" , _tins = [t] } CExprList { .. } =
     CExprList unified _elems
     where unified = unify t _etype
-maxinsert CTExpr { _tbase = CTBase { _base = "option" }, _tins = [t] } CExprOption { .. } =
+plugInExpr CTExpr { _tbase = "option" , _tins = [t] } CExprOption { .. } =
     CExprOption unified _val
     where unified = unify t _otype
-maxinsert t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
-    where retexpr = maxinsert t . last . seqToList $ s
+plugInExpr t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
+    where retexpr = plugInExpr t . last . seqToList $ s
           first   = init . seqToList $ s
-maxinsert t o = omap (maxinsert t) o
+plugInExpr t o = omap (plugInExpr t) o
 

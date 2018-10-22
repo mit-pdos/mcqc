@@ -16,6 +16,7 @@ import Memory.Copy
 import Sema.Pipeline
 import Data.Text (Text)
 import Data.List (sort, nub)
+import Data.MonoTraversable
 import Debug.Trace
 
 -- Compile a Coq expression to a C Expression
@@ -24,28 +25,32 @@ compilexpr e
     -- | trace ("DBG compiling " ++ show ce) False = undefined
     | isSeq ce  = ce
     | otherwise = CExprCall "return" [ce]
-    where ce    = copyopt . renames . semantics . toCExpr $ e
+    where ce    = annotate . renames . semantics . toCExpr $ e
           isSeq CExprSeq { .. } = True
-          isSeq _               = False
+          isSeq _ = False
+          annotate CExprLambda { .. } = CExprLambda _largs $ copyopt _largs _lbody
+          annotate o = omap annotate o
 
 -- TODO: Ignore imported modules for now
-compile :: Module -> CFile
-compile Module { .. } = CFile incls cdecls
+compile :: Context CType -> Module -> CFile
+compile classCtx Module { .. } = CFile incls cdecls
     where cdecls = map toCDecl declarations
-          incls = sort . nub . concat $ map getLibs cdecls
+          incls = sort . nub . concat $ map getIncludes cdecls
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
     CDFunc n funcT argnames cbody
-    where cbody = maxinsert retT . copyannotate argnames . compilexpr $ body
+    where cbody = plugInExpr retT . annotate . compilexpr $ body
+          annotate = copyopt argnames
           funcT = toCType ftyp
           retT  = _fret funcT
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     CDFunc name funcT argnames cbody
-    where cbody = maxinsert retT . copyannotate argnames . compilexpr $ body
+    where cbody = plugInExpr retT . annotate . compilexpr $ body
+          annotate = copyopt argnames
           funcT = toCType typ
           retT  = _fret funcT
 -- Type Declarations
@@ -55,5 +60,5 @@ toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixp
 toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
 toCDecl FixDecl { fixlist = [] }                                   = error "Empty fixlist for declaration found, undefined behavior"
 toCDecl FixDecl { fixlist = f:fl }                                 = error "Fixlist with multiple fixpoints is undefined behavior"
--- TODO: Implement other declarations
+-- TODO: Implement inductive declarations
 toCDecl IndDecl  { .. } = CDEmpty {}

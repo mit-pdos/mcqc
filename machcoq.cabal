@@ -22,7 +22,7 @@ source-repository head
 
 executable machcoq
   main-is: Main.hs
-  ghc-options: -Wall
+  ghc-options: -Wall -Wno-name-shadowing
   other-modules:
       Ops.Flags
       Parser.Mod
