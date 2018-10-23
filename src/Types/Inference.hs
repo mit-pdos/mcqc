@@ -58,6 +58,7 @@ plugInExpr t CExprCall { .. }
     | _fname == "return" = CExprCall "return" $ map (plugInExpr t) _fparams
     -- A match preserves the type if the lambdas return it (omit matched object)
     | _fname == "match"  = CExprCall "match" $ head _fparams:map (plugInExpr t) (tail _fparams)
+    | _fname == "app"    = CExprCall "app" $ map (plugInExpr t) _fparams
     -- Function call obfuscate the return type, ignore them
     | otherwise          = CExprCall _fname _fparams
 -- Or explicit if it comes from the first rule handling return calls

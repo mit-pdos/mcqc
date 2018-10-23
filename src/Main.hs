@@ -49,9 +49,11 @@ main = do
                 let cppast = prettyprint . compile context $ ast
                 B.writeFile (outfn -<.> "cpp") cppast
             (Debug) -> do
-                putStrLn $ header "Typeclass context"
+                putStrLn . header $ "Args"
+                putStrLn . show $ args
+                putStrLn . header $ "Typeclass context"
                 printCtx context
-                putStrLn $ header "JSON dump"
+                putStrLn . header $ "JSON dump"
                 let cppast = B.unpack . encodePretty . compile context $ ast
                 hPutStrLn stderr cppast
             -- Default

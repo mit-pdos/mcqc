@@ -19,6 +19,14 @@ import Data.List (sort, nub)
 import Data.MonoTraversable
 import Debug.Trace
 
+{-
+ CDFunc { _fn :: Text, _ftype :: CType, _fargs :: [Text], _fbody :: CExpr }
+    | CDType { _tname :: Text, _tval :: CType }
+    | CDExpr { _ename :: Text, _expr :: CExpr }
+    | CDEmpty { }
+  deriving (Eq, Generic, ToJSON)
+-}
+
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
 compilexpr e
@@ -34,25 +42,28 @@ compilexpr e
 -- TODO: Ignore imported modules for now
 compile :: Context CType -> Module -> CFile
 compile classCtx Module { .. } = CFile incls cdecls
-    where cdecls = map toCDecl declarations
+    where declcomp = typeInfer classCtx . toCDecl
+          cdecls = map declcomp declarations
           incls = sort . nub . concat $ map getIncludes cdecls
+
+-- Add types to generated CDecl by type inference based on a type context
+-- TODO: WIP use ctx
+typeInfer :: Context CType -> CDecl -> CDecl
+typeInfer ctx CDFunc { .. } = CDFunc _fn _ftype _fargs $ plugInExpr (_fret _ftype) _fbody
+typeInfer ctx o = o
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
     CDFunc n funcT argnames cbody
-    where cbody = plugInExpr retT . annotate . compilexpr $ body
-          annotate = copyopt argnames
+    where cbody = copyopt argnames . compilexpr $ body
           funcT = toCType ftyp
-          retT  = _fret funcT
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     CDFunc name funcT argnames cbody
-    where cbody = plugInExpr retT . annotate . compilexpr $ body
-          annotate = copyopt argnames
+    where cbody = copyopt argnames . compilexpr $ body
           funcT = toCType typ
-          retT  = _fret funcT
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType (toCTBase name) $ toCType tval
 -- Sanitize declarations for correctness
