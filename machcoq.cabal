@@ -53,6 +53,7 @@ executable machcoq
       Types.Inference
       PrettyPrinter.Expr
       PrettyPrinter.File
+      PrettyPrinter.Ind
       PrettyPrinter.Decl
   hs-source-dirs:
       src
@@ -67,6 +68,7 @@ executable machcoq
       prettyprinter,
       containers,
       unordered-containers,
+      extra,
       directory,
       filepath,
       regex-base,

@@ -9,7 +9,7 @@ Rev.json: Rev.v
 	coqc -Q ../../classes "" $<
 
 Rev.cpp: Rev.json
-	stack exec machcoq -- $<
+	stack exec machcoq -- -I../../classes $<
 
 rev: main.cpp Rev.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------

@@ -64,6 +64,14 @@ toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     CDFunc name funcT argnames cbody
     where cbody = copyopt argnames . compilexpr $ body
           funcT = toCType typ
+-- Inductive types
+toCDecl IndDecl  { iargs = [], .. } = CDInd (toCTBase name) (CTBase . toCTBase $ name) $ map mkctor constructors
+    where mkctor IndConstructor { .. } = (name, map toCType argtypes)
+          mkctor o = error $ "Non inductive constructor found, failing " ++ show o
+toCDecl IndDecl  { .. } = CDInd (toCTBase name) indtype $ map mkctor constructors
+    where mkctor IndConstructor { .. } = (name, map (toCTypeAbs iargs) argtypes)
+          mkctor o = error $ "Non inductive constructor found, failing " ++ show o
+          indtype  = CTExpr (toCTBase name) [CTFree $ length iargs - 1]
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType (toCTBase name) $ toCType tval
 -- Sanitize declarations for correctness
@@ -71,5 +79,4 @@ toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = l } ] } = error "Fixp
 toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
 toCDecl FixDecl { fixlist = [] }                                   = error "Empty fixlist for declaration found, undefined behavior"
 toCDecl FixDecl { fixlist = f:fl }                                 = error "Fixlist with multiple fixpoints is undefined behavior"
--- TODO: Implement inductive declarations
-toCDecl IndDecl  { .. } = CDEmpty {}
+

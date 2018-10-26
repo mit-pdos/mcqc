@@ -31,13 +31,12 @@ loadCtx classdir = do
             return $ M.map (map (plug plugs . mkCType abstors)) $ getCtors txt)
     return (foldr mergeCtx M.empty boundctxs)
 
--- Plug the binder in a free type
 plug :: [CType] -> CType -> CType
 plug binders CTFree { .. }
-    | _idx < nbind = binders !! _idx
+    -- Plug the binder in a free type
+    | _idx < length binders = binders !! _idx
     -- Otherwise reduce free index
-    | otherwise = CTFree $ _idx - nbind
-    where nbind = length binders
+    | otherwise = CTFree $ _idx - length binders
 plug binders other = omap (plug binders) other
 
 -- Make a CType from a Coq lexical type and abstractors

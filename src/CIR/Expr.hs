@@ -17,6 +17,7 @@ data CType =
     | CTExpr { _tbase :: Text, _tins :: [CType] }
     | CTVar  { _vname :: Text, _vargs :: [CExpr] }
     | CTBase { _base :: Text }
+    | CTPtr  { _inner :: CType }
     | CTFree { _idx :: Int }
     | CTAuto {}
     | CTUndef {} -- Should never output this type, means type inference failed
@@ -49,6 +50,7 @@ type instance Element CType = CType
 instance MonoFunctor CType where
     omap f   CTFunc { .. } = CTFunc (f _fret) $ fmap f _fins
     omap f   CTExpr { .. } = CTExpr _tbase $ fmap f _tins
+    omap f   CTPtr  { .. } = CTPtr $ f _inner
     omap f   CTVar  { .. } = error $ "Type:var with CExpr subterm cannot be traversed " ++ show _vname
     omap f   other         = other
 
@@ -80,7 +82,7 @@ instance MonoFunctorM CExpr where
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
 
--- Convert sequence to list
+-- Convert sequence to list of expressions
 seqToList :: CExpr -> [CExpr]
 seqToList CExprSeq { .. } = _left:seqToList _right
 seqToList other           = [other]
