@@ -1,9 +1,13 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Types.Inference where
+import Types.Flatten
 import CIR.Expr
 import CIR.Decl
 import Codegen.Rewrite
--- import Common.Utils
+import Common.Utils
 import Data.List (nub)
 import Data.Text (Text)
 import Data.MonoTraversable
@@ -11,6 +15,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Map      as M
 import qualified Data.Text     as T
 import qualified Common.Config as Conf
+import Debug.Trace
 
 -- Named context
 type Context a = Map Text [a]
@@ -19,12 +24,19 @@ type Context a = Map Text [a]
 printCtx :: Show a => Context a -> IO ()
 printCtx = putStr . concatMap (++"\n") . M.elems . M.mapWithKey (\k v -> show k ++ " : " ++ show v)
 
--- Merge two contexts
+-- Merge two contexts, throw an error if conflicting definitions happen (no overloading)
 mergeCtx :: Context CType -> Context CType -> Context CType
 mergeCtx = M.unionWithKey (\k va vb ->
     error $ "Constructor " ++ show k ++ " has conflicting definitions " ++ show va  ++ "\n" ++ show vb)
 
--- Unify the second type with the first type
+-- Append a Decl in a context
+addCtx :: Context CType -> CDecl -> Context CType
+addCtx ctx CDFunc { .. } = M.insert _fn (getFuncT _ftype) ctx
+addCtx ctx CDType { .. } = M.insert _tname [_tval] ctx
+addCtx ctx CDInd  { .. } = let midctx = M.insert _iname [_itype] ctx in
+                             mergeCtx (M.fromList _ictors) midctx
+
+-- Unify two types
 unify :: CType -> CType -> CType
 -- Any type is better than undefined type
 unify a b | a == b = b
@@ -50,26 +62,32 @@ unify CTFree { .. } t = t
 unify t CTFree { .. } = t
 unify a b = error $ "Unsure how to unify " ++ show a ++ " " ++ show b
 
+-- TODO: Maximal insertion
+maxinsert :: Context CType -> CExpr -> CExpr
+maxinsert t = id
 
--- Maximally plug a type into an expression
-plugInExpr :: CType -> CExpr -> CExpr
-plugInExpr t CExprCall { .. }
+-- Maximally plug a type into an expression, given a type context (Gamma)
+plugInExpr :: Context CType -> CType -> CExpr -> CExpr
+plugInExpr ctx t CExprCall { .. }
     -- Return preserves the type
-    | _fname == "return" = CExprCall "return" $ map (plugInExpr t) _fparams
+    | _fname == "return" = CExprCall "return" $ map (plugInExpr ctx t) _fparams
     -- A match preserves the type if the lambdas return it (omit matched object)
-    | _fname == "match"  = CExprCall "match" $ head _fparams:map (plugInExpr t) (tail _fparams)
-    | _fname == "app"    = CExprCall "app" $ map (plugInExpr t) _fparams
+    | _fname == "match"  = CExprCall "match" $ head _fparams:map (plugInExpr ctx t) (tail _fparams)
+    -- | _fname == "app"    = CExprCall "app" $ map (plugInExpr ctx t) _fparams
+    | _fname `M.member` ctx =
+        let params = zipWith (\tp exp -> plugInExpr ctx tp exp) (ctx M.! _fname) _fparams in
+        CExprCall _fname params
     -- Function call obfuscate the return type, ignore them
     | otherwise          = CExprCall _fname _fparams
 -- Or explicit if it comes from the first rule handling return calls
-plugInExpr CTExpr { _tbase = "list" , _tins = [t] } CExprList { .. } =
+plugInExpr _ CTExpr { _tbase = "list" , _tins = [t] } CExprList { .. } =
     CExprList unified _elems
     where unified = unify t _etype
-plugInExpr CTExpr { _tbase = "option" , _tins = [t] } CExprOption { .. } =
+plugInExpr _ CTExpr { _tbase = "option" , _tins = [t] } CExprOption { .. } =
     CExprOption unified _val
     where unified = unify t _otype
-plugInExpr t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
-    where retexpr = plugInExpr t . last . seqToList $ s
+plugInExpr ctx t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
+    where retexpr = plugInExpr ctx t . last . seqToList $ s
           first   = init . seqToList $ s
-plugInExpr t o = omap (plugInExpr t) o
+plugInExpr ctx t o = omap (plugInExpr ctx t) o
 

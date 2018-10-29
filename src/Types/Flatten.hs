@@ -10,6 +10,11 @@ import qualified Common.Config as Conf
 import Control.Lens
 import Debug.Trace
 
+-- Function type to list of args, with the return type in the end
+getFuncT :: CType -> [CType]
+getFuncT CTFunc  { .. } = _fins ++ [_fret]
+getFuncT o = [o]
+
 -- Traverse Type-tree for all typenames
 getTypesT :: CType -> [Text]
 -- getTypesT d | trace ("DBG type " ++ show d) False = undefined
@@ -52,7 +57,8 @@ getTypes CExprVar    { .. } = []
 getIncludes :: CDecl -> [Text]
 getIncludes CDEmpty {}     = []
 getIncludes CDType  { .. } = filter (`elem` Conf.libs) $ getTypesT _tval
+getIncludes CDInd   { .. } = filter (`elem` Conf.libs) $ getTypesT _itype ++ ctorargs
+    where ctorargs = concatMap (concatMap getTypesT . snd) $ _ictors
 getIncludes CDFunc  { .. } = filter (`elem` Conf.libs) $ typargs ++ bodyargs
     where typargs = getTypesT _ftype
           bodyargs = getTypes _fbody
-

@@ -33,17 +33,17 @@ loadCtx classdir = do
 
 plug :: [CType] -> CType -> CType
 plug binders CTFree { .. }
-    -- Plug the binder in a free type
-    | _idx < length binders = binders !! _idx
+    -- Plug the binder in a free type, remember free types are 1-indexed
+    | _idx <= length binders = binders !! (_idx - 1)
     -- Otherwise reduce free index
-    | otherwise = CTFree $ _idx - length binders
+    | otherwise = CTFree $ _idx - length binders + 1
 plug binders other = omap (plug binders) other
 
 -- Make a CType from a Coq lexical type and abstractors
 mkCType :: [Text] -> Text -> CType
 mkCType abstractors tn
     -- If type name is in list of abstractors, it is free
-    | tn `elem` abstractors = CTFree . MA.fromJust . L.elemIndex tn $ abstractors
+    | tn `elem` abstractors = CTFree . (+1) .  MA.fromJust . L.elemIndex tn $ abstractors
     | "(" `T.isPrefixOf` tn &&
       ")" `T.isSuffixOf` tn = mkCType abstractors . T.drop 1 . T.dropEnd 1 $ tn
     -- Otherwise type is either CTBase

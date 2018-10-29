@@ -7,6 +7,7 @@ import System.Directory
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as B
 import qualified Data.Text as T
+import qualified Data.Map as M
 import Control.Monad
 import Data.Aeson
 import Types.Inference
@@ -14,6 +15,7 @@ import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.Compiler
+import Debug.Trace
 import PrettyPrinter.File()
 import Ops.Flags
 import CIR.File
@@ -30,8 +32,11 @@ main = do
     (flags, fn) <- getFlags args
     -- Parse typeclasses
     libpath <- getLibDir flags
-    -- Load context
-    context <- loadCtx libpath
+    -- Load context if it exists
+    context <- doesDirectoryExist libpath >>=
+        (\b -> if b
+            then loadCtx libpath
+            else trace ("Warning: Class path does not exist " ++ show libpath) $ return M.empty)
     -- Read AST
     jsonast <- B.readFile fn
     -- Check if JSON parsing was a success
@@ -58,7 +63,6 @@ main = do
                 hPutStrLn stderr cppast
             -- Default
             (o) -> error $ "Unhandled flag " ++ show o)
-
     where getLibDir (Libs p:_) = return p
           getLibDir (_:ts)     = getLibDir ts -- If not found, assume its in `./classes`
           getLibDir ([])       = getCurrentDirectory >>= \d -> return (d </> "classes")

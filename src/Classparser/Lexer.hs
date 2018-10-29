@@ -6,7 +6,6 @@ import Text.Regex.Base
 import Data.Text (Text)
 import Data.List.Split
 import qualified Data.Text         as T
-import qualified Data.List         as L
 import qualified Data.Map.Strict   as M
 import qualified Data.Array        as A
 
@@ -23,23 +22,22 @@ getCtors  body =
           splitOnArrow = map removeWhite . split (dropDelims $ onSublist "->") . T.unpack
 
 -- Get instance (free types, bound types)
+-- One instance declaration per translation unit supported for now
 getPlugs :: String -> ([Text], [Text])
 getPlugs body =
     case re body of
         ([])      -> ([],[])
         (first:_) -> splitOnClass . wrap . tokenize $ first
     where re = map (fst . head . A.elems) . matchAllText (mkRegex "Instance [A-Za-z]+ (.*) :=")
-          tokenize = reject . map T.pack . split (dropDelims . dropBlanks $ oneOf "}{: ")
+          tokenize = map T.pack . split (dropDelims . dropBlanks $ oneOf "}{: ")
           wrap ("Instance":_:ts) = parenthesize . init $ ts
-          wrap o = error $ "Error parsing instance declaration " ++ show o
+          wrap _ = mempty
           parenthesize (a:b:ts)
               | "(" `T.isPrefixOf` a &&
                 ")" `T.isSuffixOf` b = (T.concat [a, " ", b]):parenthesize ts
               | otherwise = a:(parenthesize (b:ts))
-          parenthesize (o) = o
-          reject l = if L.any isNative l then l else []
-          isNative = T.isPrefixOf "Native"
-          splitOnClass l = case splitWhen isNative l of
+          parenthesize o = o
+          splitOnClass l = case splitWhen (T.isPrefixOf "Native") l of
                                ([free, bound]) -> (free, bound)
                                (_) -> ([], [])
 -- Get class free variables
