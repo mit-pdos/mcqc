@@ -1,13 +1,11 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE RecordWildCards  #-}
 {-# LANGUAGE FlexibleContexts  #-}
-module Memory.Copy (copyannotate, copyopt) where
+module Memory.Copy (copyopt) where
 import Common.Config (mutables)
 import CIR.Expr
 import Control.Monad.State
-import Data.MonoTraversable (omap)
 import Data.Text (Text)
-import Debug.Trace
 
 -- Count occurences of a specific binder, increases state
 copyAnalysis :: Text -> CExpr -> State Int ()
@@ -56,12 +54,8 @@ copyAnnotate name CExprCall { .. }
 copyAnnotate name e = omapM (copyAnnotate name) e
 
 -- Top level, to annotate, pass a list of binders and an expression to be annotated with copy()
-copyannotate :: [Text] -> CExpr -> CExpr
-copyannotate (name:ns) e = copyannotate ns $ evalState runstate 0
+copyopt :: [Text] -> CExpr -> CExpr
+copyopt (name:ns) e = copyopt ns $ evalState runstate 0
     where runstate = copyAnalysis name e >>= (\_ -> copyAnnotate name e)
-copyannotate []        e = e
+copyopt []        e = e
 
--- Top level copy pass
-copyopt :: CExpr -> CExpr
-copyopt CExprLambda { .. } = CExprLambda _largs $ copyannotate _largs _lbody
-copyopt o = omap copyopt o

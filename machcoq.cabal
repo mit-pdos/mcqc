@@ -22,7 +22,7 @@ source-repository head
 
 executable machcoq
   main-is: Main.hs
-  ghc-options: -Wall
+  ghc-options: -Wall -Wno-name-shadowing
   other-modules:
       Ops.Flags
       Parser.Mod
@@ -30,6 +30,8 @@ executable machcoq
       Parser.Expr
       Parser.Pattern
       Parser.Fix
+      Classparser.Lexer
+      Classparser.Parser
       Sema.Bool
       Sema.String
       Sema.Option
@@ -51,6 +53,7 @@ executable machcoq
       Types.Inference
       PrettyPrinter.Expr
       PrettyPrinter.File
+      PrettyPrinter.Ind
       PrettyPrinter.Decl
   hs-source-dirs:
       src
@@ -59,12 +62,17 @@ executable machcoq
       aeson-pretty,
       ansi-wl-pprint,
       base,
+      array,
+      split,
       bytestring,
       prettyprinter,
       containers,
       unordered-containers,
+      extra,
       directory,
       filepath,
+      regex-base,
+      regex-compat-tdfa,
       logict,
       transformers,
       mono-traversable,

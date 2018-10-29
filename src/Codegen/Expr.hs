@@ -7,9 +7,14 @@ import CIR.Expr
 import Codegen.Rewrite
 import Types.Flatten
 import Parser.Pattern
+import Control.Monad
 import Control.Monad.State
 import Parser.Expr
 import Debug.Trace
+import Data.Maybe
+import Data.Text (Text)
+import qualified Data.List  as L
+import qualified Data.Maybe as MA
 
 -- Expression compiling, from Coq to C++
 toCExpr :: Expr -> CExpr
@@ -33,24 +38,31 @@ toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value
 toCExpr ExprDummy       {}     = CExprVar ""
 
--- Type compiling, from Coq to C++
-toCType :: Typ -> CType
-toCType TypGlob    { targs = [], .. } = CTBase $ toCTBase name
-toCType TypGlob    { .. }
-    | name == "Datatypes.prod" = CTExpr (CTBase $ toCTBase name) $ concatMap prodlist targs
-    | otherwise = CTExpr (CTBase $ toCTBase name) $ map toCType targs
+-- Transcribe to CType with a list of abstractors
+toCTypeAbs :: [Text] -> Typ -> CType
+toCTypeAbs abs TypVar  { .. }
+    | name `elem` abs = CTFree . MA.fromJust . L.elemIndex name $ abs
+    | otherwise = CTVar (toCTBase name) $ map toCExpr args
+toCTypeAbs _ TypGlob    { targs = [], .. } = CTBase $ toCTBase name
+toCTypeAbs abs TypGlob    { .. }
+    | name == "Datatypes.prod" = CTExpr (toCTBase name) $ concatMap prodlist targs
+    | otherwise = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
     where prodlist TypGlob { name = "Datatypes.prod", targs = [a,b] } = prodlist a ++ prodlist b
-          prodlist o = [toCType o]
-toCType TypVar     { .. }             = CTVar name $ map toCExpr args
-toCType TypVaridx  { .. }             = CTFree idx
-toCType TypDummy   {}                 = CTBase "void"
-toCType TypUnknown {}                 = CTAuto
-toCType t          {- TypArrow -}     = CTFunc (last typelist) (init typelist)
-    where flattenType TypArrow { .. } = toCType left:flattenType right
-          flattenType t               = [toCType t]
+          prodlist o = [toCTypeAbs abs o]
+toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
+toCTypeAbs _ TypDummy          {}     = CTBase "void"
+toCTypeAbs _ TypUnknown        {}     = CTAuto
+toCTypeAbs abs t  {- TypArrow -}     = CTFunc (last typelist) (init typelist)
+    where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
+          flattenType t               = [toCTypeAbs abs t]
           nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
           typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
           -- raise CTFuncs to template functions
           raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
-          raiseCTFunc CTExpr { .. }   = do { c <- raiseCTFunc _tbase; cargs <- mapM raiseCTFunc _tins; return $ CTExpr c cargs }
+          raiseCTFunc CTExpr { .. }   = do { cargs <- mapM raiseCTFunc _tins; return $ CTExpr _tbase cargs }
           raiseCTFunc o               = return o
+
+-- Type compiling, from Coq to C++
+toCType :: Typ -> CType
+toCType = toCTypeAbs []
+

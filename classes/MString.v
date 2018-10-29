@@ -67,7 +67,7 @@ Module String.
     concat:    String -> list String -> String;
     split:     String -> ascii -> list String;
     prefix:    String -> String -> bool;
-    length:    String -> nat;
+    size:      String -> nat;
   }.
 
   Instance nativeString : NativeString string :=
@@ -78,7 +78,7 @@ Module String.
     concat := Coq.Strings.String.concat;
     split  := _Private.split;
     prefix := Coq.Strings.String.prefix;
-    length := Coq.Strings.String.length;
+    size   := Coq.Strings.String.length;
   }.
 
   Notation "x ++ y" := (String.append x y) (right associativity, at level 60) : string_scope.

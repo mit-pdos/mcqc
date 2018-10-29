@@ -3,39 +3,69 @@ module Main where
 import System.IO
 import System.Environment
 import System.FilePath.Posix
+import System.Directory
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as B
 import qualified Data.Text as T
+import qualified Data.Map as M
+import Control.Monad
 import Data.Aeson
+import Types.Inference
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
-import Parser.Mod
 import Codegen.Compiler
+import Debug.Trace
 import PrettyPrinter.File()
 import Ops.Flags
-
--- Calls codegen and prints errors
-cppWritter :: String -> Either String ByteString -> IO ()
-cppWritter fn (Right cpp) = B.writeFile fn cpp
-cppWritter _ (Left s) = hPutStrLn stderr s
+import CIR.File
+import Classparser.Parser
 
 -- TODO: Use namespaces to verify link of C++17 functions in place of their coq counterparts
-transpile :: Module -> Either String ByteString
-transpile mod = Right $ B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty . compile $ mod
+prettyprint  :: CFile -> ByteString
+prettyprint = B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 40 1 }
-
-debug :: Module -> Either String ByteString
-debug mod = Left $ B.unpack . encodePretty . compile $ mod
 
 main :: IO ()
 main = do
-  (as, fs) <- getArgs >>= getFlags
-  let pipeline = if Debug `elem` as then debug
-                 else transpile
-  let givefn = case getOutput as of
-                Nothing -> \arg -> addExtension (dropExtension . takeFileName $ arg) "cpp"
-                (Just fn) -> const fn
-  mapM_ (\arg -> B.readFile arg >>=
-    (\json -> cppWritter (givefn arg) (eitherDecode json >>=
-      pipeline))) fs
+    args <- getArgs
+    (flags, fn) <- getFlags args
+    -- Parse typeclasses
+    libpath <- getLibDir flags
+    -- Load context if it exists
+    context <- doesDirectoryExist libpath >>=
+        (\b -> if b
+            then loadCtx libpath
+            else trace ("Warning: Class path does not exist " ++ show libpath) $ return M.empty)
+    -- Read AST
+    jsonast <- B.readFile fn
+    -- Check if JSON parsing was a success
+    let ast = case eitherDecode jsonast of
+                  (Right r) -> r
+                  (Left s) -> error s
+    -- Keep executable flags, the others are config
+    let eflags = case filter isExec flags of
+                     ([]) -> [Output fn]
+                     (a)  -> a
+    -- Handle flags
+    forM_ eflags (\flag ->
+        case flag of
+            (Output outfn) -> do
+                let cppast = prettyprint . compile context $ ast
+                B.writeFile (outfn -<.> "cpp") cppast
+            (Debug) -> do
+                putStrLn . header $ "Args"
+                putStrLn . show $ args
+                putStrLn . header $ "Typeclass context"
+                printCtx context
+                putStrLn . header $ "JSON dump"
+                let cppast = B.unpack . encodePretty . compile context $ ast
+                hPutStrLn stderr cppast
+            -- Default
+            (o) -> error $ "Unhandled flag " ++ show o)
+    where getLibDir (Libs p:_) = return p
+          getLibDir (_:ts)     = getLibDir ts -- If not found, assume its in `./classes`
+          getLibDir ([])       = getCurrentDirectory >>= \d -> return (d </> "classes")
+          isExec (Libs _) = False
+          isExec (_)      = True
+          header s = (replicate 12 '=') ++ concat [" ", s, " "] ++ (replicate 12 '=')
