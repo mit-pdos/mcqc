@@ -68,6 +68,9 @@ int main() {
     print(show(tail(copy(lval))));
     print(show(tail(copy(lval))));
 
+    // Create a UUID v4
+    print(getuuid());
+
     print(show(mktuple((nat)1,(nat)2, string("foo"))));
 
     std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;

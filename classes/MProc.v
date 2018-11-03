@@ -23,10 +23,10 @@ Module Proc.
   | unlink : pathname -> proc unit
   (** Close fd *)
   | close : fd -> proc unit
-  (** Get random string *)
-  | rands: proc string
+  (** Get random UUID *)
+  | getuuid : proc string
   (** Get random number *)
-  | randn: proc nat
+  | randnat: proc nat
   (** Get PID *)
   | pidfn: proc string
   (** Until loop with initial value*)

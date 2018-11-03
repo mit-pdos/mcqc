@@ -2,7 +2,6 @@
 {-# LANGUAGE RecordWildCards  #-}
 module Sema.List where
 import CIR.Expr
-import Data.Maybe
 import Data.MonoTraversable
 
 -- List semantics, ie:

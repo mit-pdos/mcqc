@@ -2,7 +2,6 @@
 module Sema.Nat where
 import CIR.Expr
 import Data.MonoTraversable
-import Debug.Trace
 
 -- Natural semantics
 natSemantics :: CExpr -> CExpr

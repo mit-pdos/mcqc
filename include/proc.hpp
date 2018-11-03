@@ -15,6 +15,18 @@ namespace sys {
     #include <unistd.h>
 }
 
+namespace {
+     static inline void mkhexes(std::stringstream &s, nat cnt) {
+        nat r = rand() % 16;
+        for(int i = 0; i < cnt; ++i, r = rand() % 16) {
+            if (r > 9)
+                s << (char)('a'+(char)(r - 10));
+            else
+                s << r;
+        }
+    }
+}
+
 using namespace String;
 using namespace Option;
 using namespace Nat;
@@ -98,8 +110,24 @@ namespace Proc {
     };
 
     // random number
-    static inline nat nrand() {
+    static inline nat randnat() {
         return rand();
+    }
+
+    // Make UUID v4-ish ie: "ea22d131-e1fc-4f95-8afc-6286d15e802e"
+    static inline string getuuid() {
+           std::stringstream ss;
+        mkhexes(ss, 8);
+        ss << "-";
+        mkhexes(ss, 4);
+        ss << "-";
+        mkhexes(ss, 4);
+        ss << "-";
+        mkhexes(ss, 4);
+        ss << "-";
+        mkhexes(ss, 12);
+
+        return ss.str();
     }
 
     // Spawn an async process
@@ -109,11 +137,6 @@ namespace Proc {
              typename = std::enable_if_t<CallableWith<Func, Args...> && "Argument not callable with argument types">>
     static inline void spawn(Func f, Args... args) {
         std::async(std::launch::async, f, args...);
-    }
-
-    // print Nat
-    static inline void printn(nat n) {
-        std::cout << n << std::endl;
     }
 
     // print string to standard output

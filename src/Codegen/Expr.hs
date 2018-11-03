@@ -5,13 +5,10 @@
 module Codegen.Expr where
 import CIR.Expr
 import Codegen.Rewrite
-import Types.Flatten
 import Parser.Pattern
-import Control.Monad
+import Common.Utils
 import Control.Monad.State
 import Parser.Expr
-import Debug.Trace
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.List  as L
 import qualified Data.Maybe as MA
@@ -52,7 +49,7 @@ toCTypeAbs abs TypGlob    { .. }
 toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
 toCTypeAbs _ TypDummy          {}     = CTBase "void"
 toCTypeAbs _ TypUnknown        {}     = CTAuto
-toCTypeAbs abs t  {- TypArrow -}     = CTFunc (last typelist) (init typelist)
+toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last typelist) (init typelist)
     where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
           flattenType t               = [toCTypeAbs abs t]
           nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]

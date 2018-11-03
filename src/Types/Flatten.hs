@@ -2,63 +2,47 @@
 module Types.Flatten where
 import CIR.Expr
 import CIR.Decl
-import Codegen.Rewrite
-import Data.List (nub)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Common.Config as Conf
-import Control.Lens
-import Debug.Trace
 
--- Function type to list of args, with the return type in the end
-getFuncT :: CType -> [CType]
-getFuncT CTFunc  { .. } = _fins ++ [_fret]
-getFuncT o = [o]
+-- This class is for instances with types, which can be flattened and returned by type-name
+class Typeful a where
+    gettypes :: a -> [Text]
 
--- Traverse Type-tree for all typenames
-getTypesT :: CType -> [Text]
--- getTypesT d | trace ("DBG type " ++ show d) False = undefined
-getTypesT CTFunc { .. } = getTypesT _fret ++ concatMap getTypesT _fins
-getTypesT CTExpr { .. } = T.toLower _tbase : concatMap getTypesT _tins
-getTypesT CTVar  { .. } = concatMap getTypes _vargs
-getTypesT CTBase { .. } = [T.toLower _base]
-getTypesT _             = []
+instance Typeful CDef where
+    gettypes CDef { .. } = gettypes _ty
 
--- Get number of free parameters (Varidx)
-getMaxVaridx :: CType -> Int
-getMaxVaridx t = foldl max 0 $ getVaridxs t
-    where getVaridxs CTFree { .. } = [_idx]
-          getVaridxs CTFunc { .. } = getVaridxs _fret ++ concatMap getVaridxs _fins
-          getVaridxs CTExpr { .. } = concatMap getVaridxs _tins
-          getVaridxs other         = []
+instance Typeful CExpr where
+    gettypes CExprSeq    { .. } = "proc":(gettypes _left ++ gettypes _right)
+    gettypes CExprOption { _val = Just a }  = "option" : gettypes a
+    gettypes CExprOption { _val = Nothing } = ["option"]
+    gettypes CExprCall   { _fname  = "show", .. } = "show" : concatMap gettypes _fparams
+    gettypes CExprCall   { .. } = _fname : concatMap gettypes _fparams
+    gettypes CExprStr    { .. } = ["String"]
+    gettypes CExprNat    { .. } = ["nat"]
+    gettypes CExprTuple  { .. } = "tuple" : concatMap gettypes _items
+    gettypes CExprStmt   { .. } = "proc" : gettypes _stype ++ gettypes _sbody
+    gettypes CExprList   { .. } = "list" : concatMap gettypes _elems
+    gettypes CExprLambda { .. } = _largs ++ gettypes _lbody
+    gettypes CExprBool   { .. } = ["bool"]
+    gettypes CExprVar    { .. } = []
 
--- Traverse type, look for all C++ template free variables and return them
--- ie: (List<T>,Option<Q>) -> [T, Q]
-getTemplates :: CType -> String
-getTemplates t = take (getMaxVaridx t) ['T'..'Z']
+instance Typeful CType where
+    gettypes CTFunc { .. } = gettypes _fret ++ concatMap gettypes _fins
+    gettypes CTExpr { .. } = T.toLower _tbase : concatMap gettypes _tins
+    gettypes CTVar  { .. } = concatMap gettypes _vargs
+    gettypes CTBase { .. } = [T.toLower _base]
+    gettypes _             = []
 
--- Traverse AST for all typenames
-getTypes :: CExpr -> [Text]
-getTypes CExprSeq    { .. } = "proc":(getTypes _left ++ getTypes _right)
-getTypes CExprOption { _val = Just a }  = "option" : getTypes a
-getTypes CExprOption { _val = Nothing } = ["option"]
-getTypes CExprCall   { _fname  = "show", .. } = "show" : concatMap getTypes _fparams
-getTypes CExprCall   { .. } = _fname : concatMap getTypes _fparams
-getTypes CExprStr    { .. } = ["String"]
-getTypes CExprNat    { .. } = ["nat"]
-getTypes CExprTuple  { .. } = "tuple" : concatMap getTypes _items
-getTypes CExprStmt   { .. } = "proc" : getTypesT _stype ++ getTypes _sbody
-getTypes CExprList   { .. } = "list" : concatMap getTypes _elems
-getTypes CExprLambda { .. } = _largs ++ getTypes _lbody
-getTypes CExprBool   { .. } = ["bool"]
-getTypes CExprVar    { .. } = []
+instance Typeful CDecl where
+    gettypes CDEmpty  {}     = []
+    gettypes CDType   { _td = CDef { .. } } = gettypes _ty
+    gettypes CDInd    { _id = CDef { .. }, .. } = gettypes _ty ++ concatMap (gettypes . snd) _ictors
+    gettypes CDFunc   { _fd = CDef { .. }, .. } = gettypes _ty ++ concatMap gettypes _fargs ++ gettypes _fbody
+    gettypes CDStruct { .. } = concatMap gettypes _fields
+    gettypes CDExpr   { .. } = gettypes _expr
 
--- Traverse Declarations for libraries
 getIncludes :: CDecl -> [Text]
-getIncludes CDEmpty {}     = []
-getIncludes CDType  { .. } = filter (`elem` Conf.libs) $ getTypesT _tval
-getIncludes CDInd   { .. } = filter (`elem` Conf.libs) $ getTypesT _itype ++ ctorargs
-    where ctorargs = concatMap (concatMap getTypesT . snd) $ _ictors
-getIncludes CDFunc  { .. } = filter (`elem` Conf.libs) $ typargs ++ bodyargs
-    where typargs = getTypesT _ftype
-          bodyargs = getTypes _fbody
+getIncludes = filter (`elem` Conf.libs) . gettypes
+

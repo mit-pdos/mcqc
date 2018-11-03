@@ -46,15 +46,13 @@ executable machcoq
       CIR.Expr
       Codegen.Compiler
       Codegen.Expr
+      Codegen.Ind
       Codegen.Rewrite
       Common.Config
       Common.Utils
+      Common.Pretty
       Types.Flatten
       Types.Inference
-      PrettyPrinter.Expr
-      PrettyPrinter.File
-      PrettyPrinter.Ind
-      PrettyPrinter.Decl
   hs-source-dirs:
       src
   build-depends:

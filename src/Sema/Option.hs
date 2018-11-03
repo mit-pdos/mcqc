@@ -2,7 +2,6 @@
 {-# LANGUAGE RecordWildCards  #-}
 module Sema.Option where
 import CIR.Expr
-import Data.Maybe
 import Data.MonoTraversable
 
 -- Option semantics

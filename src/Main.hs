@@ -16,7 +16,6 @@ import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.Compiler
 import Debug.Trace
-import PrettyPrinter.File()
 import Ops.Flags
 import CIR.File
 import Classparser.Parser

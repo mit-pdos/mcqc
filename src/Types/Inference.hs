@@ -11,6 +11,7 @@ import Common.Utils
 import Data.List (nub)
 import Data.Text (Text)
 import Data.MonoTraversable
+import Control.Lens (view)
 import Data.Map.Strict (Map)
 import qualified Data.Map      as M
 import qualified Data.Text     as T
@@ -31,10 +32,9 @@ mergeCtx = M.unionWithKey (\k va vb ->
 
 -- Append a Decl in a context
 addCtx :: Context CType -> CDecl -> Context CType
-addCtx ctx CDFunc { .. } = M.insert _fn (getFuncT _ftype) ctx
-addCtx ctx CDType { .. } = M.insert _tname [_tval] ctx
-addCtx ctx CDInd  { .. } = let midctx = M.insert _iname [_itype] ctx in
-                             mergeCtx (M.fromList _ictors) midctx
+addCtx ctx CDFunc { _fd = CDef { .. }, .. } = M.insert _nm (map (view ty) _fargs ++ [_ty]) ctx
+addCtx ctx CDType { _td = CDef { .. }, .. } = M.insert _nm [_ty] ctx
+addCtx ctx CDInd  { _id = CDef { .. }, .. } = M.insert _nm [_ty] ctx -- TODO: Add _ictors to context too
 
 -- Unify two types
 unify :: CType -> CType -> CType
@@ -64,30 +64,30 @@ unify a b = error $ "Unsure how to unify " ++ show a ++ " " ++ show b
 
 -- TODO: Maximal insertion
 maxinsert :: Context CType -> CExpr -> CExpr
-maxinsert t = id
+maxinsert t = \x->x
 
 -- Maximally plug a type into an expression, given a type context (Gamma)
-plugInExpr :: Context CType -> CType -> CExpr -> CExpr
-plugInExpr ctx t CExprCall { .. }
+unifyExpr :: Context CType -> CType -> CExpr -> CExpr
+unifyExpr ctx t CExprCall { .. }
     -- Return preserves the type
-    | _fname == "return" = CExprCall "return" $ map (plugInExpr ctx t) _fparams
+    | _fname == "return" = CExprCall "return" $ map (unifyExpr ctx t) _fparams
     -- A match preserves the type if the lambdas return it (omit matched object)
-    | _fname == "match"  = CExprCall "match" $ head _fparams:map (plugInExpr ctx t) (tail _fparams)
-    -- | _fname == "app"    = CExprCall "app" $ map (plugInExpr ctx t) _fparams
+    | _fname == "match"  = CExprCall "match" $ head _fparams:map (unifyExpr ctx t) (tail _fparams)
+    -- | _fname == "app"    = CExprCall "app" $ map (unifyExpr ctx t) _fparams
     | _fname `M.member` ctx =
-        let params = zipWith (\tp exp -> plugInExpr ctx tp exp) (ctx M.! _fname) _fparams in
-        CExprCall _fname params
+        let params = zipWith (\tp exp -> unifyExpr ctx tp exp) (ctx M.! _fname) _fparams in
+            CExprCall _fname params
     -- Function call obfuscate the return type, ignore them
     | otherwise          = CExprCall _fname _fparams
 -- Or explicit if it comes from the first rule handling return calls
-plugInExpr _ CTExpr { _tbase = "list" , _tins = [t] } CExprList { .. } =
+unifyExpr _ CTExpr { _tbase = "list" , _tins = [t] } CExprList { .. } =
     CExprList unified _elems
     where unified = unify t _etype
-plugInExpr _ CTExpr { _tbase = "option" , _tins = [t] } CExprOption { .. } =
+unifyExpr _ CTExpr { _tbase = "option" , _tins = [t] } CExprOption { .. } =
     CExprOption unified _val
     where unified = unify t _otype
-plugInExpr ctx t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
-    where retexpr = plugInExpr ctx t . last . seqToList $ s
+unifyExpr ctx t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
+    where retexpr = unifyExpr ctx t . last . seqToList $ s
           first   = init . seqToList $ s
-plugInExpr ctx t o = omap (plugInExpr ctx t) o
+unifyExpr ctx t o = omap (unifyExpr ctx t) o
 

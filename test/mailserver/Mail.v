@@ -24,9 +24,9 @@ Definition mail_deliver (msg : data) (tmpdir : pathname) (mboxdir : pathname) :=
     (fun tmpfn => open (tmpdir ++ [tmpfn]) >>=
       (fun fd => write fd msg >>=
         (fun _ => close fd >>=
-          (fun _ => until (fun _ => false) 
-                       (fun _ => 
-                         (rands >>= 
+          (fun _ => until (fun _ => false)
+                       (fun _ =>
+                         (getuuid >>=
                            (fun mailfn => link (tmpdir ++ [tmpfn]) (mboxdir ++ [mailfn]) >>=
                              (fun ok => if ok then
                                         unlink (tmpdir ++ [tmpfn]) >>= (fun _ => ret true)

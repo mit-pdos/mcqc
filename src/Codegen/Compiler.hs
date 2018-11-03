@@ -9,14 +9,15 @@ import CIR.File
 import CIR.Decl
 import CIR.Expr
 import Codegen.Expr
+import Codegen.Ind
 import Codegen.Rewrite
 import Types.Inference
 import Types.Flatten
 import Memory.Copy
+import Common.Utils
 import Sema.Pipeline
-import Data.Text (Text)
-import Data.List (sort, nub)
 import Data.MonoTraversable
+import qualified Data.List as L
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
@@ -34,38 +35,46 @@ compilexpr e
 compile :: Context CType -> Module -> CFile
 compile ctx Module { .. } = CFile incls $ map (typeInfer newctx) untypdecls
     where newctx = foldl addCtx ctx untypdecls
-          untypdecls = map toCDecl declarations
-          incls = sort . nub . concat $ map getIncludes untypdecls
+          untypdecls = concatMap (expandind . toCDecl) declarations
+          incls = L.sort . L.nub . concat $ map getIncludes untypdecls
 
 -- Add types to generated CDecl by type inference based on a type context
--- TODO: WIP use ctx
 typeInfer :: Context CType -> CDecl -> CDecl
-typeInfer ctx CDFunc { _ftype = ft@CTFunc { .. }, .. } = CDFunc _fn ft _fargs $ plugInExpr ctx _fret _fbody
-typeInfer ctx CDFunc { .. } = error $ "Function declaration " ++ show _fn ++ " with non-function type " ++ show _ftype
+typeInfer ctx CDFunc { _fd = fd@CDef { .. }, .. } = CDFunc fd _fargs $ unifyExpr ctx _ty _fbody
 typeInfer _ o = o
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
-    CDFunc n funcT argnames cbody
+    CDFunc retNT argsNT cbody
     where cbody = copyopt argnames . compilexpr $ body
-          funcT = toCType ftyp
+          (retNT, argsNT) = case toCType ftyp of
+                                (CTFunc { .. }) -> (CDef n _fret, zipf argnames _fins)
+                                (o) -> error $ "Fixpoint declartion with no-func type " ++ show o
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
-    CDFunc name funcT argnames cbody
+    CDFunc retNT argsNT cbody
     where cbody = copyopt argnames . compilexpr $ body
-          funcT = toCType typ
--- Inductive types
-toCDecl IndDecl  { iargs = [], .. } = CDInd (toCTBase name) (CTBase . toCTBase $ name) $ map mkctor constructors
-    where mkctor IndConstructor { .. } = (name, map toCType argtypes)
+          (retNT, argsNT) = case toCType typ of
+                                (CTFunc { .. }) -> (CDef name _fret, zipf argnames _fins)
+                                (o) -> error $ "Function declartion with no-func type " ++ show o
+-- Inductive type
+toCDecl IndDecl  { iargs = [], .. } = CDInd (CDef iname indtype) $ map mkctor constructors
+    where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCType) argtypes)
           mkctor o = error $ "Non inductive constructor found, failing " ++ show o
-toCDecl IndDecl  { .. } = CDInd (toCTBase name) indtype $ map mkctor constructors
-    where mkctor IndConstructor { .. } = (name, map (toCTypeAbs iargs) argtypes)
+          mkptr t | t == indtype = CTPtr t | otherwise = t
+          indtype = CTBase iname
+          iname = toCTBase name
+-- Parametric inductive type
+toCDecl IndDecl  { .. }             = CDInd (CDef iname indtype) $ map mkctor constructors
+    where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCTypeAbs iargs) argtypes)
           mkctor o = error $ "Non inductive constructor found, failing " ++ show o
-          indtype  = CTExpr (toCTBase name) [CTFree $ length iargs - 1]
+          mkptr t | t == indtype = CTPtr t | otherwise = t
+          indtype  = CTExpr iname [CTFree $ length iargs - 1]
+          iname = toCTBase name
 -- Type Declarations
-toCDecl TypeDecl { .. } = CDType (toCTBase name) $ toCType tval
+toCDecl TypeDecl { .. } = CDType . CDef (toCTBase name) $ toCType tval
 -- Sanitize declarations for correctness
 toCDecl FixDecl { fixlist = [ Fix { name = Just _, value = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
 toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"

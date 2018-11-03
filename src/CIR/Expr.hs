@@ -2,14 +2,22 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 module CIR.Expr where
 import GHC.Generics
 import Control.Lens
 import Data.Aeson
-import Data.Text (Text)
-import Data.Maybe
 import Data.MonoTraversable
+import Common.Pretty
+import Codegen.Rewrite
+import Data.Text.Prettyprint.Doc
+import Data.Text (Text)
+import qualified Data.Text as T
+
+-- C++ Typed names
+data CDef = CDef { _nm :: Text, _ty :: CType }
+    deriving (Eq, Generic, ToJSON)
 
 -- C++ Types
 data CType =
@@ -40,19 +48,20 @@ data CExpr =
           | CExprList { _etype :: CType, _elems :: [CExpr] }
           | CExprOption { _otype :: CType, _val :: Maybe CExpr }
           | CExprTuple { _items :: [CExpr] }
-    deriving (Eq, Generic, ToJSON, Show)
+    deriving (Show, Eq, Generic, ToJSON)
 
 -- Compatible with Element a = a
 type instance Element CExpr = CExpr
 type instance Element CType = CType
+type instance Element CDef  = CDef
 
 -- CTypes are monomorphic functors
 instance MonoFunctor CType where
     omap f   CTFunc { .. } = CTFunc (f _fret) $ fmap f _fins
     omap f   CTExpr { .. } = CTExpr _tbase $ fmap f _tins
     omap f   CTPtr  { .. } = CTPtr $ f _inner
-    omap f   CTVar  { .. } = error $ "Type:var with CExpr subterm cannot be traversed " ++ show _vname
-    omap f   other         = other
+    omap _   CTVar  { .. } = error $ "Type:var with CExpr subterm cannot be traversed " ++ show _vname
+    omap _   other         = other
 
 -- CExpr are monomorphic functors
 instance MonoFunctor CExpr where
@@ -77,11 +86,12 @@ instance MonoFunctorM CExpr where
     omapM f   CExprSeq    { .. } = do { l <- f _left; r <- f _right; return $ CExprSeq l r }
     omapM f   CExprTuple  { .. } = mapM f _items >>= \items -> return $ CExprTuple items
     omapM f   CExprList   { .. } = mapM f _elems >>= \elems -> return $ CExprList _etype elems
-    omapM f   CExprOption { _val = Nothing, .. } = return $ CExprOption _otype Nothing
     omapM f   CExprOption { _val = Just a, .. } = f a >>= \b -> return $ CExprOption _otype (Just b)
+    omapM _   CExprOption { _val = Nothing, .. } = return $ CExprOption _otype Nothing
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
 
+-- Utility functions
 -- Convert sequence to list of expressions
 seqToList :: CExpr -> [CExpr]
 seqToList CExprSeq { .. } = _left:seqToList _right
@@ -93,7 +103,79 @@ listToSeq []     = error "Empty sequence list given, unable to convert to expres
 listToSeq [a]    = a
 listToSeq (a:ts) = CExprSeq a $ listToSeq ts
 
+-- Pretty printer
+instance Pretty CDef where
+    pretty CDef { .. } = pretty _ty <+> pretty _nm
+
+instance Pretty CType where
+  pretty CTFunc  { .. } = group $ pretty _fret <> (parens . commatize $ map pretty _fins)
+  pretty CTExpr  { .. } = pretty _tbase <> "<" <> commatize (map pretty _tins) <> ">"
+  pretty CTBase  { .. } = pretty _base
+  -- Use template letters starting at T as is custom in C++
+  pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
+  pretty CTAuto  {}     = "auto" :: Doc ann
+  pretty CTUndef {}     = error "Undefined type found, inference failed" -- error "Undef type found in the end, internal error"
+
+instance Pretty CExpr where
+  pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =
+                            group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
+                            <> line
+                            <> tab (pretty s)
+                            <> line
+                            <> "}"
+  pretty CExprLambda { .. } =
+                            group $ "[=](" <> commatize ["auto" <+> pretty a | a <- _largs] <> ") {"
+                            <+> "return" <+> pretty _lbody <> ";"
+                            <+> "}"
+  pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a <> ";"
+  pretty CExprCall   { _fname = "eqb", _fparams = [a, b] } = pretty a <+> "==" <+> pretty b
+  pretty CExprCall   { _fname = "ltb", _fparams = [a, b] } = pretty a <+> "<"  <+> pretty b
+  pretty CExprCall   { _fname = "leb", _fparams = [a, b] } = pretty a <+> "<=" <+> pretty b
+  pretty CExprCall   { _fname = "match", .. } = "match" <> (parens . breakcommatize $ _fparams)
+  pretty CExprCall   { .. } = pretty (toCName _fname) <> (parens . commatize $ map pretty _fparams)
+  pretty CExprVar    { .. } = pretty _var
+  pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
+  pretty CExprNat    { .. } = "(nat)" <> pretty _nat
+  pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
+  pretty CExprOption { _otype = CTUndef, .. } = case _val of
+                                (Just a)  -> "some(" <> pretty a <> ")"
+                                (Nothing) -> error $ "type inference failed for none()"
+  pretty CExprOption { .. } = case _val of
+                                (Just a)  -> "some<" <> pretty _otype <> ">(" <> pretty a <> ")"
+                                (Nothing) -> "none<" <> pretty _otype <> ">()"
+  pretty CExprList   { _etype = CTUndef, .. } = "list {" <> commatize (map pretty _elems) <> "}"
+  pretty CExprList   { .. } = "list<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
+  pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
+  pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") (init . seqToList $ s))
+                            <> line
+                            <> "return" <+> pretty (last . seqToList $ s) <> ";"
+  pretty CExprStmt   { _sname = "_", .. } = pretty _sbody
+  pretty CExprStmt   { .. } = pretty _stype <+> pretty _sname <+> "=" <+> pretty _sbody
+
 -- Generate lenses
+makeLenses ''CDef
 makeLenses ''CExpr
 makeLenses ''CType
+
+-- Utility functions
+-- Apply toCName to a CExpr
+renames :: CExpr -> CExpr
+renames =
+ -- single step lenses
+ over fname toCName
+ . over str toCName
+ . over var toCName
+ -- nested definition lenses
+ . over (largs . traverse) toCName
+ -- recursive lenses
+ . over lbody renames
+ . over sbody renames
+ . over left renames
+ . over right renames
+ . over (items . traverse) renames
+ . over (fparams . traverse) renames
+ . over (items . traverse) renames
+ . over (elems . traverse) renames
+ . over (val . traverse) renames
+
 
