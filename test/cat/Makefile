@@ -9,7 +9,7 @@ Cat.json: Cat.v
 	coqc -Q ../../classes "" $<
 
 Cat.cpp: Cat.json
-	stack exec machcoq -- $<
+	stack exec machcoq -- -I../../classes $<
 
 cat: main.cpp Cat.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------

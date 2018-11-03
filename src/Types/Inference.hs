@@ -35,6 +35,7 @@ addCtx :: Context CType -> CDecl -> Context CType
 addCtx ctx CDFunc { _fd = CDef { .. }, .. } = M.insert _nm (map (view ty) _fargs ++ [_ty]) ctx
 addCtx ctx CDType { _td = CDef { .. }, .. } = M.insert _nm [_ty] ctx
 addCtx ctx CDInd  { _id = CDef { .. }, .. } = M.insert _nm [_ty] ctx -- TODO: Add _ictors to context too
+addCtx ctx _ = ctx
 
 -- Unify two types
 unify :: CType -> CType -> CType

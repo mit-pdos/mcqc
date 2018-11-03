@@ -38,7 +38,7 @@ toCExpr ExprDummy       {}     = CExprVar ""
 -- Transcribe to CType with a list of abstractors
 toCTypeAbs :: [Text] -> Typ -> CType
 toCTypeAbs abs TypVar  { .. }
-    | name `elem` abs = CTFree . MA.fromJust . L.elemIndex name $ abs
+    | name `elem` abs = CTFree . (+1) . MA.fromJust . L.elemIndex name $ abs
     | otherwise = CTVar (toCTBase name) $ map toCExpr args
 toCTypeAbs _ TypGlob    { targs = [], .. } = CTBase $ toCTBase name
 toCTypeAbs abs TypGlob    { .. }

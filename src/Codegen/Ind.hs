@@ -71,8 +71,8 @@ mkMatch CDef { .. } ctors =
     CDFunc (CDef "match" CTAuto) ((CDef "self" $ CTPtr _ty):givenm 'f' ftyps) $ CExprCall "return" []
 --        CExprCall "std::visit" [CExprLambda "a" $ CExprCall "return" [CExprVar "f"]]
 --      ]
-    where maxfree = getMaxVaridx _ty
-          ftyps   = [CTFree i | i <- [maxfree..length ctors]]
+    where maxfree = getMaxVaridx _ty + 1
+          ftyps   = [CTFree i | i <- [maxfree..length ctors + 1]]
 
 -- Intermediate representation before printing inductive as tagged-unioan, the order of the list is important
 expandind :: CDecl -> [CDecl]

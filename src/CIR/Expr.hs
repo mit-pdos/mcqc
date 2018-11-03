@@ -14,6 +14,7 @@ import Codegen.Rewrite
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
 import qualified Data.Text as T
+import Debug.Trace
 
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
@@ -115,6 +116,7 @@ instance Pretty CType where
   pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
   pretty CTUndef {}     = error "Undefined type found, inference failed" -- error "Undef type found in the end, internal error"
+  pretty CTPtr   { .. } = "std::shared_ptr<" <> pretty _inner <> ">"
 
 instance Pretty CExpr where
   pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =

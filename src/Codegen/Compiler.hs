@@ -71,7 +71,7 @@ toCDecl IndDecl  { .. }             = CDInd (CDef iname indtype) $ map mkctor co
     where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCTypeAbs iargs) argtypes)
           mkctor o = error $ "Non inductive constructor found, failing " ++ show o
           mkptr t | t == indtype = CTPtr t | otherwise = t
-          indtype  = CTExpr iname [CTFree $ length iargs - 1]
+          indtype  = CTExpr iname [CTFree $ length iargs]
           iname = toCTBase name
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType . CDef (toCTBase name) $ toCType tval

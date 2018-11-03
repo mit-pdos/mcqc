@@ -22,6 +22,6 @@ instance Pretty CFile where
            <> line
            <> line <> (vcat . map (\p -> "using namespace" <+> pretty (T.toTitle p) <> ";") $ _includes)
            <> line
-           <> line <> (vcat . map pretty $ _decls)
+           <> line <> (vsep . map pretty $ _decls)
 
 makeLenses ''CFile

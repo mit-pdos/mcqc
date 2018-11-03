@@ -33,21 +33,29 @@ instance Show CDecl where
 -- Generate Lens code
 makeLenses ''CDecl
 
+mkTemplateLine :: [CType] -> Doc ann
+mkTemplateLine argsT =
+    if null templates then mempty else "template<" <> commatize templates <> ">"
+    where getTemplates t = take (getMaxVaridx t) ['T'..'Z']
+          templates = [ "class" <+> pretty a | a <- L.nub $ concatMap getTemplates argsT]
+
 instance Pretty CDecl where
   pretty CDFunc   { _fd = CDef { .. }, .. } =
-        (if null templates then mempty else "template<" <> commatize templates <> ">")
+          mkTemplateLine (_ty:map (view ty) _fargs)
           <> line <> pretty _ty <+> pretty _nm <> "(" <> (commatize . map pretty $ _fargs) <> ") {"
           <> line <> (tab . pretty) _fbody
           <> line <> "}"
-    where getTemplates t = take (getMaxVaridx t) ['T'..'Z']
-          templates = [ "class" <+> pretty a | a <- L.nub $ getTemplates _ty ++ (concatMap (getTemplates . view ty) _fargs)]
   pretty CDType   { _td = CDef { .. }, .. } = "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";"
   pretty CDStruct { _fields = [], ..} = "struct" <+> pretty _sn <+> "{};"
-  pretty CDStruct { .. } =  "struct" <+> pretty _sn <+> "{"
+  pretty CDStruct { .. } =
+          mkTemplateLine (map (view ty) _fields)
+          <> line <> "struct" <+> pretty _sn <+> "{"
           <> line <> (tab . vcat . map (\x -> pretty x <> ";") $ _fields)
-          <> line <> pretty _sn <> "(" <> (commatize . map pretty $ _fields) <> ") {"
-          <> line <> (tab . vcat . map (\x -> "this->" <> pretty x <+> "=" <+> pretty x <> ";") $ _fields)
+          <> line <> (tab $ pretty _sn <> "(" <> (commatize . map pretty $ _fields) <> ") {")
+          <> line <> (tab . tab . vcat . map (\x -> "this->" <> toNm x <+> "=" <+> toNm x <> ";") $ _fields)
+          <> line <> (tab $ "};")
           <> line <> "};"
+    where toNm = pretty . _nm
   pretty CDEmpty {} = mempty
   pretty CDInd { _id = CDef { .. }, .. } = error $ "Inductive declaration " ++ show _nm ++ " was not expanded"
   pretty e = error $ "Unhandled declaration " ++ show e
