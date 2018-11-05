@@ -50,7 +50,12 @@ mkCtorStruct (name, o) = error $ "Cannot export constructor" ++ show name ++ " o
 
 -- Make C++ variant an alias for Coq inductive type
 mkIndAlias :: CDef -> [(Text, CType)] -> CDecl
-mkIndAlias CDef { .. } = CDType . CDef _nm . CTExpr "std::variant" . snd . unzip
+mkIndAlias CDef { .. } = CDType . CDef _nm . CTExpr "std::variant" . map mkTyp
+    where mkTyp (nm, CTFunc { .. }) = let freedom = maximum $ 0:map getMaxVaridx _fins in
+            if freedom > 0
+            then CTExpr nm [CTFree freedom]
+            else CTBase nm
+
 
 -- Make C++ ctor functions for each Coq inductive constructor
 mkCtorFunc :: CDef -> (Text, CType) -> CDecl

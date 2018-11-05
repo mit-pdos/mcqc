@@ -35,21 +35,23 @@ makeLenses ''CDecl
 
 mkTemplateLine :: [CType] -> Doc ann
 mkTemplateLine argsT =
-    if null templates then mempty else "template<" <> commatize templates <> ">"
+    if null templates then mempty else "template<" <> commatize templates <> ">" <> line
     where getTemplates t = take (getMaxVaridx t) ['T'..'Z']
           templates = [ "class" <+> pretty a | a <- L.nub $ concatMap getTemplates argsT]
 
 instance Pretty CDecl where
   pretty CDFunc   { _fd = CDef { .. }, .. } =
           mkTemplateLine (_ty:map (view ty) _fargs)
-          <> line <> pretty _ty <+> pretty _nm <> "(" <> (commatize . map pretty $ _fargs) <> ") {"
+          <> pretty _ty <+> pretty _nm <> "(" <> (commatize . map pretty $ _fargs) <> ") {"
           <> line <> (tab . pretty) _fbody
           <> line <> "}"
-  pretty CDType   { _td = CDef { .. }, .. } = "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";"
+  pretty CDType   { _td = CDef { .. }, .. } =
+          mkTemplateLine [_ty]
+          <> "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";"
   pretty CDStruct { _fields = [], ..} = "struct" <+> pretty _sn <+> "{};"
   pretty CDStruct { .. } =
           mkTemplateLine (map (view ty) _fields)
-          <> line <> "struct" <+> pretty _sn <+> "{"
+          <> "struct" <+> pretty _sn <+> "{"
           <> line <> (tab . vcat . map (\x -> pretty x <> ";") $ _fields)
           <> line <> (tab $ pretty _sn <> "(" <> (commatize . map pretty $ _fields) <> ") {")
           <> line <> (tab . tab . vcat . map (\x -> "this->" <> toNm x <+> "=" <+> toNm x <> ";") $ _fields)

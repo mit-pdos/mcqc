@@ -36,7 +36,7 @@ compile :: Context CType -> Module -> CFile
 compile ctx Module { .. } = CFile incls $ map (typeInfer newctx) untypdecls
     where newctx = foldl addCtx ctx untypdecls
           untypdecls = concatMap (expandind . toCDecl) declarations
-          incls = L.sort . L.nub . concat $ map getIncludes untypdecls
+          incls = L.sort . L.nub . concat $ map getAllowedIncludes untypdecls
 
 -- Add types to generated CDecl by type inference based on a type context
 typeInfer :: Context CType -> CDecl -> CDecl

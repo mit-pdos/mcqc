@@ -11,32 +11,23 @@ Inductive List {T} :=
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-template<typename T>
-using Ptr = std::shared_ptr<T>;
-
 struct Nil {};
-
 template<typename T>
 struct Cons {
     T a;
     Ptr<std::variant<Nil, Cons<T>>> b;
     Cons(T a, Ptr<std::variant<Nil, Cons<T>>> b) { this->a = a; this->b = b; };
 };
-
 template<typename T>
 using list = std::variant<Nil, Cons<T>>;
-
-// Constructor functions
 template<typename T>
 Ptr<list<T>> nil() {
     return std::make_shared<list<T>>(Nil());
 }
-
 template<typename T>
 Ptr<list<T>> cons(T a, Ptr<list<T>> b) {
     return std::make_shared<list<T>>(Cons(a,b));
 }
-
 template<typename T, typename Func, typename Func2>
 auto match(Ptr<list<T>> l, Func f, Func2 g) {
     return std::visit(overloaded {

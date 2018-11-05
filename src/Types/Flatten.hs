@@ -8,41 +8,42 @@ import qualified Common.Config as Conf
 
 -- This class is for instances with types, which can be flattened and returned by type-name
 class Typeful a where
-    gettypes :: a -> [Text]
+    getincludes  :: a -> [Text]
 
 instance Typeful CDef where
-    gettypes CDef { .. } = gettypes _ty
+    getincludes CDef { .. } = getincludes _ty
 
 instance Typeful CExpr where
-    gettypes CExprSeq    { .. } = "proc":(gettypes _left ++ gettypes _right)
-    gettypes CExprOption { _val = Just a }  = "option" : gettypes a
-    gettypes CExprOption { _val = Nothing } = ["option"]
-    gettypes CExprCall   { _fname  = "show", .. } = "show" : concatMap gettypes _fparams
-    gettypes CExprCall   { .. } = _fname : concatMap gettypes _fparams
-    gettypes CExprStr    { .. } = ["String"]
-    gettypes CExprNat    { .. } = ["nat"]
-    gettypes CExprTuple  { .. } = "tuple" : concatMap gettypes _items
-    gettypes CExprStmt   { .. } = "proc" : gettypes _stype ++ gettypes _sbody
-    gettypes CExprList   { .. } = "list" : concatMap gettypes _elems
-    gettypes CExprLambda { .. } = _largs ++ gettypes _lbody
-    gettypes CExprBool   { .. } = ["bool"]
-    gettypes CExprVar    { .. } = []
+    getincludes CExprSeq    { .. } = "proc":(getincludes _left ++ getincludes _right)
+    getincludes CExprOption { _val = Just a }  = "option" : getincludes a
+    getincludes CExprOption { _val = Nothing } = ["option"]
+    getincludes CExprCall   { _fname  = "show", .. } = "show" : concatMap getincludes _fparams
+    getincludes CExprCall   { .. } = _fname : concatMap getincludes _fparams
+    getincludes CExprStr    { .. } = ["String"]
+    getincludes CExprNat    { .. } = ["nat"]
+    getincludes CExprTuple  { .. } = "tuple" : concatMap getincludes _items
+    getincludes CExprStmt   { .. } = "proc" : getincludes _stype ++ getincludes _sbody
+    getincludes CExprList   { .. } = "list" : concatMap getincludes _elems
+    getincludes CExprLambda { .. } = _largs ++ getincludes _lbody
+    getincludes CExprBool   { .. } = ["bool"]
+    getincludes CExprVar    { .. } = []
 
 instance Typeful CType where
-    gettypes CTFunc { .. } = gettypes _fret ++ concatMap gettypes _fins
-    gettypes CTExpr { .. } = T.toLower _tbase : concatMap gettypes _tins
-    gettypes CTVar  { .. } = concatMap gettypes _vargs
-    gettypes CTBase { .. } = [T.toLower _base]
-    gettypes _             = []
+    getincludes CTFunc { .. } = getincludes _fret ++ concatMap getincludes _fins
+    getincludes CTExpr { _tbase = "std::variant", .. } = "variant":concatMap getincludes _tins
+    getincludes CTExpr { .. } = T.toLower _tbase : concatMap getincludes _tins
+    getincludes CTVar  { .. } = concatMap getincludes _vargs
+    getincludes CTBase { .. } = [T.toLower _base]
+    getincludes _             = []
 
 instance Typeful CDecl where
-    gettypes CDEmpty  {}     = []
-    gettypes CDType   { _td = CDef { .. } } = gettypes _ty
-    gettypes CDInd    { _id = CDef { .. }, .. } = gettypes _ty ++ concatMap (gettypes . snd) _ictors
-    gettypes CDFunc   { _fd = CDef { .. }, .. } = gettypes _ty ++ concatMap gettypes _fargs ++ gettypes _fbody
-    gettypes CDStruct { .. } = concatMap gettypes _fields
-    gettypes CDExpr   { .. } = gettypes _expr
+    getincludes CDEmpty  {}     = []
+    getincludes CDType   { _td = CDef { .. } } = getincludes _ty
+    getincludes CDInd    { _id = CDef { .. }, .. } = getincludes _ty ++ concatMap (getincludes . snd) _ictors
+    getincludes CDFunc   { _fd = CDef { .. }, .. } = getincludes _ty ++ concatMap getincludes _fargs ++ getincludes _fbody
+    getincludes CDStruct { .. } = concatMap getincludes _fields
+    getincludes CDExpr   { .. } = getincludes _expr
 
-getIncludes :: CDecl -> [Text]
-getIncludes = filter (`elem` Conf.libs) . gettypes
+getAllowedIncludes :: CDecl -> [Text]
+getAllowedIncludes = filter (`elem` Conf.libs) . getincludes
 
