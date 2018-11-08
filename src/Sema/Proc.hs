@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
 module Sema.Proc where
 import qualified Data.Text as T
+import Common.Utils
 import CIR.Expr
 import Data.MonoTraversable
 import Debug.Trace
@@ -9,9 +10,9 @@ import Debug.Trace
 bindSemantics :: CExpr -> CExpr
 -- bindSemantics s | trace ("DBG Sema/Proc.hs/bindSemantics " ++ (show s)) False = undefined
 bindSemantics CExprCall { _fname = "MProc.Proc.Coq_ret", _fparams = [a] } = a
-bindSemantics CExprCall { _fname = "MProc.Proc.Coq_bind", _fparams = [call, CExprLambda { _largs = [varname], .. }] } =
+bindSemantics CExprCall { _fname = "MProc.Proc.Coq_bind", _fparams = [call, CExprLambda { _lds = [CDef { .. }], .. }] } =
     CExprSeq statement $ bindSemantics _lbody
-    where statement = CExprStmt CTAuto varname $ bindSemantics call
+    where statement = CExprStmt (mkdef _nm) $ bindSemantics call
 bindSemantics other = omap bindSemantics other
 
 -- Remove native type instances (since Coq extracts them as arguments)

@@ -28,7 +28,7 @@ compilexpr e
     where ce    = annotate . renames . semantics . toCExpr $ e
           isSeq CExprSeq { .. } = True
           isSeq _ = False
-          annotate CExprLambda { .. } = CExprLambda _largs $ copyopt _largs _lbody
+          annotate CExprLambda { .. } = CExprLambda _lds $ copyopt (map _nm _lds) _lbody
           annotate o = omap annotate o
 
 -- TODO: Ignore imported modules for now

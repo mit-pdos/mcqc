@@ -16,9 +16,11 @@ import qualified Data.Maybe as MA
 -- Expression compiling, from Coq to C++
 toCExpr :: Expr -> CExpr
 -- toCExpr d | trace ("=== DBG Expr.hs/toCExpr " ++ show d) False = undefined
-toCExpr ExprLambda      { .. } = CExprLambda argnames $ toCExpr body
+toCExpr ExprLambda      { .. } = CExprLambda defs $ toCExpr body
+    where defs = map mkdef argnames
 toCExpr ExprCase        { .. } = CExprCall "match" $ toCExpr expr:map mkLambda cases
-    where mkLambda Case    { .. } = CExprLambda (getArgs pat) (toCExpr body)
+    where mkLambda Case    { .. } = CExprLambda (mkdefs pat) $ toCExpr body
+          mkdefs                  = map mkdef . getArgs
           getArgs PatCtor  { .. } = argnames
           getArgs PatTuple { .. } = concatMap getArgs items
           getArgs PatRel   { .. } = [name]
@@ -29,7 +31,7 @@ toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name $ map 
 toCExpr ExprApply       { func = ExprLambda { .. }, .. } = CExprCall (head argnames) (map toCExpr args)
 toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr $ ExprApply value args
 toCExpr ExprLet         { .. } = CExprSeq assignment (toCExpr body)
-    where assignment = CExprStmt CTAuto name $ toCExpr nameval
+    where assignment = CExprStmt (mkdef name) $ toCExpr nameval
 toCExpr ExprRel         { .. } = CExprVar name
 toCExpr ExprGlobal      { .. } = CExprVar name
 toCExpr ExprCoerce      { .. } = toCExpr value

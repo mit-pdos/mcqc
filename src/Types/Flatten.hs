@@ -22,9 +22,9 @@ instance Typeful CExpr where
     getincludes CExprStr    { .. } = ["String"]
     getincludes CExprNat    { .. } = ["nat"]
     getincludes CExprTuple  { .. } = "tuple" : concatMap getincludes _items
-    getincludes CExprStmt   { .. } = "proc" : getincludes _stype ++ getincludes _sbody
+    getincludes CExprStmt   { .. } = "proc" : getincludes _sd ++ getincludes _sbody
     getincludes CExprList   { .. } = "list" : concatMap getincludes _elems
-    getincludes CExprLambda { .. } = _largs ++ getincludes _lbody
+    getincludes CExprLambda { .. } = concatMap getincludes _lds ++ getincludes _lbody
     getincludes CExprBool   { .. } = ["bool"]
     getincludes CExprVar    { .. } = []
 

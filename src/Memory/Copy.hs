@@ -20,13 +20,13 @@ copyAnalysis name CExprCall   { _fparams = h:ps, .. } = do { copyAnalysis name h
     where nextarg  = CExprCall _fname ps
 copyAnalysis name CExprLambda { .. }
     -- Shadowing can happen in a lambda arg, stop
-    | name `elem` _largs = return ()
-    | otherwise          = copyAnalysis name _lbody
+    | name `elem` map _nm _lds = return ()
+    | otherwise                = copyAnalysis name _lbody
 copyAnalysis name CExprSeq    { .. } = do { copyAnalysis name _left; copyAnalysis name _right }
-copyAnalysis name CExprStmt   { .. }
+copyAnalysis name CExprStmt   { _sd = CDef { .. }, .. }
     -- Shadowing can happen in a statement, stop
-    | name == _sname = return ()
-    | otherwise      = copyAnalysis name _sbody
+    | name == _nm = return ()
+    | otherwise   = copyAnalysis name _sbody
 copyAnalysis name CExprTuple  { .. } = mapM_ (copyAnalysis name) _items
 -- If the function does not mutate, increase references only if a mutating reference has been seen already
 copyAnalysis name CExprVar    { .. }

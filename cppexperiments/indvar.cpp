@@ -15,33 +15,33 @@ struct Nil {};
 template<typename T>
 struct Cons {
     T a;
-    Ptr<std::variant<Nil, Cons<T>>> b;
-    Cons(T a, Ptr<std::variant<Nil, Cons<T>>> b) { this->a = a; this->b = b; };
+    std::shared_ptr<std::variant<Nil, Cons<T>>> b;
+    Cons(T a, std::shared_ptr<std::variant<Nil, Cons<T>>> b) { this->a = a; this->b = b; };
 };
 template<typename T>
 using list = std::variant<Nil, Cons<T>>;
 template<typename T>
-Ptr<list<T>> nil() {
+std::shared_ptr<list<T>> nil() {
     return std::make_shared<list<T>>(Nil());
 }
 template<typename T>
-Ptr<list<T>> cons(T a, Ptr<list<T>> b) {
+std::shared_ptr<list<T>> cons(T a, std::shared_ptr<list<T>> b) {
     return std::make_shared<list<T>>(Cons(a,b));
 }
 template<typename T, typename Func, typename Func2>
-auto match(Ptr<list<T>> l, Func f, Func2 g) {
+auto match(std::shared_ptr<list<T>> l, Func f, Func2 g) {
     return std::visit(overloaded {
-            [&](Nil n) { return f(); },
-            [&](Cons<T> c) { return g(c.a, c.b); }
-            }, *l);
+            [&](Nil a) { return f(); },
+            [&](Cons<T> b) { return g(b.a, b.b); }
+           }, *l);
 }
 
 // Generate show methods by Generics maybe
 template<typename T>
-void print(Ptr<list<T>> l) {
+void print(std::shared_ptr<list<T>> l) {
     match(l,
         []() { std::cout << "null" << std::endl; },
-        [](T t, Ptr<list<T>> tail){ std::cout << t << " "; print(tail); });
+        [](T t, std::shared_ptr<list<T>> tail){ std::cout << t << " "; print(tail); });
 }
 
 int main() {

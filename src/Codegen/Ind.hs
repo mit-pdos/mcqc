@@ -35,13 +35,23 @@ Ptr<list<T>> cons(T a, Ptr<list<T>> b) {
 }
 
 template<typename T, typename Func, typename Func2>
-auto match(Ptr<list<T>> l, Func f, Func2 g) {
+auto match(std::shared_ptr<list<T>> self, Func f, Func2 g) {
     return std::visit(overloaded {
-            [&](Nil n) { return f(); },
-            [&](Cons<T> c) { return g(c.a, c.b); }
-            }, *l);
+            [&](Nil a) { return f(); },
+            [&](Cons<T> b) { return g(b.a, b.b); }
+           }, *l);
 }
 -}
+
+-- Make a match statement for unfolding the Inductive type
+mkMatch :: CDef -> [(Text, CType)] -> CDecl
+mkMatch CDef { .. } ctors =
+    CDFunc matchdef (matchedobj:fdefs) $ CExprCall "return" [
+       CExprCall "std::visit" []
+    ]
+    where matchedobj = CDef "self" $ CTPtr _ty
+          matchdef   = CDef "match" CTAuto
+          fdefs      = givenm 'f' [CTFree (i+1) | i <- [getMaxVaridx _ty..length ctors]]
 
 -- Make a struct for each Coq inductive constructor with that name
 mkCtorStruct :: (Text, CType) -> CDecl
@@ -56,7 +66,6 @@ mkIndAlias CDef { .. } = CDType . CDef _nm . CTExpr "std::variant" . map mkTyp
             then CTExpr nm [CTFree freedom]
             else CTBase nm
 
-
 -- Make C++ ctor functions for each Coq inductive constructor
 mkCtorFunc :: CDef -> (Text, CType) -> CDecl
 mkCtorFunc CDef { .. } (ctornm, CTFunc { .. }) =
@@ -70,14 +79,6 @@ mkCtorFunc CDef { .. } (ctornm, CTFunc { .. }) =
           defs      = givenm 'a' _fins
           -- TODO: Prints _ty early, make a typed call expression instead
           sharedptr = T.concat ["std::make_shared<", renderStrict . layoutPretty defaultLayoutOptions . pretty $ _ty, ">"]
--- Make a match statement for unfolding the Inductive type
-mkMatch :: CDef -> [(Text, CType)] -> CDecl
-mkMatch CDef { .. } ctors =
-    CDFunc (CDef "match" CTAuto) ((CDef "self" $ CTPtr _ty):givenm 'f' ftyps) $ CExprCall "return" []
---        CExprCall "std::visit" [CExprLambda "a" $ CExprCall "return" [CExprVar "f"]]
---      ]
-    where maxfree = getMaxVaridx _ty + 1
-          ftyps   = [CTFree i | i <- [maxfree..length ctors + 1]]
 
 -- Intermediate representation before printing inductive as tagged-unioan, the order of the list is important
 expandind :: CDecl -> [CDecl]

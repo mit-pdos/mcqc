@@ -19,6 +19,10 @@ next = T.pack . reverse . incrementText . reverse . T.unpack
           incrementText ('z':xs)    = 'a' : incrementText xs
           incrementText (x:xs)      = succ x : xs
 
+-- Make an untyped definition
+mkdef :: Text -> CDef
+mkdef nm = CDef nm CTAuto
+
 -- Print warning
 warn :: String -> a -> a
 warn s = trace ("Warning: " ++ s)
@@ -26,6 +30,11 @@ warn s = trace ("Warning: " ++ s)
 -- Zip names and types to fields
 zipf :: [Text] -> [CType] -> [CDef]
 zipf = zipWith (\a b -> CDef a b)
+
+-- Zip+add a list to a list of tuples
+zipAdd :: [a] -> [(b,c)] -> [(a,b,c)]
+zipAdd (h:ts) ((fs,sn):tts) = (h,fs,sn):zipAdd ts tts
+zipAdd [] [] = []
 
 -- Give an ord of names to types, useful for making constructors
 givenm :: Char -> [CType] -> [CDef]
