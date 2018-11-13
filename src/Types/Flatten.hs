@@ -30,7 +30,6 @@ instance Typeful CExpr where
 
 instance Typeful CType where
     getincludes CTFunc { .. } = getincludes _fret ++ concatMap getincludes _fins
-    getincludes CTExpr { _tbase = "std::variant", .. } = "variant":concatMap getincludes _tins
     getincludes CTExpr { .. } = T.toLower _tbase : concatMap getincludes _tins
     getincludes CTVar  { .. } = concatMap getincludes _vargs
     getincludes CTBase { .. } = [T.toLower _base]
@@ -39,7 +38,7 @@ instance Typeful CType where
 instance Typeful CDecl where
     getincludes CDEmpty  {}     = []
     getincludes CDType   { _td = CDef { .. } } = getincludes _ty
-    getincludes CDInd    { _id = CDef { .. }, .. } = getincludes _ty ++ concatMap (getincludes . snd) _ictors
+    getincludes CDInd    { _id = CDef { .. }, .. } = "variant" : getincludes _ty ++ concatMap (getincludes . snd) _ictors
     getincludes CDFunc   { _fd = CDef { .. }, .. } = getincludes _ty ++ concatMap getincludes _fargs ++ getincludes _fbody
     getincludes CDStruct { .. } = concatMap getincludes _fields
     getincludes CDExpr   { .. } = getincludes _expr

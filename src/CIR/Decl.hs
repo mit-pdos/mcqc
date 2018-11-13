@@ -44,10 +44,10 @@ instance Pretty CDecl where
           mkTemplateLine (_ty:map (view ty) _fargs)
           <> pretty _ty <+> pretty _nm <> "(" <> (commatize . map pretty $ _fargs) <> ") {"
           <> line <> (tab . pretty) _fbody
-          <> line <> "}"
+          <> line <> "}" <> line
   pretty CDType   { _td = CDef { .. }, .. } =
           mkTemplateLine [_ty]
-          <> "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";"
+          <> "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";" <> line
   pretty CDStruct { _fields = [], ..} = "struct" <+> pretty _sn <+> "{};"
   pretty CDStruct { .. } =
           mkTemplateLine (map (view ty) _fields)
@@ -56,7 +56,7 @@ instance Pretty CDecl where
           <> line <> (tab $ pretty _sn <> "(" <> (commatize . map pretty $ _fields) <> ") {")
           <> line <> (tab . tab . vcat . map (\x -> "this->" <> toNm x <+> "=" <+> toNm x <> ";") $ _fields)
           <> line <> (tab $ "};")
-          <> line <> "};"
+          <> line <> "};" <> line
     where toNm = pretty . _nm
   pretty CDEmpty {} = mempty
   pretty CDInd { _id = CDef { .. }, .. } = error $ "Inductive declaration " ++ show _nm ++ " was not expanded"

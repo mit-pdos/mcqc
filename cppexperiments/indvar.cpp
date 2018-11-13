@@ -7,9 +7,15 @@ Inductive List {T} :=
   | CONS: T -> @List T -> @List T.
 */
 
+// Start const part
 // Overload functions to a single overloaded definition
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template<typename T, typename ...Args>
+inline auto gmatch(std::shared_ptr<T> m, Args... args) {
+    return std::visit(overloaded { args... }, *m);
+}
+// End const part
 
 struct Nil {};
 template<typename T>
@@ -28,12 +34,13 @@ template<typename T>
 std::shared_ptr<list<T>> cons(T a, std::shared_ptr<list<T>> b) {
     return std::make_shared<list<T>>(Cons(a,b));
 }
+
+
 template<typename T, typename Func, typename Func2>
 auto match(std::shared_ptr<list<T>> l, Func f, Func2 g) {
-    return std::visit(overloaded {
+    return gmatch(l,
             [&](Nil a) { return f(); },
-            [&](Cons<T> b) { return g(b.a, b.b); }
-           }, *l);
+            [&](Cons<T> b) { return g(b.a, b.b); });
 }
 
 // Generate show methods by Generics maybe
