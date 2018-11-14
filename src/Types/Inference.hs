@@ -3,20 +3,13 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Types.Inference where
-import Types.Flatten
 import CIR.Expr
 import CIR.Decl
-import Codegen.Rewrite
-import Common.Utils
-import Data.List (nub)
 import Data.Text (Text)
 import Data.MonoTraversable
 import Control.Lens (view)
 import Data.Map.Strict (Map)
 import qualified Data.Map      as M
-import qualified Data.Text     as T
-import qualified Common.Config as Conf
-import Debug.Trace
 
 -- Named context
 type Context a = Map Text [a]
@@ -62,10 +55,6 @@ unify CTFree { _idx = a } CTFree { _idx = b }
 unify CTFree { .. } t = t
 unify t CTFree { .. } = t
 unify a b = error $ "Unsure how to unify " ++ show a ++ " " ++ show b
-
--- TODO: Maximal insertion
-maxinsert :: Context CType -> CExpr -> CExpr
-maxinsert t = \x->x
 
 -- Maximally plug a type into an expression, given a type context (Gamma)
 unifyExpr :: Context CType -> CType -> CExpr -> CExpr

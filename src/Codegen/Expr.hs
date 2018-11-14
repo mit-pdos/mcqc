@@ -21,19 +21,19 @@ toCExpr ExprLambda      { .. } = CExprLambda defs $ toCExpr body
 toCExpr ExprCase        { .. } = CExprCall "match" $ toCExpr expr:map mkLambda cases
     where mkLambda Case    { .. } = CExprLambda (mkdefs pat) $ toCExpr body
           mkdefs                  = map mkdef . getArgs
-          getArgs PatCtor  { .. } = argnames
+          getArgs PatCtor  { .. } = map toCName argnames
           getArgs PatTuple { .. } = concatMap getArgs items
-          getArgs PatRel   { .. } = [name]
+          getArgs PatRel   { .. } = [toCName name]
           getArgs PatWild  {}     = ["_"]
-toCExpr ExprConstructor { .. } = CExprCall name $ map toCExpr args
-toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall name $ map toCExpr args
-toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall name $ map toCExpr args
-toCExpr ExprApply       { func = ExprLambda { .. }, .. } = CExprCall (head argnames) (map toCExpr args)
+toCExpr ExprConstructor { .. } = CExprCall (toCName name) $ map toCExpr args
+toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (toCName name) $ map toCExpr args
+toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (toCName name) $ map toCExpr args
+toCExpr ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (toCName h) $ map toCExpr args
 toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr $ ExprApply value args
 toCExpr ExprLet         { .. } = CExprSeq assignment (toCExpr body)
     where assignment = CExprStmt (mkdef name) $ toCExpr nameval
-toCExpr ExprRel         { .. } = CExprVar name
-toCExpr ExprGlobal      { .. } = CExprVar name
+toCExpr ExprRel         { .. } = CExprVar . toCName $ name
+toCExpr ExprGlobal      { .. } = CExprVar . toCName $ name
 toCExpr ExprCoerce      { .. } = toCExpr value
 toCExpr ExprDummy       {}     = CExprVar ""
 

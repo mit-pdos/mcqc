@@ -3,7 +3,6 @@
 #include <iostream>
 #include <future>
 #include "string.hpp"
-#include "list.hpp"
 #include "exception.h"
 #include "option.hpp"
 #include "nat.hpp"

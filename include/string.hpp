@@ -6,11 +6,9 @@
 #include "type_checks.h"
 #include "nat.hpp"
 #include "option.hpp"
-#include "list.hpp"
 
 using namespace Nat;
 using namespace Option;
-using namespace List;
 
 namespace String {
     // type allias for std::string
@@ -89,35 +87,6 @@ namespace String {
             return s.substr(begin, len);
         }
         return string();
-    }
-
-     // Constructive, concat a list of strings around the given separator
-    template<typename S=string, typename L,
-             typename = std::enable_if_t<is_same_kind_v<string, S>>,
-             typename = std::enable_if_t<is_same_kind_v<list<string>, L>>>
-    static string concat(S&& sep, L&& l) noexcept {
-        std::stringstream ss;
-        for (auto it = l.begin(); it != l.end(); ++it) {
-            if (it != l.begin()) {
-                ss << FWD(sep);
-            }
-            ss << *it;
-        }
-        return ss.str();
-    }
-
-    // Opposite of concat, split a string (constructive obviously)
-    template<typename S=string,
-             typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static list<string> split(S&& s, char c = ' ') {
-        std::stringstream ss(s);
-        string buf;
-
-        list<string> l = list<string>{};
-        while (getline(ss, buf, c)) {
-            l.push_back(buf);
-        }
-        return l;
     }
 
     // Is the given string a prefix of the second string

@@ -23,7 +23,7 @@ toCTBase "Datatypes.prod" = "tuple"
 toCTBase "Datatypes.unit" = "void"
 toCTBase "Ascii.ascii" = "char"
 toCTBase s = rewrite s
-    where prefixes   = "String":"Datatypes":"coq_":map mkmodule Conf.libs
+    where prefixes   = "String":"Datatypes":map mkmodule Conf.libs
           mkmodule m = T.concat ["M", T.toTitle m, ".", T.toTitle m, "."]
           rewrite    = foldr (.) id $ map (\m -> safeStripPrefix m) prefixes
 
@@ -31,13 +31,14 @@ toCTBase s = rewrite s
 toCName :: Text -> Text
 toCName s
     | T.isInfixOf "'" s ||
-      T.isInfixOf "\"" s = unquote s
-    | otherwise = rewrite s
-    where prefixes = "Datatypes":"Coq_":map mkmodule Conf.libs ++ map T.toTitle Conf.libs
+      T.isInfixOf "\"" s    = toCName . unquote $ s
+    | otherwise             = rewrite s
+    where prefixes = "Datatypes":map mkmodule Conf.libs ++ map T.toTitle Conf.libs
           -- "lib" -> "MLib.Lib" for coq typeclasses
           mkmodule m = T.concat ["M", T.toTitle m, ".", T.toTitle m, "."]
           -- top-level string rewriting, creates a pipeline of Text->Text composed functions
-          rewrite  = foldr (.) id $ map (\m -> safeStripPrefix m) prefixes
+          rewrite  = foldr (.) unctor $ map (\m -> safeStripPrefix m) prefixes
           -- "foo'" -> "fooM"
           unquote = T.map (\c -> if c == '\"' || c == '\'' then 'M' else c)
-
+          -- Make constructors call the function, not the struct
+          unctor  = T.replace "Coq_" "coq_"

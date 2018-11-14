@@ -10,11 +10,9 @@ import Control.Lens
 import Data.Aeson
 import Data.MonoTraversable
 import Common.Pretty
-import Codegen.Rewrite
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
 import qualified Data.Text as T
-import Debug.Trace
 
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
@@ -134,7 +132,7 @@ instance Pretty CExpr where
   pretty CExprCall   { _fname = "ltb", _fparams = [a, b] } = pretty a <+> "<"  <+> pretty b
   pretty CExprCall   { _fname = "leb", _fparams = [a, b] } = pretty a <+> "<=" <+> pretty b
   pretty CExprCall   { _fname = "match", .. } = "match" <> (parens . breakcommatize $ _fparams)
-  pretty CExprCall   { .. } = pretty (toCName _fname) <> (parens . commatize $ map pretty _fparams)
+  pretty CExprCall   { .. } = pretty _fname <> (parens . commatize $ map pretty _fparams)
   pretty CExprVar    { .. } = pretty _var
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
@@ -157,27 +155,4 @@ instance Pretty CExpr where
 makeLenses ''CDef
 makeLenses ''CExpr
 makeLenses ''CType
-
--- Utility functions
--- Apply toCName to a CExpr
-renames :: CExpr -> CExpr
-renames =
- -- single step lenses
- over str toCName
- . over fname toCName
- . over var toCName
- -- nested definition lenses
- . over (sd . nm) toCName
- . over (lds . traverse . nm) toCName
- -- recursive lenses
- . over lbody renames
- . over sbody renames
- . over left renames
- . over right renames
- . over (items . traverse) renames
- . over (fparams . traverse) renames
- . over (items . traverse) renames
- . over (elems . traverse) renames
- . over (val . traverse) renames
-
 
