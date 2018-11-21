@@ -22,19 +22,19 @@
 
     Type alias for sum type
     CPP: template<class [[TT]]>
-    CPP: using List = std::variant<Nil, Cons<[[TT]]>>
+    CPP: using coq_List = std::variant<Nil, Cons<[[TT]]>>
 
     Coq constructor functions
     CPP: template<class [[TT]]>
-    CPP: std::shared_ptr<List<[[TT]]>> nil()
-    CPP: return std::make_shared<List<[[TT]]>>(Nil());
+    CPP: std::shared_ptr<coq_List<[[TT]]>> nil()
+    CPP: return std::make_shared<coq_List<[[TT]]>>(Nil());
     CPP: template<class [[TT]]>
-    CPP: std::shared_ptr<List<[[TT]]>> cons([[TT]] [[AA]], std::shared_ptr<List<[[TT]]>> [[BB]])
-    CPP: return std::make_shared<List<[[TT]]>>(Cons([[AA]], [[BB]]));
+    CPP: std::shared_ptr<coq_List<[[TT]]>> cons([[TT]] [[AA]], std::shared_ptr<coq_List<[[TT]]>> [[BB]])
+    CPP: return std::make_shared<coq_List<[[TT]]>>(Cons([[AA]], [[BB]]));
 
     Match definition
     CPP: template<class [[TT]], class [[UU:.?]], class [[VV:.?]]>
-    CPP: match(std::shared_ptr<List<[[TT]]>> self, [[UU]] f, [[VV]] g)
+    CPP: match(std::shared_ptr<coq_List<[[TT]]>> self, [[UU]] f, [[VV]] g)
     CPP: return gmatch(self, [=](Nil a) { return f(); }, [=](Cons<[[TT]]> a) { return g(a.[[AA]], a.[[BB]]); });
     CPP: }
 *)

@@ -3,24 +3,24 @@
 CXX=clang++
 CXXFLAGS?=-g -O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I../../include
 
-all: ind
+all: list
 
-Ind.json: Ind.v
+List.json: List.v
 	coqc -Q ../../classes "" $<
 
-Ind.cpp: Ind.json
+List.cpp: List.json
 	stack exec machcoq -- -I../../classes $<
 
-ind: main.cpp Ind.cpp ../../include/*
+list: main.cpp List.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@
 
-prof: ind
+prof: list
 	@echo --------------------------------------------------------------------------------
 	@echo Profiling $@ ...
 	valgrind --tool=massif ./$<
 
 clean:
-	-rm -rf ind Ind.cpp *.dSYM *.glob *.vo *.json *.o
+	-rm -rf ind List.cpp *.dSYM *.glob *.vo *.json *.o
 
