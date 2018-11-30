@@ -44,8 +44,6 @@ data CExpr =
           | CExprStr    { _str :: Text }
           | CExprNat    { _nat :: Int }
           | CExprBool   { _bool :: Bool }
-          | CExprList   { _etype :: CType, _elems :: [CExpr] }
-          | CExprOption { _otype :: CType, _val :: Maybe CExpr }
           | CExprTuple  { _items :: [CExpr] }
     deriving (Show, Eq, Generic, ToJSON)
 
@@ -68,8 +66,6 @@ instance MonoFunctor CExpr where
     omap f   CExprStmt   { .. } = CExprStmt _sd $ f _sbody
     omap f   CExprSeq    { .. } = CExprSeq (f _left) (f _right)
     omap f   CExprTuple  { .. } = CExprTuple $ fmap f _items
-    omap f   CExprList   { .. } = CExprList _etype $ fmap f _elems
-    omap f   CExprOption { .. } = CExprOption _otype $ fmap f _val
     omap f   CExprLambda { .. } = CExprLambda _lds $ f _lbody
     -- If it doesn't match anything, then it's a normal form, ignore
     omap _   other              = other
@@ -84,9 +80,6 @@ instance MonoFunctorM CExpr where
     omapM f   CExprLambda { .. } = f _lbody >>= \b -> return $ CExprLambda _lds b
     omapM f   CExprSeq    { .. } = do { l <- f _left; r <- f _right; return $ CExprSeq l r }
     omapM f   CExprTuple  { .. } = mapM f _items >>= \items -> return $ CExprTuple items
-    omapM f   CExprList   { .. } = mapM f _elems >>= \elems -> return $ CExprList _etype elems
-    omapM f   CExprOption { _val = Just a, .. } = f a >>= \b -> return $ CExprOption _otype (Just b)
-    omapM _   CExprOption { _val = Nothing, .. } = return $ CExprOption _otype Nothing
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
 
@@ -137,13 +130,6 @@ instance Pretty CExpr where
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
-  pretty CExprOption { _otype = CTUndef, .. } = case _val of
-                                (Just a)  -> "some(" <> pretty a <> ")"
-                                (Nothing) -> error $ "type inference failed for none()"
-  pretty CExprOption { .. } = case _val of
-                                (Just a)  -> "some<" <> pretty _otype <> ">(" <> pretty a <> ")"
-                                (Nothing) -> "none<" <> pretty _otype <> ">()"
-  pretty CExprList   { .. } = "list<" <> pretty _etype  <> ">{" <> commatize (map pretty _elems) <> "}"
   pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
   pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") (init . seqToList $ s))
                             <> line

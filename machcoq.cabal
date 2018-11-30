@@ -34,8 +34,6 @@ executable machcoq
       Classparser.Parser
       Sema.Bool
       Sema.String
-      Sema.Option
-      Sema.List
       Sema.Nat
       Sema.Proc
       Sema.Tuple

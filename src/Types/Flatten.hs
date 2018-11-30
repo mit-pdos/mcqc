@@ -15,15 +15,12 @@ instance Typeful CDef where
 
 instance Typeful CExpr where
     getincludes CExprSeq    { .. } = "proc":(getincludes _left ++ getincludes _right)
-    getincludes CExprOption { _val = Just a }  = "option" : getincludes a
-    getincludes CExprOption { _val = Nothing } = ["option"]
     getincludes CExprCall   { _fname  = "show", .. } = "show" : concatMap getincludes _fparams
     getincludes CExprCall   { .. } = _fname : concatMap getincludes _fparams
     getincludes CExprStr    { .. } = ["String"]
     getincludes CExprNat    { .. } = ["nat"]
     getincludes CExprTuple  { .. } = "tuple" : concatMap getincludes _items
     getincludes CExprStmt   { .. } = "proc" : getincludes _sd ++ getincludes _sbody
-    getincludes CExprList   { .. } = "list" : concatMap getincludes _elems
     getincludes CExprLambda { .. } = concatMap getincludes _lds ++ getincludes _lbody
     getincludes CExprBool   { .. } = ["bool"]
     getincludes CExprVar    { .. } = []

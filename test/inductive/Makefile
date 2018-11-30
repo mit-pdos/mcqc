@@ -22,5 +22,5 @@ prof: list
 	valgrind --tool=massif ./$<
 
 clean:
-	-rm -rf ind List.cpp *.dSYM *.glob *.vo *.json *.o
+	-rm -rf list List.cpp *.dSYM *.glob *.vo *.json *.o
 

@@ -18,6 +18,7 @@ import Common.Utils
 import Sema.Pipeline
 import Data.MonoTraversable
 import qualified Data.List as L
+import qualified Data.Text as T
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
@@ -33,10 +34,11 @@ compilexpr e
 
 -- TODO: Ignore imported modules for now
 compile :: Context CType -> Module -> CFile
-compile ctx Module { .. } = CFile incls used_modules $ map (typeInfer newctx) untypdecls
+compile ctx Module { .. } = CFile incls $ map (typeInfer newctx) untypdecls
     where newctx     = foldl addCtx ctx untypdecls
           untypdecls = concatMap (expandind . toCDecl) declarations
-          incls   = L.sort . L.nub . concatMap (getAllowedIncludes . toCDecl) $ declarations
+          declincls  = concatMap (getAllowedIncludes . toCDecl) $ declarations
+          incls      = filter (/= "datatypes") . L.sort . L.nub $ declincls ++ (map T.toLower used_modules)
 
 -- Add types to generated CDecl by type inference based on a type context
 typeInfer :: Context CType -> CDecl -> CDecl

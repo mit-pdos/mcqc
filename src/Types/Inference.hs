@@ -70,12 +70,6 @@ unifyExpr ctx t CExprCall { .. }
     -- Function call obfuscate the return type, ignore them
     | otherwise          = CExprCall _fname _fparams
 -- Or explicit if it comes from the first rule handling return calls
-unifyExpr _ CTExpr { _tbase = "list" , _tins = [t] } CExprList { .. } =
-    CExprList unified _elems
-    where unified = unify t _etype
-unifyExpr _ CTExpr { _tbase = "option" , _tins = [t] } CExprOption { .. } =
-    CExprOption unified _val
-    where unified = unify t _otype
 unifyExpr ctx t s@CExprSeq { .. } = listToSeq $ first ++ [retexpr]
     where retexpr = unifyExpr ctx t . last . seqToList $ s
           first   = init . seqToList $ s

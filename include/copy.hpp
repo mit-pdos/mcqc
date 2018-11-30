@@ -1,16 +1,12 @@
 #ifndef COPY_H
 #define COPY_H
 #include "string.hpp"
-#include "list.hpp"
-#include "option.hpp"
 #include "nat.hpp"
 #include "type_checks.h"
 #include "tuple.hpp"
 
 using namespace Nat;
 using namespace String;
-using namespace List;
-using namespace Option;
 using namespace Tuple;
 
 namespace Copy {
@@ -26,22 +22,6 @@ namespace Copy {
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static string copy(S&& s) noexcept {
         return FWD(s);
-    }
-
-    // copy due to the return value being a non-ref
-    template<typename L,
-			 typename T = typename std::remove_reference_t<L>::value_type>
-	static typename std::enable_if<is_same_kind_v<L, list<T>>, list<T>>::type
-	copy(L&& l) {
-		return FWD(l);
-    }
-
-    // copy due to the return value being a non-ref
-    template<typename O,
-	         typename T = typename std::remove_reference_t<O>::value_type>
-    typename std::enable_if<is_same_kind_v<O, option<T>>, option<T>>::type
-    copy(O&& o) {
-        return FWD(o);
     }
 
     // copy due to the return value being a non-ref

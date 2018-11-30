@@ -5,10 +5,8 @@
 #include <sstream>
 #include "type_checks.h"
 #include "nat.hpp"
-#include "option.hpp"
 
 using namespace Nat;
-using namespace Option;
 
 namespace String {
     // type allias for std::string
@@ -66,16 +64,6 @@ namespace String {
             l.insert(l.end(), r.begin(), r.end());
             return l;
         }
-    }
-
-    // Get characater in given index of string
-    template<typename S=string,
-             typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static option<char> get(nat index, S&& s) noexcept {
-        if (index < s.length()) {
-            return some<char>(s[index]);
-        }
-        return none<char>();
     }
 
     // Constructive, get substring based on begin index and length
