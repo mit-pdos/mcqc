@@ -54,7 +54,7 @@ mkCtorFunc CDef { .. } (ctornm, CTFunc { .. }) =
           -- TODO: Prints _ty early, make a typed call expression instead
           sharedptr = T.concat ["std::make_shared<", renderStrict . layoutPretty defaultLayoutOptions . pretty $ _ty, ">"]
 
--- Intermediate representation before printing inductive as tagged-unioan, the order of the list is important
+-- Intermediate representation before printing inductive as tagged-union, the order of the list is important
 expandind :: CDecl -> [CDecl]
 expandind CDInd { .. } = map (mkCtorStruct unaliasedT) _ictors ++ [mkIndAlias _id _ictors] ++ map (mkCtorFunc _id) _ictors ++ [mkMatch _id _ictors]
     where unaliasedT = CTExpr "std::variant" . map (\(cn, t) -> toCtorT cn t) $ _ictors

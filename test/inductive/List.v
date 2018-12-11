@@ -39,10 +39,11 @@
     CPP: }
 *)
 
-Inductive List {T} :=
-  | Nil: @List T
-  | Cons: T -> @List T -> @List T.
+
+Inductive list (A : Type) : Type :=
+ | nil : list A
+ | cons : A -> list A -> list A.
 
 Require Extraction.
 Extraction Language JSON.
-Separate Extraction List.
+Separate Extraction list.

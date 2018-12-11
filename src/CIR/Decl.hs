@@ -24,8 +24,16 @@ data CDecl =
     | CDExpr   { _en :: Text, _expr :: CExpr }
     | CDInd    { _id :: CDef, _ictors :: [(Text, CType)] }
     | CDStruct { _sn :: Text, _fields :: [CDef] }
+    | CDSeq    { _left :: CDecl, _right :: CDecl }
     | CDEmpty  {}
   deriving (Eq, Generic, ToJSON)
+
+instance Semigroup CDecl where
+    (<>) = CDSeq
+
+instance Monoid CDecl where
+    mempty = CDEmpty
+    mappend = (<>)
 
 instance Show CDecl where
     show = B.unpack . encodePretty

@@ -1,16 +1,14 @@
 #ifndef SHOW_H
 #define SHOW_H
 #include <iostream>
-#include <future>
+#include <variant>
 #include "string.hpp"
-#include "option.hpp"
 #include "nat.hpp"
 #include "type_checks.h"
 #include "tuple.hpp"
 
 using namespace Nat;
 using namespace String;
-using namespace Option;
 using namespace Tuple;
 
 template <class T, class... TArgs> decltype(void(T{std::declval<TArgs>()...}), std::true_type{}) test_is_braces_constructible(int);

@@ -4,7 +4,6 @@
 #include <future>
 #include "string.hpp"
 #include "exception.h"
-#include "option.hpp"
 #include "nat.hpp"
 #include "tuple.hpp"
 
@@ -27,7 +26,6 @@ namespace {
 }
 
 using namespace String;
-using namespace Option;
 using namespace Nat;
 
 namespace Proc {
