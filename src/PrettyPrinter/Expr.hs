@@ -14,6 +14,7 @@ instance Pretty CType where
   pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
   pretty CTUndef {}     = warn ("Undefined type found") "" -- error "Undef type found in the end, internal error"
+  pretty t              = warn ("Unhandled type " ++ show t) mempty
 
 instance Pretty CExpr where
   pretty CExprLambda { _lbody = s@CExprSeq { .. }, .. } =

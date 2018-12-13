@@ -83,9 +83,7 @@ namespace Proc {
              typename = std::enable_if_t<CallableWith<Func, option<T>>
                 && "2nd argument func not callable with option<T>">,
              typename = std::enable_if_t<std::is_same_v<bool, std::invoke_result_t<FuncCmp, T>>
-                && "Return type of FuncCmp is not bool">,
-             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, option<T>>>
-                && "Return type of Func is not T">>
+                && "Return type of FuncCmp is not bool">>
     static inline T until(FuncCmp fcmp, Func f, option<T> init) {
         option<T> base = init;
         T result;
@@ -98,8 +96,8 @@ namespace Proc {
     };
 
     // random number
-    static inline nat nrand() {
-        return rand();
+    static inline nat randnat() {
+        return static_cast<nat>(rand());
     }
 
     // Spawn an async process

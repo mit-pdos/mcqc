@@ -22,12 +22,10 @@ namespace List {
     //   Func2 g   : Lambda to call if l is not empty, takes two arguments: (T head, list<T> tail)
     template<typename L, typename T = typename std::remove_reference_t<L>::value_type,
              typename Func, typename Func2,
-             typename Ret = std::invoke_result_t<Func>,
              typename = std::enable_if_t<is_same_kind_v<L, list<T>>  && "Only match on list<T> types">,
-             typename = std::enable_if_t<CallableWith<Func>          && "1st argument not callable with void">,
-             typename = std::enable_if_t<CallableWith<Func2, T, L>   && "2nd argument not callable with (T, list<T>)">,
-             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, T, L>> && "Arg function return types must match">>
-    static Ret match(L&& l, Func f, Func2 g) {
+             typename = std::enable_if_t<CallableWith<Func>          && "1st closure not nullary">,
+             typename = std::enable_if_t<CallableWith<Func2, T, L>   && "2nd closure not callable with (T, list<T>)">>
+    static auto match(L&& l, Func f, Func2 g) {
         if(l.empty()) {
             return f();
         }

@@ -22,16 +22,19 @@
     LLVM: {{.*}} call {{.*}}i32 @{{.*}}fib{{.*}}[[MM]]
     LLVM: {{.*}} call {{.*}}i32 @{{.*}}fib{{.*}}[[SM]]
 *)
+Add LoadPath "../../classes".
 Require MNat.
 Import Nat.
 
 Fixpoint fib(n: nat) :=
   match n with
     | 0 => 1
-    | 1 => 1
-    | S(S m as sm) => (fib m) + (fib sm)
+    | S sm =>
+      match sm with
+        | 0 => 1
+        | S m => (fib m) + (fib sm)
+      end
   end.
-
 
 Require Extraction.
 Extraction Language JSON.

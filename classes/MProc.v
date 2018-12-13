@@ -8,28 +8,23 @@ Set Implicit Arguments.
 Module Proc.
   Definition fd := nat.
   Definition filename := string.
-  Definition pathname := list filename.
 
   Inductive proc: Type -> Type :=
   (** Open filepath to fd *)
-  | open : pathname -> proc fd
+  | open : filename -> proc fd
   (** Open TCP port to fd *)
   | socket: nat -> proc fd
   (** Read from fd *)
   | read: fd -> nat -> proc string
   (** Write to fd *)
   | write: fd -> string -> proc unit
-  | link : pathname -> pathname -> proc bool
-  | unlink : pathname -> proc unit
+  | link : filename -> filename -> proc bool
+  | unlink : filename -> proc unit
   (** Close fd *)
   | close : fd -> proc unit
-  (** Get random string *)
-  | rands: proc string
-  (** Get random number *)
-  | randn: proc nat
-  (** Get PID *)
-  | pidfn: proc string
-  (** Until loop with initial value*)
+   (** Get random number *)
+  | randnat: proc nat
+    (** Until loop with initial value*)
   | until : forall T, (T -> bool) -> (option T -> proc T) -> option T -> proc T
   (** Spawn async future *)
   | spawn: forall T, (T -> unit) -> T -> proc unit
@@ -43,6 +38,6 @@ Module Proc.
                             (at level 60, right associativity).
 
   Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
-                               (at level 60, right associativity) : proc_scope.
+                               (at level 60, right associativity).
 End Proc.
 

@@ -7,7 +7,7 @@
     CPP: #include "copy.hpp"
     CPP: #include "list.hpp"
     CPP: #include "nat.hpp"
-    
+
     CPP: list<nat> dlists
     CPP: return app(copy(l1), app(l2, l1));
 
@@ -27,7 +27,6 @@ Local Open Scope list_scope.
 Definition dlists (l1 l2: list nat) := l1 ++ l2 ++ l1.
 
 Definition ddlist (h: nat) (a : list nat) := (cons h a) ++ ((cons h a) ++ (cons h a)).
-
 
 Fixpoint fdlist (a : list nat) :=
   match a with

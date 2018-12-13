@@ -36,15 +36,10 @@ template<typename T>
 static inline list<T> rev(list<T> l) {
     return match(l,
         []()    { return list<T>(); },
-        [](auto h, auto ls) { return app(rev(ls), list<T>(1, h)); });
+        [](auto h, auto ls) { return app(rev(ls), list<T>{h}); });
 }
 
 int main() {
-
-    // Currying
-    auto f = [](auto a, auto b, auto c, auto d) {
-        return a  * b * c * d;
-    };
 
     list<nat> lval = list<nat>{2,4,6,8};
     list<nat> rval = list<nat>{1,3,5};
@@ -53,7 +48,7 @@ int main() {
     list<list<nat>> llval = list<list<nat>>{lval, rval, lval, rval};
     list<list<nat>> zzval = list<list<nat>>{zeros, zeros};
 
-    print(show(split(string("hello world of c++"))));
+    print(show(split(string("hello world"))));
     print(show(true));
     print(mkstring('c',string("elo")));
     print(show(app(app(copy(llval), zzval), copy(llval))));
@@ -69,6 +64,11 @@ int main() {
     print(show(tail(copy(lval))));
 
     print(show(mktuple((nat)1,(nat)2, string("foo"))));
+
+    // Currying
+    auto f = [](auto a, auto b, auto c, auto d) {
+        return a  * b * c * d;
+    };
 
     std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
