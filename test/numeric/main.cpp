@@ -8,12 +8,12 @@ using namespace Nat;
 // For benchmarking against autogen version
 unsigned int fib2(unsigned int n) {
 	if (n == 0 || n == 1) { return 1; }
-	else { return add(fib(n-1), fib(n-2)); }
+	else { return add(fib2(n-1), fib2(n-2)); }
 }
 // Overflows
 unsigned int fib2_unsafe(unsigned int n) {
 	if (n == 0 || n == 1) { return 1; }
-	else { return fib(n-1) + fib(n-2); }
+	else { return fib2_unsafe(n-1) + fib2_unsafe(n-2); }
 }
 
 // Overflows, is not recursive
