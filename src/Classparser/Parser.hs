@@ -11,16 +11,21 @@ import System.FilePath
 import System.Directory
 import Control.Monad
 import Data.MonoTraversable
+import qualified Common.Config     as Conf
 import qualified Data.Text         as T
 import qualified Data.List         as L
 import qualified Data.Map.Strict   as M
 import qualified Data.Maybe        as MA
+import Debug.Trace
 
 -- Given a path, look for all .v files and create the type Context
 loadCtx :: FilePath -> IO (Context CType)
 loadCtx classdir = do
-    files <- listDirectory classdir
-    let classes = filter (\fn -> ".v" == takeExtension fn) . map (classdir </>) $ files
+    files <- map (classdir </>) <$> listDirectory classdir
+    let canonical = T.toLower . T.pack . tail . takeBaseName
+    let classes = filter (\fn -> (not . null . takeBaseName $ fn) &&
+                                 (canonical fn `elem` Conf.libs) &&
+                                 ".v" == takeExtension fn) files
     boundctxs <- forM classes (\fn -> do
             txt <- readFile fn
             let abstors = getAbstractors txt

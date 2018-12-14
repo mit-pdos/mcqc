@@ -19,11 +19,11 @@ import Sema.Pipeline
 import Data.MonoTraversable
 import qualified Data.List as L
 import qualified Data.Text as T
+import Debug.Trace
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
 compilexpr e
-    -- | trace ("DBG compiling " ++ show ce) False = undefined
     | isSeq ce  = ce
     | otherwise = CExprCall "return" [ce]
     where ce    = annotate . semantics . toCExpr $ e
@@ -37,6 +37,7 @@ compile :: Context CType -> Module -> CFile
 compile ctx Module { .. } = CFile incls $ map (typeInfer newctx) untypdecls
     where newctx     = foldl addCtx ctx untypdecls
           untypdecls = concatMap (expandind . toCDecl) declarations
+          -- Handle includes
           declincls  = concatMap (getAllowedIncludes . toCDecl) $ declarations
           incls      = filter (/= "datatypes") . L.sort . L.nub $ declincls ++ (map T.toLower used_modules)
 
@@ -60,7 +61,7 @@ toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     where cbody = copyopt argnames . compilexpr $ body
           (retNT, argsNT) = case toCType typ of
                                 (CTFunc { .. }) -> (CDef name _fret, zipf argnames _fins)
-                                (o) -> error $ "Function declartion with no-func type " ++ show o
+                                (e) -> (CDef name e, [])
 -- Inductive type
 toCDecl IndDecl  { iargs = [], .. } = CDInd (CDef iname indtype) $ map mkctor constructors
     where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCType) argtypes)

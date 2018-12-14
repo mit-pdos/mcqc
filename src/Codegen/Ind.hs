@@ -24,7 +24,8 @@ mkMatch CDef { .. } ctors =
     ]
     where matchedobj                    = CDef "self" $ CTPtr _ty
           matchdef                      = CDef "match" CTAuto
-          fdefs                         = givenm 'f' [CTFree (i+1) | i <- [getMaxVaridx _ty..length ctors]]
+          freevars                      = getMaxVaridx _ty
+          fdefs                         = givenm 'f' [CTFree (i + freevars) | i <- [1..length ctors]]
           flams (f,o, ft@CTFunc { .. }) = CExprLambda [CDef "a" $ toCtorT o ft] $ CExprCall f (dodots $ length _fins)
           dodots n                      = [CExprVar ("a" `T.append` "." `T.append` T.pack [i]) | i <- take n ['a'..]]
 

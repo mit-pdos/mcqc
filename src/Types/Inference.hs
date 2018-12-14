@@ -10,6 +10,7 @@ import Data.MonoTraversable
 import Control.Lens (view)
 import Data.Map.Strict (Map)
 import qualified Data.Map      as M
+import Debug.Trace
 
 -- Named context
 type Context a = Map Text [a]

@@ -30,6 +30,7 @@ toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (toCName na
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (toCName name) $ map toCExpr args
 toCExpr ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (toCName h) $ map toCExpr args
 toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr $ ExprApply value args
+--    where assignment = CExprStmt (mkdef name) $ toCExpr nameval
 toCExpr ExprLet         { .. } = CExprSeq assignment (toCExpr body)
     where assignment = CExprStmt (mkdef name) $ toCExpr nameval
 toCExpr ExprRel         { .. } = CExprVar . toCName $ name

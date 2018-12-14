@@ -15,8 +15,8 @@ import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.Compiler
-import Debug.Trace
 import Ops.Flags
+import Common.Utils
 import CIR.File
 import Classparser.Parser
 
@@ -35,7 +35,7 @@ main = do
     context <- doesDirectoryExist libpath >>=
         (\b -> if b
             then loadCtx libpath
-            else trace ("Warning: Class path does not exist " ++ show libpath) $ return M.empty)
+            else warn ("Class path does not exist " ++ show libpath) $ return M.empty)
     -- Read AST
     jsonast <- B.readFile fn
     -- Check if JSON parsing was a success
