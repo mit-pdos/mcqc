@@ -6,13 +6,17 @@
 {-# LANGUAGE RecordWildCards #-}
 module CIR.Expr where
 import GHC.Generics
-import Control.Lens
 import Data.Aeson
 import Data.MonoTraversable
 import Common.Pretty
+import Types.Context
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
+import Data.Map (Map)
 import qualified Data.Text as T
+import qualified Control.Lens as Lens
+import qualified Data.Map  as M
+import Debug.Trace
 
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
@@ -34,7 +38,7 @@ data CType =
 data CExpr =
           -- High level C++ expressions
             CExprLambda { _lds :: [CDef], _lbody :: CExpr }
-          | CExprCall   { _fname :: Text, _fparams :: [CExpr] }
+          | CExprCall   { _cd :: CDef, _cparams :: [CExpr] }
           -- Continuations
           | CExprSeq    { _left :: CExpr, _right :: CExpr }
           -- C++ statament
@@ -46,6 +50,9 @@ data CExpr =
           | CExprBool   { _bool :: Bool }
           | CExprTuple  { _items :: [CExpr] }
     deriving (Show, Eq, Generic, ToJSON)
+
+instance Semigroup CExpr where
+    (<>) = CExprSeq
 
 -- Compatible with Element a = a
 type instance Element CExpr = CExpr
@@ -62,7 +69,7 @@ instance MonoFunctor CType where
 
 -- CExpr are monomorphic functors
 instance MonoFunctor CExpr where
-    omap f   CExprCall   { .. } = CExprCall _fname $ fmap f _fparams
+    omap f   CExprCall   { .. } = CExprCall _cd $ fmap f _cparams
     omap f   CExprStmt   { .. } = CExprStmt _sd $ f _sbody
     omap f   CExprSeq    { .. } = CExprSeq (f _left) (f _right)
     omap f   CExprTuple  { .. } = CExprTuple $ fmap f _items
@@ -75,13 +82,125 @@ class MonoFunctorM mono where
     omapM :: Monad m => (Element mono -> m (Element mono)) -> mono -> m mono
 
 instance MonoFunctorM CExpr where
-    omapM f   CExprCall   { .. } = mapM f _fparams >>= \ps -> return $ CExprCall _fname ps
+    omapM f   CExprCall   { .. } = mapM f _cparams >>= \ps -> return $ CExprCall _cd ps
     omapM f   CExprStmt   { .. } = f _sbody >>= \b -> return $ CExprStmt _sd b
     omapM f   CExprLambda { .. } = f _lbody >>= \b -> return $ CExprLambda _lds b
     omapM f   CExprSeq    { .. } = do { l <- f _left; r <- f _right; return $ CExprSeq l r }
     omapM f   CExprTuple  { .. } = mapM f _items >>= \items -> return $ CExprTuple items
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
+
+-- This class is for instances with types
+class Typeful a where
+    -- Get all libraries needed by a
+    getincludes  :: a -> [Text]
+    -- Unify with a type (inference) with a Type context
+    unify        :: Context CType -> CType -> a -> a
+    -- Return the type
+    gettype      :: a -> CType
+    -- Add types to context
+    addctx       :: Context CType -> a -> Context CType
+    -- Get number of free types
+    getMaxVaridx :: a -> Int
+
+instance Typeful CDef where
+    getincludes CDef { .. } = getincludes _ty
+    gettype CDef     { .. } = _ty
+    unify ctx t CDef { .. } = CDef _nm $ unify ctx t _ty
+    addctx ctx CDef  { .. } = mergeCtx ctx $ M.singleton _nm _ty
+    getMaxVaridx  = getMaxVaridx . gettype
+
+instance Typeful CExpr where
+    getincludes CExprSeq    { .. } = "proc":(getincludes _left ++ getincludes _right)
+    getincludes CExprCall   { _cd = CDef { _nm = "show"}, .. } = "show" : concatMap getincludes _cparams
+    getincludes CExprCall   { _cd = CDef { _nm = "gmatch"}, .. } = "variant" : concatMap getincludes _cparams
+    getincludes CExprCall   { _cd = CDef { .. }, .. } = _nm : concatMap getincludes _cparams
+    getincludes CExprStr    { .. } = ["String"]
+    getincludes CExprNat    { .. } = ["nat"]
+    getincludes CExprTuple  { .. } = "tuple" : concatMap getincludes _items
+    getincludes CExprStmt   { .. } = "proc" : getincludes _sd ++ getincludes _sbody
+    getincludes CExprLambda { .. } = concatMap getincludes _lds ++ getincludes _lbody
+    getincludes CExprBool   { .. } = ["bool"]
+    getincludes CExprVar    { .. } = []
+
+    gettype s@CExprSeq { .. } = gettype . last . seqToList $ s
+    gettype CExprCall { .. } = gettype _cd
+    gettype CExprStr { .. } = CTBase "string"
+    gettype CExprNat { .. } = CTBase "nat"
+    gettype CExprTuple { .. } = CTExpr "tuple" $ map gettype _items
+    gettype CExprStmt  { .. } = gettype _sd
+    gettype CExprLambda { .. } = gettype _lbody
+    gettype CExprBool { .. } = CTBase "bool"
+    gettype _ = CTAuto
+
+    unify ctx t CExprCall { _cd = CDef { .. },  .. }
+        -- Return preserves the type
+        | _nm == "return"    = CExprCall newD $ map (unify ctx t) _cparams
+        -- A match preserves the type if the lambdas return it (omit matched object)
+        | _nm  == "match"     = CExprCall newD $ head _cparams:map (unify ctx t) (tail _cparams)
+        -- Match with something from the context
+        | _nm `M.member` ctx =
+            case ctx M.! _nm of
+              (CTFunc { .. }) -> CExprCall newD $ zipWith (unify ctx) _fins _cparams
+              (t) -> error $ "Cannot unify " ++ show _nm ++ " with " ++ show t
+        -- Function call obfuscate the return type, ignore them
+        | otherwise             = CExprCall newD _cparams
+        where newD = CDef _nm $ unify ctx t _ty
+    -- Or explicit if it comes from the first rule handling return calls
+    unify ctx t s@CExprSeq { .. } = listToSeq first <> retexpr
+        where retexpr = unify ctx t . last . seqToList $ s
+              first   = init . seqToList $ s
+    unify ctx t o = omap (unify ctx t) o
+
+    -- Cowardly refuse to add expression to global context
+    addctx ctx _ = ctx
+
+    -- Get max varidx by getting the type first
+    getMaxVaridx = getMaxVaridx . gettype
+
+instance Typeful CType where
+    getincludes CTFunc { .. } = getincludes _fret ++ concatMap getincludes _fins
+    getincludes CTExpr { .. } = T.toLower _tbase : concatMap getincludes _tins
+    getincludes CTVar  { .. } = concatMap getincludes _vargs
+    getincludes CTBase { .. } = [T.toLower _base]
+    getincludes _             = []
+
+    -- Unify the same type
+    unify _ a b | a == b = b
+    -- Any type is better than undefined type
+    unify _ t CTUndef {} = t
+    unify _ CTUndef {} t = t
+    -- Type is better than auto-type
+    unify _ t CTAuto = t
+    unify _ CTAuto _ = CTAuto
+    -- Function types
+    unify c CTFunc { _fret = a, _fins = ina} CTFunc { _fret = b, _fins = inb}
+        | length ina == length inb = CTFunc (unify c a b) $ zipWith (unify c) ina inb
+        | otherwise = error $ "Attempting to unify func types with different args" ++ show ina ++ " " ++ show inb
+    -- Ignore Proc monad wrapped types
+    unify c CTExpr { _tbase = "proc" , _tins = [a] } t = unify c a t
+    unify c t CTExpr { _tbase = "proc" , _tins = [a] } = unify c t a
+    -- Unify composite type expressions
+    unify c CTExpr { _tbase = a , _tins = ina } CTExpr { _tbase = b , _tins = inb }
+        | a == b && length ina == length inb = CTExpr a $ zipWith (unify c) ina inb
+        | otherwise = error $ "Attempting to unify list types with different args" ++ show ina ++ " " ++ show inb
+    -- Unify free parameters, here we're assuming Coq has already type-checked this
+    unify _ CTFree { .. } t = t
+    unify _ t CTFree { .. } = t
+    -- Pointers go down, not up
+    unify c CTPtr { .. } t = CTPtr $ unify c _inner t
+    unify _ a b = error $ "Unsure how to unify " ++ show a ++ " " ++ show b
+
+    -- Return the type itself
+    gettype x = x
+
+    -- Return number of free variables
+    getMaxVaridx t = foldl max 0 $ getVaridxs t
+        where getVaridxs CTFree { .. } = [_idx]
+              getVaridxs CTFunc { .. } = getVaridxs _fret ++ concatMap getVaridxs _fins
+              getVaridxs CTExpr { .. } = concatMap getVaridxs _tins
+              getVaridxs CTPtr  { .. } = getVaridxs _inner
+              getVaridxs _ = [0]
 
 -- Utility functions
 -- Convert sequence to list of expressions
@@ -93,7 +212,7 @@ seqToList other           = [other]
 listToSeq :: [CExpr] -> CExpr
 listToSeq []     = error "Empty sequence list given, unable to convert to expression"
 listToSeq [a]    = a
-listToSeq (a:ts) = CExprSeq a $ listToSeq ts
+listToSeq (a:ts) = a <> listToSeq ts
 
 -- Pretty printer
 instance Pretty CDef where
@@ -106,7 +225,7 @@ instance Pretty CType where
   -- Use template letters starting at T as is custom in C++
   pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
-  pretty CTUndef {}     = error "Undefined type found, inference failed" -- error "Undef type found in the end, internal error"
+  pretty CTUndef {}     = error "Undef type found, type inference error"
   pretty CTPtr   { .. } = "std::shared_ptr<" <> pretty _inner <> ">"
 
 instance Pretty CExpr where
@@ -120,12 +239,15 @@ instance Pretty CExpr where
                             group $ "[=](" <> (commatize . map pretty $ _lds) <> ") {"
                             <+> "return" <+> pretty _lbody <> ";"
                             <+> "}"
-  pretty CExprCall   { _fname = "return", _fparams = [a] } = "return" <+> pretty a <> ";"
-  pretty CExprCall   { _fname = "eqb", _fparams = [a, b] } = pretty a <+> "==" <+> pretty b
-  pretty CExprCall   { _fname = "ltb", _fparams = [a, b] } = pretty a <+> "<"  <+> pretty b
-  pretty CExprCall   { _fname = "leb", _fparams = [a, b] } = pretty a <+> "<=" <+> pretty b
-  pretty CExprCall   { _fname = "match", .. } = "match" <> (parens . breakcommatize $ _fparams)
-  pretty CExprCall   { .. } = pretty _fname <> (parens . commatize $ map pretty _fparams)
+  pretty CExprCall   { _cd = CDef { _nm = "return" }, _cparams = [a] } = "return" <+> pretty a <> ";"
+  pretty CExprCall   { _cd = CDef { _nm = "eqb" }, _cparams = [a, b] } = pretty a <+> "==" <+> pretty b
+  pretty CExprCall   { _cd = CDef { _nm = "ltb" }, _cparams = [a, b] } = pretty a <+> "<"  <+> pretty b
+  pretty CExprCall   { _cd = CDef { _nm = "leb" }, _cparams = [a, b] } = pretty a <+> "<=" <+> pretty b
+  pretty CExprCall   { _cd = CDef { _nm = "match" }, .. } = "match" <> (parens . breakcommatize $ _cparams)
+  pretty CExprCall   { _cd = CDef { _ty = CTAuto, .. }, .. } = pretty _nm <> (parens . commatize $ map pretty _cparams)
+  pretty CExprCall   { _cd = CDef { .. }, .. } =
+    pretty _nm <> "<" <> mkTemplates _ty <> ">" <> (parens . commatize $ map pretty _cparams)
+    where mkTemplates t = commatize  . map pretty . take (getMaxVaridx t) $ ['T'..'Z']
   pretty CExprVar    { .. } = pretty _var
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
@@ -138,7 +260,7 @@ instance Pretty CExpr where
   pretty CExprStmt   { _sd = CDef { .. }, .. } = pretty _ty <+> pretty _nm <+> "=" <+> pretty _sbody
 
 -- Generate lenses
-makeLenses ''CDef
-makeLenses ''CExpr
-makeLenses ''CType
+Lens.makeLenses ''CDef
+Lens.makeLenses ''CExpr
+Lens.makeLenses ''CType
 

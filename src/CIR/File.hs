@@ -11,9 +11,10 @@ import Control.Lens
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
 import qualified Data.Text as T
+import qualified Data.List as L
 
 data CFile = CFile { _includes :: [Text], _decls :: [CDecl] }
-    deriving (Eq, Generic, ToJSON)
+    deriving (Show, Eq, Generic, ToJSON)
 
 instance Pretty CFile where
   pretty CFile { .. } =
@@ -24,5 +25,12 @@ instance Pretty CFile where
            <> line <> (vcat . map (\p -> "using namespace" <+> pretty (T.toTitle p) <> ";") $ _includes)
            <> line
            <> line <> (vsep . map pretty $ _decls)
+
+instance Semigroup CFile where
+    a <> b = CFile (L.sort . L.nub $ _includes a ++ _includes b) $ _decls a ++ _decls b
+
+instance Monoid CFile where
+    mempty = CFile [] []
+    mappend = (<>)
 
 makeLenses ''CFile

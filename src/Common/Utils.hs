@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Common.Utils where
 import CIR.Expr
+import Codegen.Rewrite
 import qualified Data.Text as T
 import qualified Data.Char as C
 import Data.Text (Text)
@@ -21,7 +22,7 @@ next = T.pack . reverse . incrementText . reverse . T.unpack
 
 -- Make an untyped definition
 mkdef :: Text -> CDef
-mkdef nm = CDef nm CTAuto
+mkdef nm = CDef (toCName nm) CTAuto
 
 -- Print warning
 warn :: String -> a -> a
@@ -31,22 +32,7 @@ warn s = trace ("Warning: " ++ s)
 zipf :: [Text] -> [CType] -> [CDef]
 zipf = zipWith (\a b -> CDef a b)
 
--- Zip+add a list to a list of tuples
-zipAdd :: [a] -> [(b,c)] -> [(a,b,c)]
-zipAdd (h:ts) ((fs,sn):tts) = (h,fs,sn):zipAdd ts tts
-zipAdd [] [] = []
-
 -- Give an ord of names to types, useful for making constructors
 givenm :: Char -> [CType] -> [CDef]
 givenm c = zipf [T.pack [i] | i <- [c..]]
-
--- Get number of free parameters (Varidx)
-getMaxVaridx :: CType -> Int
-getMaxVaridx t = foldl max 0 $ getVaridxs t
-    where getVaridxs CTFree { .. } = [_idx]
-          getVaridxs CTFunc { .. } = getVaridxs _fret ++ concatMap getVaridxs _fins
-          getVaridxs CTExpr { .. } = concatMap getVaridxs _tins
-          getVaridxs CTPtr  { .. } = getVaridxs _inner
-          getVaridxs _ = [0]
-
 

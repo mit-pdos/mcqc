@@ -30,14 +30,11 @@ executable machcoq
       Parser.Expr
       Parser.Pattern
       Parser.Fix
-      Classparser.Lexer
-      Classparser.Parser
       Sema.Bool
       Sema.String
       Sema.Nat
       Sema.Proc
       Sema.Tuple
-      Memory.Copy
       Sema.Pipeline
       CIR.File
       CIR.Decl
@@ -49,8 +46,7 @@ executable machcoq
       Common.Config
       Common.Utils
       Common.Pretty
-      Types.Flatten
-      Types.Inference
+      Types.Context
   hs-source-dirs:
       src
   build-depends:

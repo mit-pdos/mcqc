@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 module Codegen.Compiler (compile) where
 import Parser.Mod
@@ -11,57 +12,68 @@ import CIR.Expr
 import Codegen.Expr
 import Codegen.Ind
 import Codegen.Rewrite
-import Types.Inference
-import Types.Flatten
-import Memory.Copy
+import Types.Context
 import Common.Utils
 import Sema.Pipeline
-import Data.MonoTraversable
-import qualified Data.List as L
-import qualified Data.Text as T
+import Control.Monad.State
+import Data.Text (Text)
+import qualified Data.List     as L
+import qualified Data.Text     as T
+import qualified Data.Map      as M
+import qualified Common.Config as Conf
 import Debug.Trace
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
 compilexpr e
     | isSeq ce  = ce
-    | otherwise = CExprCall "return" [ce]
-    where ce    = annotate . semantics . toCExpr $ e
+    | otherwise = CExprCall (mkdef "return") [ce]
+    where ce    = semantics . toCExpr $ e
           isSeq CExprSeq { .. } = True
           isSeq _ = False
-          annotate CExprLambda { .. } = CExprLambda _lds $ copyopt (map _nm _lds) _lbody
-          annotate o = omap annotate o
 
--- TODO: Ignore imported modules for now
-compile :: Context CType -> Module -> CFile
-compile ctx Module { .. } = CFile incls $ map (typeInfer newctx) untypdecls
-    where newctx     = foldl addCtx ctx untypdecls
-          untypdecls = concatMap (expandind . toCDecl) declarations
-          -- Handle includes
-          declincls  = concatMap (getAllowedIncludes . toCDecl) $ declarations
-          incls      = filter (/= "datatypes") . L.sort . L.nub $ declincls ++ (map T.toLower used_modules)
+-- Compile a module
+compile :: Module -> State (Context CType) CFile
+compile Module { .. } = do
+    let alldecls = concatMap (expandind . toCDecl) $ declarations
+    -- Get the context so far
+    ctx <- get
+    let untyped = filter (\d -> not $ getname d `M.member` ctx) alldecls
+    -- Add declarations
+    let newctx = foldl addctx ctx untyped
+    let incls = L.sort . L.nub . concatMap getAllowedIncludes $ alldecls
+    put newctx
+    return . CFile incls $ map (typeInfer newctx) $ untyped
 
 -- Add types to generated CDecl by type inference based on a type context
 typeInfer :: Context CType -> CDecl -> CDecl
-typeInfer ctx CDFunc { _fd = fd@CDef { .. }, .. } = CDFunc fd _fargs $ unifyExpr ctx _ty _fbody
+typeInfer ctx CDFunc { .. } = CDFunc _fd _fargs $ unify ctx (gettype _fd) _fbody
 typeInfer _ o = o
+
+-- Get allowed includes based on the libraries in the config
+getAllowedIncludes :: CDecl -> [Text]
+getAllowedIncludes = filter (`elem` Conf.libs) . getincludes
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
     CDFunc retNT argsNT cbody
-    where cbody = copyopt argnames . compilexpr $ body
+    where cbody = compilexpr body
           (retNT, argsNT) = case toCType ftyp of
                                 (CTFunc { .. }) -> (CDef n _fret, zipf argnames _fins)
                                 (o) -> error $ "Fixpoint declartion with no-func type " ++ show o
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
     CDFunc retNT argsNT cbody
-    where cbody = copyopt argnames . compilexpr $ body
+    where cbody = compilexpr body
           (retNT, argsNT) = case toCType typ of
                                 (CTFunc { .. }) -> (CDef name _fret, zipf argnames _fins)
                                 (e) -> (CDef name e, [])
+-- If an Ind of base is found, ignore
+toCDecl IndDecl  { .. }
+    | name `elem` Conf.base = CDEmpty
+    | (T.toLower name) `elem` Conf.base = CDEmpty
 -- Inductive type
 toCDecl IndDecl  { iargs = [], .. } = CDInd (CDef iname indtype) $ map mkctor constructors
     where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCType) argtypes)
@@ -70,7 +82,7 @@ toCDecl IndDecl  { iargs = [], .. } = CDInd (CDef iname indtype) $ map mkctor co
           indtype = CTBase iname
           iname = toCTBase name
 -- Parametric inductive type
-toCDecl IndDecl  { .. }             = CDInd (CDef iname indtype) $ map mkctor constructors
+toCDecl IndDecl  { .. } = CDInd (CDef iname indtype) $ map mkctor constructors
     where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCTypeAbs iargs) argtypes)
           mkctor o = error $ "Non inductive constructor found, failing " ++ show o
           mkptr t | t == indtype = CTPtr t | otherwise = t

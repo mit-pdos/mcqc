@@ -10,7 +10,7 @@
     CPP: nat fib(nat n)
     CPP: return match{{.*}}n{{.*}}
     CPP: return (nat)1;
-    CPP: return match{{.*}}copy(sm){{.*}}
+    CPP: return match{{.*}}sm{{.*}}
     CPP: return (nat)1;
     CPP: add{{.*}}fib(m){{.*}}fib(sm)
 

@@ -18,20 +18,20 @@ toCExpr :: Expr -> CExpr
 -- toCExpr d | trace ("=== DBG Expr.hs/toCExpr " ++ show d) False = undefined
 toCExpr ExprLambda      { .. } = CExprLambda defs $ toCExpr body
     where defs = map mkdef argnames
-toCExpr ExprCase        { .. } = CExprCall "match" $ toCExpr expr:map mkLambda cases
+toCExpr ExprCase        { .. } = CExprCall (mkdef "match") $ toCExpr expr:map mkLambda cases
     where mkLambda Case    { .. } = CExprLambda (mkdefs pat) $ toCExpr body
           mkdefs                  = map mkdef . getArgs
-          getArgs PatCtor  { .. } = map toCName argnames
+          getArgs PatCtor  { .. } = argnames
           getArgs PatTuple { .. } = concatMap getArgs items
-          getArgs PatRel   { .. } = [toCName name]
+          getArgs PatRel   { .. } = [name]
           getArgs PatWild  {}     = ["_"]
-toCExpr ExprConstructor { .. } = CExprCall (toCName name) $ map toCExpr args
-toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (toCName name) $ map toCExpr args
-toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (toCName name) $ map toCExpr args
-toCExpr ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (toCName h) $ map toCExpr args
+toCExpr ExprConstructor { .. } = CExprCall (mkdef name) $ map toCExpr args
+toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (mkdef name) $ map toCExpr args
+toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (mkdef name) $ map toCExpr args
+toCExpr ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (mkdef h) $ map toCExpr args
 toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr $ ExprApply value args
 --    where assignment = CExprStmt (mkdef name) $ toCExpr nameval
-toCExpr ExprLet         { .. } = CExprSeq assignment (toCExpr body)
+toCExpr ExprLet         { .. } = assignment <> (toCExpr body)
     where assignment = CExprStmt (mkdef name) $ toCExpr nameval
 toCExpr ExprRel         { .. } = CExprVar . toCName $ name
 toCExpr ExprGlobal      { .. } = CExprVar . toCName $ name

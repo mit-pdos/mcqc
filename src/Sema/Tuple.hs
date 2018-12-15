@@ -5,10 +5,9 @@ import CIR.Expr
 
 -- Tuple semantics
 tupleSemantics :: CExpr -> CExpr
-tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = [a] }  =
+tupleSemantics CExprCall { _cd = CDef { _nm = "Datatypes.Coq_pair" }, _cparams = [a] }  =
     error "Datatypes.Coq_pair with one arg found, undefined behavior."
-tupleSemantics CExprCall { _fname = "Datatypes.Coq_pair", _fparams = args } =
-    CExprTuple $ map tupleSemantics args -- TODO: Type inference
-tupleSemantics other =
-    omap tupleSemantics other
+tupleSemantics CExprCall { _cd = CDef { _nm = "Datatypes.Coq_pair" }, _cparams = args } =
+    CExprTuple $ map tupleSemantics args
+tupleSemantics other = omap tupleSemantics other
 
