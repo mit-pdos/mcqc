@@ -13,6 +13,7 @@ import Codegen.Expr
 import Codegen.Ind
 import Codegen.Rewrite
 import Types.Context
+import Types.Templates
 import Common.Utils
 import Sema.Pipeline
 import Control.Monad.State
@@ -43,12 +44,13 @@ compile Module { .. } = do
     let newctx = foldl addctx ctx untyped
     let incls = L.sort . L.nub . concatMap getAllowedIncludes $ alldecls
     put newctx
-    return . CFile incls $ map (typeInfer newctx) $ untyped
+    return . CFile incls $ map (typeify newctx) $ untyped
 
 -- Add types to generated CDecl by type inference based on a type context
-typeInfer :: Context CType -> CDecl -> CDecl
-typeInfer ctx CDFunc { .. } = CDFunc _fd _fargs $ unify ctx (gettype _fd) _fbody
-typeInfer _ o = o
+typeify :: Context CType -> CDecl -> CDecl
+typeify ctx CDFunc { .. } = CDFunc _fd _fargs $ exprmodifier  _fbody
+    where exprmodifier = templatify ctx . unify ctx (gettype _fd)
+typeify _ o = o
 
 -- Get allowed includes based on the libraries in the config
 getAllowedIncludes :: CDecl -> [Text]

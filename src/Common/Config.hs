@@ -16,6 +16,8 @@ base = [ "nat", "string", "tuple", "option" ]
 -- Type context of native libraries
 nativeContext :: Context CType
 nativeContext = M.fromList [
+    -- Ptr
+    ("std::make_shared", CTFunc (CTPtr $ CTFree 1) [CTFree 1]),
     -- Nat
     ("succ",      CTFunc (CTBase "nat") [CTBase "nat"]),
     ("pred",      CTFunc (CTBase "nat") [CTBase "nat"]),

@@ -47,6 +47,7 @@ executable machcoq
       Common.Utils
       Common.Pretty
       Types.Context
+      Types.Templates
   hs-source-dirs:
       src
   build-depends:

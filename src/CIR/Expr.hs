@@ -18,6 +18,23 @@ import qualified Control.Lens as Lens
 import qualified Data.Map  as M
 import Debug.Trace
 
+-- Foldable is not possible as CExpr cannot be empty, FunctorM will do
+class MonoFunctorM mono where
+    omapM :: Monad m => (Element mono -> m (Element mono)) -> mono -> m mono
+
+-- This class is for instances with types
+class Typeful a where
+    -- Get all libraries needed by a
+    getincludes  :: a -> [Text]
+    -- Unify with a type (inference) with a Type context
+    unify        :: Context CType -> CType -> a -> a
+    -- Return the type
+    gettype      :: a -> CType
+    -- Add types to context
+    addctx       :: Context CType -> a -> Context CType
+    -- Get number of free types
+    getMaxVaridx :: a -> Int
+
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
     deriving (Show, Eq, Generic, ToJSON)
@@ -77,10 +94,6 @@ instance MonoFunctor CExpr where
     -- If it doesn't match anything, then it's a normal form, ignore
     omap _   other              = other
 
--- Foldable is not possible as CExpr cannot be empty, FunctorM will do
-class MonoFunctorM mono where
-    omapM :: Monad m => (Element mono -> m (Element mono)) -> mono -> m mono
-
 instance MonoFunctorM CExpr where
     omapM f   CExprCall   { .. } = mapM f _cparams >>= \ps -> return $ CExprCall _cd ps
     omapM f   CExprStmt   { .. } = f _sbody >>= \b -> return $ CExprStmt _sd b
@@ -90,24 +103,11 @@ instance MonoFunctorM CExpr where
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
 
--- This class is for instances with types
-class Typeful a where
-    -- Get all libraries needed by a
-    getincludes  :: a -> [Text]
-    -- Unify with a type (inference) with a Type context
-    unify        :: Context CType -> CType -> a -> a
-    -- Return the type
-    gettype      :: a -> CType
-    -- Add types to context
-    addctx       :: Context CType -> a -> Context CType
-    -- Get number of free types
-    getMaxVaridx :: a -> Int
-
 instance Typeful CDef where
-    getincludes CDef { .. } = getincludes _ty
-    gettype CDef     { .. } = _ty
-    unify ctx t CDef { .. } = CDef _nm $ unify ctx t _ty
-    addctx ctx CDef  { .. } = mergeCtx ctx $ M.singleton _nm _ty
+    getincludes CDef  { .. } = getincludes _ty
+    gettype CDef      { .. } = _ty
+    unify ctx t CDef  { .. } = CDef _nm $ unify ctx t _ty
+    addctx ctx CDef   { .. } = mergeCtx ctx $ M.singleton _nm _ty
     getMaxVaridx  = getMaxVaridx . gettype
 
 instance Typeful CExpr where
@@ -137,7 +137,7 @@ instance Typeful CExpr where
         -- Return preserves the type
         | _nm == "return"    = CExprCall newD $ map (unify ctx t) _cparams
         -- A match preserves the type if the lambdas return it (omit matched object)
-        | _nm  == "match"     = CExprCall newD $ head _cparams:map (unify ctx t) (tail _cparams)
+        | _nm  == "match"    = CExprCall newD $ head _cparams:map (unify ctx t) (tail _cparams)
         -- Match with something from the context
         | _nm `M.member` ctx =
             case ctx M.! _nm of
@@ -246,8 +246,7 @@ instance Pretty CExpr where
   pretty CExprCall   { _cd = CDef { _nm = "match" }, .. } = "match" <> (parens . breakcommatize $ _cparams)
   pretty CExprCall   { _cd = CDef { _ty = CTAuto, .. }, .. } = pretty _nm <> (parens . commatize $ map pretty _cparams)
   pretty CExprCall   { _cd = CDef { .. }, .. } =
-    pretty _nm <> "<" <> mkTemplates _ty <> ">" <> (parens . commatize $ map pretty _cparams)
-    where mkTemplates t = commatize  . map pretty . take (getMaxVaridx t) $ ['T'..'Z']
+    pretty _nm <> "<" <> pretty _ty <> ">" <> (parens . commatize $ map pretty _cparams)
   pretty CExprVar    { .. } = pretty _var
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
