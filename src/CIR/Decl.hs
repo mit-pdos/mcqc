@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
@@ -5,17 +6,17 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CIR.Decl where
-import CIR.Expr
+import CIR.Expr hiding (omapM)
 import Common.Pretty
 import GHC.Generics
 import Types.Context
 import Data.Aeson
+import Data.MonoTraversable
 import Data.Text (Text)
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import qualified Data.ByteString.Lazy.Char8 as B
 import qualified Data.List                  as L
-import qualified Control.Lens               as Lens
 import qualified Data.Map                   as M
 
 -- Global scope C++ definitions,
@@ -25,31 +26,63 @@ data CDecl =
     | CDExpr   { _en :: Text, _expr :: CExpr }
     | CDInd    { _id :: CDef, _ictors :: [(Text, CType)] }
     | CDStruct { _sn :: Text, _fields :: [CDef] }
+    | CDSeq    { _left :: CDecl, _right :: CDecl }
     | CDEmpty  {}
   deriving (Eq, Generic, ToJSON)
+
+type instance Element CDecl = CDecl
 
 instance Show CDecl where
     show = B.unpack . encodePretty
 
--- Generate Lens code
-Lens.makeLenses ''CDecl
+instance Semigroup CDecl where
+    (<>) = CDSeq
 
--- Get declaration name
-getname :: CDecl -> Text
-getname CDFunc   { .. } = _nm _fd
-getname CDType   { .. } = _nm _td
-getname CDExpr   { .. } = _en
-getname CDInd    { .. } = _nm _id
-getname CDStruct { .. } = _sn
-getname CDEmpty  {} = ""
+instance Monoid CDecl where
+    mappend = (<>)
+    mempty  = CDEmpty
 
--- Pretty print the template line
-mkTemplateLine :: [CType] -> Doc ann
-mkTemplateLine argsT =
-    if null templates then mempty else "template<" <> commatize templates <> ">" <> line
-    where getTemplates t = take (getMaxVaridx t) ['T'..'Z']
-          templates = [ "class" <+> pretty a | a <- L.nub $ concatMap getTemplates argsT]
+instance MonoFunctor CDecl where
+    omap f CDSeq { .. } = f _left <> f _right
+    omap f CDEmpty = mempty
 
+instance MonoFoldable CDecl where
+    ofoldMap f = ofoldr (mappend . f) mempty
+
+    ofoldr f b CDEmpty = b
+    ofoldr f b CDSeq { .. } = f _left (ofoldr f b _right)
+    ofoldr f b d = f d b
+
+    ofoldl' f b CDSeq { .. } = ofoldl' f (f b _left) _right
+    ofoldl' f b CDEmpty = b
+    ofoldl' f b d = f b d
+
+    otoList CDSeq { .. } = _left:otoList _right
+    otoList CDEmpty      = []
+    otoList d            = [d]
+
+    onull CDEmpty = True
+    onull d = False
+
+    olength = length . otoList
+    ofoldr1Ex f = ofoldr1Ex f . otoList
+    ofoldl1Ex' f = ofoldl1Ex' f . otoList
+
+instance MonoTraversable CDecl where
+    otraverse f CDSeq { .. } = CDSeq <$> otraverse f _left <*> otraverse f _right
+    otraverse f CDEmpty = pure CDEmpty
+    otraverse f d = f d
+
+-- Has a name
+instance Nameful CDecl where
+    getname CDFunc   { .. } = _nm _fd
+    getname CDType   { .. } = _nm _td
+    getname CDExpr   { .. } = _en
+    getname CDInd    { .. } = _nm _id
+    getname CDStruct { .. } = _sn
+    getname CDEmpty  {} = ""
+
+-- Has a type
 instance Typeful CDecl where
     getincludes CDEmpty  {}     = []
     getincludes CDType   { .. } = getincludes _td
@@ -76,6 +109,14 @@ instance Typeful CDecl where
 
     getMaxVaridx = getMaxVaridx . gettype
 
+-- Pretty print the template line
+mkTemplateLine :: [CType] -> Doc ann
+mkTemplateLine argsT =
+    if null templates then mempty else "template<" <> commatize templates <> ">" <> line
+    where getTemplates t = take (getMaxVaridx t) ['T'..'Z']
+          templates = [ "class" <+> pretty a | a <- L.nub $ concatMap getTemplates argsT]
+
+-- Pretty print a declaration
 instance Pretty CDecl where
   pretty CDFunc   { _fd = CDef { .. }, .. } =
           mkTemplateLine (_ty:map gettype _fargs)
@@ -97,5 +138,6 @@ instance Pretty CDecl where
     where toNm = pretty . _nm
   pretty CDEmpty {} = mempty
   pretty CDInd { _id = CDef { .. }, .. } = error $ "Inductive declaration " ++ show _nm ++ " was not expanded"
+  pretty CDSeq { .. } = vsep [pretty _left, pretty _right]
   pretty e = error $ "Unhandled declaration " ++ show e
 

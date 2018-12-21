@@ -14,7 +14,6 @@ import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
 import Data.Map (Map)
 import qualified Data.Text as T
-import qualified Control.Lens as Lens
 import qualified Data.Map  as M
 import Debug.Trace
 
@@ -34,6 +33,10 @@ class Typeful a where
     addctx       :: Context CType -> a -> Context CType
     -- Get number of free types
     getMaxVaridx :: a -> Int
+
+-- This class is for instances with names
+class Nameful a where
+    getname      :: a -> Text
 
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
@@ -202,6 +205,20 @@ instance Typeful CType where
               getVaridxs CTPtr  { .. } = getVaridxs _inner
               getVaridxs _ = [0]
 
+instance Nameful CDef where
+    getname CDef { .. } = _nm
+
+instance Nameful CExpr where
+    getname CExprCall   { .. } = _nm _cd
+    getname CExprStr    { .. } = _str
+    getname CExprTuple  { .. } = T.pack . show $ _items
+    getname CExprNat    { .. } = T.pack . show $ _nat
+    getname CExprStmt   { .. } = _nm _sd
+    getname CExprVar    { .. } = _var
+    getname CExprBool   { .. } = T.pack . show $ _bool
+    getname CExprLambda { .. } = "(lambda)"
+    getname e = "(expr)"
+
 -- Utility functions
 -- Convert sequence to list of expressions
 seqToList :: CExpr -> [CExpr]
@@ -257,9 +274,4 @@ instance Pretty CExpr where
                             <> "return" <+> pretty (last . seqToList $ s) <> ";"
   pretty CExprStmt   { _sd = CDef { _nm = "_", .. }, .. } = pretty _sbody
   pretty CExprStmt   { _sd = CDef { .. }, .. } = pretty _ty <+> pretty _nm <+> "=" <+> pretty _sbody
-
--- Generate lenses
-Lens.makeLenses ''CDef
-Lens.makeLenses ''CExpr
-Lens.makeLenses ''CType
 

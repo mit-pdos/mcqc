@@ -3,7 +3,6 @@
 module Codegen.Ind where
 import CIR.Expr
 import CIR.Decl
-import Control.Lens
 import Common.Utils
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
@@ -40,7 +39,7 @@ mkMatch CDef { .. } ctors =
       ]
     where freevars                      = getMaxVaridx _ty
           fdefs                         = givenm 'f' [CTFree (i + freevars) | i <- [1..length ctors]]
-          fnames                        = map (view nm) fdefs
+          fnames                        = map getname fdefs
           mkLambdas f (o,ft@CTFunc { .. }) = CExprLambda [CDef "_" $ toCtorT o ft] $ CExprCall (CDef f CTAuto) (dodots $ length _fins)
           dodots n                      = [CExprVar ("_" `T.append` "." `T.append` T.pack [i]) | i <- take n ['a'..]]
 
@@ -62,7 +61,7 @@ mkCtorFunc CDef { .. } (ctornm, CTFunc { .. }) =
     CDFunc fdptr defs $
       CExprCall (CDef "return" (CTPtr _ty)) [    -- return inside the ctor body
         CExprCall (CDef "std::make_shared" _ty) [ -- wrap in a shared pointer
-          CExprCall fd . map (CExprVar . view nm) $ defs -- Call struct constructor in mkCDStruct
+          CExprCall fd . map (CExprVar . getname) $ defs -- Call struct constructor in mkCDStruct
         ]
       ]
     where fdptr = CDef (T.toLower ctornm) (CTPtr _ty)

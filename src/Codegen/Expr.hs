@@ -59,7 +59,7 @@ toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last typelist) (init typelist)
           typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
           -- raise CTFuncs to template functions
           raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
-          raiseCTFunc CTExpr { .. }   = do { cargs <- mapM raiseCTFunc _tins; return $ CTExpr _tbase cargs }
+          raiseCTFunc CTExpr { .. }   = CTExpr _tbase <$> mapM raiseCTFunc _tins
           raiseCTFunc o               = return o
 
 -- Type compiling, from Coq to C++

@@ -7,13 +7,12 @@ module CIR.File where
 import GHC.Generics
 import CIR.Decl
 import Data.Aeson
-import Control.Lens
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
 import qualified Data.Text as T
 import qualified Data.List as L
 
-data CFile = CFile { _includes :: [Text], _decls :: [CDecl] }
+data CFile = CFile { _includes :: [Text], _decl :: CDecl }
     deriving (Show, Eq, Generic, ToJSON)
 
 instance Pretty CFile where
@@ -24,13 +23,12 @@ instance Pretty CFile where
            <> line
            <> line <> (vcat . map (\p -> "using namespace" <+> pretty (T.toTitle p) <> ";") $ _includes)
            <> line
-           <> line <> (vsep . map pretty $ _decls)
+           <> line <> (pretty _decl)
 
 instance Semigroup CFile where
-    a <> b = CFile (L.sort . L.nub $ _includes a ++ _includes b) $ _decls a ++ _decls b
+    a <> b = CFile (L.sort . L.nub $ _includes a ++ _includes b) $ _decl a <> _decl b
 
 instance Monoid CFile where
-    mempty = CFile [] []
+    mempty = CFile [] mempty
     mappend = (<>)
 
-makeLenses ''CFile

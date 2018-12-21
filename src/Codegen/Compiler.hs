@@ -16,6 +16,7 @@ import Types.Context
 import Types.Templates
 import Common.Utils
 import Sema.Pipeline
+import Data.MonoTraversable
 import Control.Monad.State
 import Data.Text (Text)
 import qualified Data.List     as L
@@ -44,13 +45,16 @@ compile Module { .. } = do
     let newctx = foldl addctx ctx untyped
     let incls = L.sort . L.nub . concatMap getAllowedIncludes $ alldecls
     put newctx
-    return . CFile incls $ map (typeify newctx) $ untyped
+    CFile incls . mconcat <$> otraverse typeify untyped
+
 
 -- Add types to generated CDecl by type inference based on a type context
-typeify :: Context CType -> CDecl -> CDecl
-typeify ctx CDFunc { .. } = CDFunc _fd _fargs $ exprmodifier  _fbody
-    where exprmodifier = templatify ctx . unify ctx (gettype _fd)
-typeify _ o = o
+typeify :: CDecl -> State (Context CType) CDecl
+typeify CDFunc { .. } = do
+    ctx <- get
+    let exprmodifier = templatify ctx . unify ctx (gettype _fd)
+    return $ CDFunc _fd _fargs (exprmodifier  _fbody)
+typeify o = return o
 
 -- Get allowed includes based on the libraries in the config
 getAllowedIncludes :: CDecl -> [Text]
