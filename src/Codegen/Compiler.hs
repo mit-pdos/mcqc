@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE BangPatterns #-}
 module Codegen.Compiler (compile) where
 import Parser.Mod
 import Parser.Decl
@@ -37,7 +38,7 @@ compilexpr e
 -- Compile a module
 compile :: Module -> State (Context CType) CFile
 compile Module { .. } = do
-    let alldecls = concatMap (expandind . toCDecl) $ declarations
+    let alldecls = map toCDecl declarations
     -- Get the context so far
     ctx <- get
     let untyped = filter (\d -> not $ getname d `M.member` ctx) alldecls
@@ -63,37 +64,23 @@ getAllowedIncludes = filter (`elem` Conf.libs) . getincludes
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
-toCDecl FixDecl { fixlist = [ Fix { name = Just n, value = ExprLambda { .. }, .. } ] } =
-    CDFunc retNT argsNT cbody
+toCDecl FixDecl { fixlist = [ Fix { name = Just nm, value = ExprLambda { .. }, .. } ] } =
+    case toCType ftyp of
+      (CTFunc { .. }) -> CDFunc (CDef nm . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
     where cbody = compilexpr body
-          (retNT, argsNT) = case toCType ftyp of
-                                (CTFunc { .. }) -> (CDef n _fret, zipf argnames _fins)
-                                (o) -> error $ "Fixpoint declartion with no-func type " ++ show o
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
-    CDFunc retNT argsNT cbody
+    case toCType typ of
+      (CTFunc { .. }) -> CDFunc (CDef name . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
+      -- A constant term declaration is defined as a function with no args and the expression as the body
+      (e) -> CDFunc (CDef name e) [] cbody
     where cbody = compilexpr body
-          (retNT, argsNT) = case toCType typ of
-                                (CTFunc { .. }) -> (CDef name _fret, zipf argnames _fins)
-                                (e) -> (CDef name e, [])
--- If an Ind of base is found, ignore
+-- If an Ind of base is defined as a base type, ignore
 toCDecl IndDecl  { .. }
     | name `elem` Conf.base = CDEmpty
     | (T.toLower name) `elem` Conf.base = CDEmpty
 -- Inductive type
-toCDecl IndDecl  { iargs = [], .. } = CDInd (CDef iname indtype) $ map mkctor constructors
-    where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCType) argtypes)
-          mkctor o = error $ "Non inductive constructor found, failing " ++ show o
-          mkptr t | t == indtype = CTPtr t | otherwise = t
-          indtype = CTBase iname
-          iname = toCTBase name
--- Parametric inductive type
-toCDecl IndDecl  { .. } = CDInd (CDef iname indtype) $ map mkctor constructors
-    where mkctor IndConstructor { .. } = (name, CTFunc indtype $ map (mkptr . toCTypeAbs iargs) argtypes)
-          mkctor o = error $ "Non inductive constructor found, failing " ++ show o
-          mkptr t | t == indtype = CTPtr t | otherwise = t
-          indtype  = CTExpr iname [CTFree $ length iargs]
-          iname = toCTBase name
+toCDecl i@IndDecl  { .. } = contract . expand $ i
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType . CDef (toCTBase name) $ toCType tval
 -- Sanitize declarations for correctness

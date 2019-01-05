@@ -216,8 +216,13 @@ instance Nameful CExpr where
     getname CExprStmt   { .. } = _nm _sd
     getname CExprVar    { .. } = _var
     getname CExprBool   { .. } = T.pack . show $ _bool
-    getname CExprLambda { .. } = "(lambda)"
-    getname e = "(expr)"
+    getname e = error $ "Cannot get a name for expr " ++ show e
+
+instance Nameful CType where
+    getname CTExpr { .. } = _tbase
+    getname CTBase { .. } = _base
+    getname CTVar  { .. } = _vname
+    getname t = error $ "Cannot get a name for type " ++ show t
 
 -- Utility functions
 -- Convert sequence to list of expressions

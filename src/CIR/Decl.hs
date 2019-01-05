@@ -24,7 +24,6 @@ data CDecl =
     CDFunc     { _fd :: CDef, _fargs :: [CDef], _fbody :: CExpr }
     | CDType   { _td :: CDef }
     | CDExpr   { _en :: Text, _expr :: CExpr }
-    | CDInd    { _id :: CDef, _ictors :: [(Text, CType)] }
     | CDStruct { _sn :: Text, _fields :: [CDef] }
     | CDSeq    { _left :: CDecl, _right :: CDecl }
     | CDEmpty  {}
@@ -78,18 +77,18 @@ instance Nameful CDecl where
     getname CDFunc   { .. } = _nm _fd
     getname CDType   { .. } = _nm _td
     getname CDExpr   { .. } = _en
-    getname CDInd    { .. } = _nm _id
     getname CDStruct { .. } = _sn
     getname CDEmpty  {} = ""
+    getname CDSeq    { .. } = getname _left
 
 -- Has a type
 instance Typeful CDecl where
     getincludes CDEmpty  {}     = []
     getincludes CDType   { .. } = getincludes _td
-    getincludes CDInd    { .. } = "variant" : getincludes _id ++ concatMap (getincludes . snd) _ictors
     getincludes CDFunc   { .. } = getincludes _fd ++ concatMap getincludes _fargs ++ getincludes _fbody
     getincludes CDStruct { .. } = concatMap getincludes _fields
     getincludes CDExpr   { .. } = getincludes _expr
+    getincludes CDSeq    { .. } = getincludes _left ++ getincludes _right
 
     unify ctx t CDType   { .. } = CDType $ unify ctx t _td
     unify ctx t CDExpr   { .. } = CDExpr _en $ unify ctx t _expr
@@ -137,7 +136,6 @@ instance Pretty CDecl where
           <> line <> "};" <> line
     where toNm = pretty . _nm
   pretty CDEmpty {} = mempty
-  pretty CDInd { _id = CDef { .. }, .. } = error $ "Inductive declaration " ++ show _nm ++ " was not expanded"
   pretty CDSeq { .. } = vsep [pretty _left, pretty _right]
   pretty e = error $ "Unhandled declaration " ++ show e
 
