@@ -40,7 +40,6 @@ namespace Array {
         return a;
     }
 
-
     template<typename T>
     constexpr array<T> empty(nat n, T val) {
         return std::vector<T>(n, val);

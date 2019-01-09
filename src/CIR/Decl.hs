@@ -24,7 +24,7 @@ data CDecl =
     CDFunc     { _fd :: CDef, _fargs :: [CDef], _fbody :: CExpr }
     | CDType   { _td :: CDef }
     | CDExpr   { _en :: Text, _expr :: CExpr }
-    | CDStruct { _sn :: Text, _fields :: [CDef] }
+    | CDStruct { _sn :: Text, _fields :: [CDef], _nfree :: Int }
     | CDSeq    { _left :: CDecl, _right :: CDecl }
     | CDEmpty  {}
   deriving (Eq, Generic, ToJSON)
@@ -93,7 +93,8 @@ instance Typeful CDecl where
     unify ctx t CDType   { .. } = CDType $ unify ctx t _td
     unify ctx t CDExpr   { .. } = CDExpr _en $ unify ctx t _expr
     unify ctx t CDFunc   { .. } = CDFunc (unify ctx t _fd) _fargs $ unify ctx t _fbody
-    unify ctx t CDStruct { .. } = CDStruct _sn $ map (unify ctx t) _fields
+    unify ctx t CDStruct { .. } = CDStruct _sn (map (unify ctx t) _fields) _nfree
+    unify ctx t CDSeq    { .. } = CDSeq (unify ctx t _left) (unify ctx t _right)
     unify _ _  a = a
 
     gettype CDType { .. } = gettype _td
@@ -102,8 +103,15 @@ instance Typeful CDecl where
     gettype _             = CTUndef
 
     addctx ctx d@CDFunc { .. } = mergeCtx ctx $ M.singleton (_nm _fd) (gettype d)
+    addctx ctx CDType { _td = CDef { _ty = CTExpr { _tbase = "std::variant", ..  }, .. } }
+        | freedom > 0 = mergeCtx ctx $ M.fromList . map exprmaker $ _tins
+        | otherwise = mergeCtx ctx $ M.fromList . map basemaker $ _tins
+        where freedom = maximum . map getMaxVaridx $ _tins
+              exprmaker n = (getname n, CTExpr _nm [CTFree i | i <- [1..freedom]])
+              basemaker n = (getname n, CTBase _nm)
     addctx ctx CDType { .. } = addctx ctx _td
     addctx ctx CDExpr { .. } = mergeCtx ctx $ M.singleton _en (gettype _expr)
+    addctx ctx CDSeq  { .. } = ctx `addctx` _left `addctx` _right
     addctx ctx _ = ctx
 
     getMaxVaridx = getMaxVaridx . gettype
@@ -125,7 +133,9 @@ instance Pretty CDecl where
   pretty CDType   { _td = CDef { .. }, .. } =
           mkTemplateLine [_ty]
           <> "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";" <> line
-  pretty CDStruct { _fields = [], ..} = "struct" <+> pretty _sn <+> "{};"
+  pretty CDStruct { _fields = [], .. } =
+          mkTemplateLine [CTFree i | i <- [1.._nfree]]
+          <> "struct" <+> pretty _sn <+> "{};"
   pretty CDStruct { .. } =
           mkTemplateLine (map gettype _fields)
           <> "struct" <+> pretty _sn <+> "{"

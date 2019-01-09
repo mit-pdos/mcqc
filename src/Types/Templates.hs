@@ -5,7 +5,6 @@ import Types.Context
 import CIR.Expr
 import Data.Map
 import Data.MonoTraversable
-import Debug.Trace
 
 -- Make a CDef into a template form by getting the gcs
 class Template a where
@@ -19,8 +18,7 @@ instance Template CDef where
             (Just t) -> CDef _nm t
 
 instance Template CExpr where
-    templatify ctx d | trace ("Templating expr " ++ show d) False = undefined
-    templatify ctx CExprCall { .. } = trace ("=====  GOT IT " ++ show _cd ++ " becomes " ++ show (templatify ctx _cd)) (CExprCall (templatify ctx _cd) $ fmap (templatify ctx) _cparams)
+    templatify ctx CExprCall { .. } = CExprCall (templatify ctx _cd) $ fmap (templatify ctx) _cparams
     templatify ctx e = omap (templatify ctx) e
 
 -- Greatest common subtype between two types

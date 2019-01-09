@@ -42,19 +42,21 @@ contract CDInd  { .. } = mconcatMap (mkCtorStruct unaliasedT) _ictors
                         <> mkIndAlias _id _ictors
                         <> mconcatMap (mkCtorFunc _id) _ictors
                         <> mkMatch _id _ictors
-    where unaliasedT = CTExpr "std::variant" $ mapf toCtorT _ictors
+    where freedom = maximum $ map getMaxVaridx _ictors
+          unaliasedT = CTExpr "std::variant" $ mapf (toCtorT freedom) _ictors
           mconcatMap f a = mconcat $ map f a
 
 -- Take a Coq constructor, create a C++ constructor type
-toCtorT :: Text -> CType -> CType
-toCtorT nm CTFunc { .. }
-    | freedom > 0 = CTExpr nm [CTFree freedom]
+toCtorT :: Int -> Text -> CType -> CType
+toCtorT n nm CTFunc { .. }
+    | freedom > 0 = CTExpr nm [CTFree i | i<- [1..freedom]]
     | otherwise = CTBase nm
-    where freedom = maximum $ 0:map getMaxVaridx _fins
+    where freedom = maximum $ n:map getMaxVaridx _fins
+
 -- Make a lambda clause to a match
-mkMatchClause :: Text -> CDef -> CExpr
-mkMatchClause fn CDef { _ty = ft@CTFunc { .. }, .. } =
-    CExprLambda [CDef "_" $ toCtorT _nm ft] $ CExprCall (CDef fn CTAuto) (dodots $ length _fins)
+mkMatchClause :: Int -> Text -> CDef -> CExpr
+mkMatchClause nfree fn CDef { _ty = ft@CTFunc { .. }, .. } =
+    CExprLambda [CDef "_" $ toCtorT nfree _nm ft] $ CExprCall (CDef fn CTAuto) (dodots $ length _fins)
     where dodots n = [CExprVar ("_" `T.append` "." `T.append` T.pack [i]) | i <- take n ['a'..]]
 
 -- Make a match statement for unfolding the Inductive type
@@ -62,26 +64,27 @@ mkMatch :: CDef -> [CDef] -> CDecl
 mkMatch CDef { .. } ctors =
     CDFunc (CDef "match" CTAuto) ((CDef "self" $ CTPtr _ty):fdefs) $
       CExprCall (CDef "return" CTAuto) [
-        CExprCall (CDef "gmatch" CTAuto) $ (CExprVar "self"):(zipWith mkMatchClause fnames ctors)
+        CExprCall (CDef "gmatch" CTAuto) $ (CExprVar "self"):(zipWith mkClause fnames ctors)
       ]
-    where freevars = getMaxVaridx _ty
-          fdefs = givenm 'f' [CTFree (i + freevars) | i <- [1..length ctors]]
+    where freedom = getMaxVaridx _ty
+          mkClause = mkMatchClause freedom
+          fdefs = givenm 'f' [CTFree (i + freedom) | i <- [1..length ctors]]
           fnames = map getname fdefs
 
 -- Make a struct for each Coq inductive constructor with that name
--- Args: constructor: (Text, CType)
---       Struct recursive type (own type unaliased)
 mkCtorStruct :: CType -> CDef -> CDecl
 mkCtorStruct unaliasT CDef { _nm = name, _ty = CTFunc { .. } } =
-    CDStruct name (givenm 'a' . map mkRecTypes $ _fins)
-    where mkRecTypes rec
+    CDStruct name (givenm 'a' . map mkRecTypes $ _fins) freedom
+    where freedom = getMaxVaridx unaliasT
+          mkRecTypes rec
             | CTPtr _fret == rec = CTPtr unaliasT
             | otherwise = rec
 mkCtorStruct _ CDef { .. } = error $ "Cannot export constructor " ++ show (_nm)
 
 -- Make C++ variant an alias for Coq inductive type
 mkIndAlias :: CDef -> [CDef] -> CDecl
-mkIndAlias CDef { .. } = CDType . CDef _nm . CTExpr "std::variant" . mapf toCtorT
+mkIndAlias CDef { .. } = CDType . CDef _nm . CTExpr "std::variant" . mapf (toCtorT freedom)
+    where freedom = getMaxVaridx _ty
 
 -- Make C++ ctor functions for each Coq inductive constructor
 mkCtorFunc :: CDef -> CDef -> CDecl

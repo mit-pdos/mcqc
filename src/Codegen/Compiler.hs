@@ -51,10 +51,12 @@ compile Module { .. } = do
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> State (Context CType) CDecl
+typeify d | trace ("Typeifying CDecl " ++ show d) False = undefined
 typeify CDFunc { .. } = do
     ctx <- get
     let exprmodifier = templatify ctx . unify ctx (gettype _fd)
     return $ CDFunc _fd _fargs (exprmodifier  _fbody)
+typeify CDSeq { .. } = CDSeq <$> typeify _left <*> typeify _right
 typeify o = return o
 
 -- Get allowed includes based on the libraries in the config

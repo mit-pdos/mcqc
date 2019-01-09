@@ -142,12 +142,10 @@ instance Typeful CExpr where
         -- A match preserves the type if the lambdas return it (omit matched object)
         | _nm  == "match"    = CExprCall newD $ head _cparams:map (unify ctx t) (tail _cparams)
         -- Match with something from the context
-        | _nm `M.member` ctx =
-            case ctx M.! _nm of
-              (CTFunc { .. }) -> CExprCall newD $ zipWith (unify ctx) _fins _cparams
-              (t) -> error $ "Cannot unify " ++ show _nm ++ " with " ++ show t
-        -- Function call obfuscate the return type, ignore them
-        | otherwise             = CExprCall newD _cparams
+        | otherwise = case ctx M.!? _nm of
+              (Just CTFunc { .. }) -> CExprCall newD $ zipWith (unify ctx) _fins _cparams
+              (Just t2) -> CExprCall newD _cparams -- error $ "Cannot unify " ++ show _nm ++ " with " ++ show t2 ++ " and " ++ show t
+              (Nothing) -> CExprCall newD _cparams
         where newD = CDef _nm $ unify ctx t _ty
     -- Or explicit if it comes from the first rule handling return calls
     unify ctx t s@CExprSeq { .. } = listToSeq first <> retexpr
