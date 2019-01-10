@@ -12,13 +12,12 @@
     CPP: read_loop(fd f)
     CPP: cat(pathname path, string fn)
 *)
+Add LoadPath "../../classes".
 Require MNat.
-Require MList.
 Require MProc.
 Require MString.
 Require MShow.
 Import MNat.Nat.
-Import MList.List.
 Import MProc.Proc.
 Import MString.String.
 Import MShow.Show.
@@ -31,18 +30,15 @@ Definition read_loop (f: fd) :=
       (fun prev => (snd prev) =? 0)
       (fun prev => s <- read f 4096;
                   ret match prev with
-                      | Some (sp, _) => ((sp ++ s), length s)
-                      | None => (s, length s)
+                      | Some (sp, _) => ((sp ++ s), size s)
+                      | None => (s, size s)
                       end
       )
       (Some ("", 4096));
     ret (fst tup).
 
-Local Close Scope string_scope.
-Require Import Coq.Lists.List.
-Import ListNotations.
-Definition cat (path: pathname) (fn : string) :=
-  f <- open (path ++ [fn]);
+Definition cat (path: string) (fn : string) :=
+  f <- open (path ++ "/" ++ fn);
   contents <- read_loop f;
   _ <- close f;
   _ <- print (show contents);

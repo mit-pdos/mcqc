@@ -11,12 +11,12 @@ import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.Compiler
 import Ops.Flags
 import Types.Context
+import Common.Filter
 import CIR.File
 import Parser.Mod
 import qualified Data.ByteString.Lazy.Char8 as B
 import qualified Data.Text as T
 import qualified Common.Config as Conf
-import Debug.Trace
 
 -- Render from Pretty printer Doc to bytestring
 render :: Doc ann -> ByteString
@@ -33,7 +33,8 @@ main = do
     forM_ flags (\flag ->
         case flag of
             (Output outfn) -> do
-                let extfn = map (`T.append` ".json") $ used_modules ast
+                let modules = filterMod . used_modules $ ast
+                let extfn = map (`T.append` ".json") modules
                 externals <- mapM (readAst . T.unpack) extfn
                 -- All the compiling in one line
                 let bigfile = flip evalState Conf.nativeContext (mconcat <$> mapM compile (externals ++ [ast]))
@@ -41,8 +42,11 @@ main = do
             (Debug) -> do
                 putStrLn . header $ "Args"
                 putStrLn . show $ args
+                putStrLn . header $ "Modules Imported"
+                let modules = filterMod . used_modules $ ast
+                putStrLn . show $ modules
                 putStrLn . header $ "JSON dump"
-                let extfn = map (`T.append` ".json") $ used_modules ast
+                let extfn = map (`T.append` ".json") modules
                 externals <- mapM (readAst . T.unpack) extfn
                 putStrLn . show $ externals
                 -- All the compiling in one line

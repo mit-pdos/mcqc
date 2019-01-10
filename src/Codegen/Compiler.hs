@@ -16,15 +16,14 @@ import Codegen.Rewrite
 import Types.Context
 import Types.Templates
 import Common.Utils
+import Common.Filter
 import Sema.Pipeline
 import Data.MonoTraversable
 import Control.Monad.State
-import Data.Text (Text)
 import qualified Data.List     as L
 import qualified Data.Text     as T
 import qualified Data.Map      as M
 import qualified Common.Config as Conf
-import Debug.Trace
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
@@ -44,14 +43,14 @@ compile Module { .. } = do
     let untyped = filter (\d -> not $ getname d `M.member` ctx) alldecls
     -- Add declarations
     let newctx = foldl addctx ctx untyped
-    let incls = L.sort . L.nub . concatMap getAllowedIncludes $ alldecls
+    let incls = L.sort . L.nub . concatMap (filterAllowed . getincludes) $ alldecls
     put newctx
     CFile incls . mconcat <$> otraverse typeify untyped
 
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> State (Context CType) CDecl
-typeify d | trace ("Typeifying CDecl " ++ show d) False = undefined
+-- typeify d | trace ("Typeifying CDecl " ++ show d) False = undefined
 typeify CDFunc { .. } = do
     ctx <- get
     let exprmodifier = templatify ctx . unify ctx (gettype _fd)
@@ -59,16 +58,13 @@ typeify CDFunc { .. } = do
 typeify CDSeq { .. } = CDSeq <$> typeify _left <*> typeify _right
 typeify o = return o
 
--- Get allowed includes based on the libraries in the config
-getAllowedIncludes :: CDecl -> [Text]
-getAllowedIncludes = filter (`elem` Conf.libs) . getincludes
-
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
 toCDecl FixDecl { fixlist = [ Fix { name = Just nm, value = ExprLambda { .. }, .. } ] } =
     case toCType ftyp of
       (CTFunc { .. }) -> CDFunc (CDef nm . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
+      (e) -> error $ "Fixpoint with non-function type " ++ show e
     where cbody = compilexpr body
 -- Lambda Declarations -> C Functions
 toCDecl TermDecl { val = ExprLambda { .. }, .. } =
@@ -90,4 +86,4 @@ toCDecl FixDecl { fixlist = [ Fix { name = Just _, value = _ } ] } = error "Fixp
 toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
 toCDecl FixDecl { fixlist = [] }                                   = error "Empty fixlist for declaration found, undefined behavior"
 toCDecl FixDecl { fixlist = _:_ }                                  = error "Fixlist with multiple fixpoints is undefined behavior"
-
+toCDecl _ = mempty

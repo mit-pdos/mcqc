@@ -9,9 +9,6 @@ import Codegen.Expr
 import Codegen.Rewrite
 import Common.Utils
 import Data.Text (Text)
-import Data.Text.Prettyprint.Doc
-import Data.Text.Prettyprint.Doc.Render.Text
-import qualified Common.Config as Conf
 import qualified Data.Text     as T
 import Debug.Trace
 

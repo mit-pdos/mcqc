@@ -5,7 +5,6 @@ Module Option.
   {
     some:   A -> Option;
     none:   Option;
-    map:    (A->A) -> Option A -> Option A;
   }.
 
   Instance nativeOption {T}: NativeOption T (option T) :=

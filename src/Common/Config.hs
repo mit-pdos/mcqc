@@ -7,11 +7,11 @@ import qualified Data.Map as M
 
 -- Libraries in include/*.hpp
 libs :: [Text]
-libs = [ "nat", "proc", "show", "string", "variant", "tuple" ]
+libs = [ "nat", "bool", "proc", "show", "string", "variant", "pair" ]
 
 -- Base types (pass-by-value)
 base :: [Text]
-base = [ "nat", "string", "tuple", "option" ]
+base = [ "nat", "ascii", "bool", "proc", "string", "prod", "option" ]
 
 -- Type context of native libraries
 nativeContext :: Context CType

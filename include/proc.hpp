@@ -3,6 +3,7 @@
 #include <iostream>
 #include <future>
 #include "string.hpp"
+#include "option.hpp"
 #include "exception.h"
 #include "nat.hpp"
 #include "tuple.hpp"
@@ -26,6 +27,7 @@ namespace {
 }
 
 using namespace String;
+using namespace Option;
 using namespace Nat;
 
 namespace Proc {

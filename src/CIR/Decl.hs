@@ -43,17 +43,18 @@ instance Monoid CDecl where
 
 instance MonoFunctor CDecl where
     omap f CDSeq { .. } = f _left <> f _right
-    omap f CDEmpty = mempty
+    omap _ CDEmpty = mempty
+    omap _ d = d
 
 instance MonoFoldable CDecl where
     ofoldMap f = ofoldr (mappend . f) mempty
 
-    ofoldr f b CDEmpty = b
+    ofoldr _ b CDEmpty = b
     ofoldr f b CDSeq { .. } = f _left (ofoldr f b _right)
     ofoldr f b d = f d b
 
     ofoldl' f b CDSeq { .. } = ofoldl' f (f b _left) _right
-    ofoldl' f b CDEmpty = b
+    ofoldl' _ b CDEmpty = b
     ofoldl' f b d = f b d
 
     otoList CDSeq { .. } = _left:otoList _right
@@ -61,7 +62,7 @@ instance MonoFoldable CDecl where
     otoList d            = [d]
 
     onull CDEmpty = True
-    onull d = False
+    onull _ = False
 
     olength = length . otoList
     ofoldr1Ex f = ofoldr1Ex f . otoList
@@ -69,7 +70,7 @@ instance MonoFoldable CDecl where
 
 instance MonoTraversable CDecl where
     otraverse f CDSeq { .. } = CDSeq <$> otraverse f _left <*> otraverse f _right
-    otraverse f CDEmpty = pure CDEmpty
+    otraverse _ CDEmpty = pure CDEmpty
     otraverse f d = f d
 
 -- Has a name
@@ -102,6 +103,7 @@ instance Typeful CDecl where
     gettype CDFunc { .. } = CTFunc (_ty _fd) (map gettype _fargs)
     gettype _             = CTUndef
 
+    addctx ctx CDFunc { _fd = CDef { _nm = "match" } } = ctx
     addctx ctx d@CDFunc { .. } = mergeCtx ctx $ M.singleton (_nm _fd) (gettype d)
     addctx ctx CDType { _td = CDef { _ty = CTExpr { _tbase = "std::variant", ..  }, .. } }
         | freedom > 0 = mergeCtx ctx $ M.fromList . map exprmaker $ _tins

@@ -12,10 +12,8 @@ import Common.Pretty
 import Types.Context
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
-import Data.Map (Map)
 import qualified Data.Text as T
 import qualified Data.Map  as M
-import Debug.Trace
 
 -- Foldable is not possible as CExpr cannot be empty, FunctorM will do
 class MonoFunctorM mono where
@@ -144,8 +142,7 @@ instance Typeful CExpr where
         -- Match with something from the context
         | otherwise = case ctx M.!? _nm of
               (Just CTFunc { .. }) -> CExprCall newD $ zipWith (unify ctx) _fins _cparams
-              (Just t2) -> CExprCall newD _cparams -- error $ "Cannot unify " ++ show _nm ++ " with " ++ show t2 ++ " and " ++ show t
-              (Nothing) -> CExprCall newD _cparams
+              (_) -> CExprCall newD _cparams
         where newD = CDef _nm $ unify ctx t _ty
     -- Or explicit if it comes from the first rule handling return calls
     unify ctx t s@CExprSeq { .. } = listToSeq first <> retexpr
@@ -195,6 +192,9 @@ instance Typeful CType where
     -- Return the type itself
     gettype x = x
 
+    -- addctx will not do anything without a name
+    addctx ctx _ = ctx
+
     -- Return number of free variables
     getMaxVaridx t = foldl max 0 $ getVaridxs t
         where getVaridxs CTFree { .. } = [_idx]
@@ -243,7 +243,7 @@ instance Pretty CType where
   pretty CTExpr  { .. } = pretty _tbase <> "<" <> commatize (map pretty _tins) <> ">"
   pretty CTBase  { .. } = pretty _base
   -- Use template letters starting at T as is custom in C++
-  pretty CTFree  { .. } = pretty $ ['T'..'Z'] !! (_idx - 1)
+  pretty CTFree  { .. } = pretty $ stringsFromTo 'T' 'Z' !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
   pretty CTUndef {}     = error "Undef type found, type inference error"
   pretty CTPtr   { .. } = "std::shared_ptr<" <> pretty _inner <> ">"

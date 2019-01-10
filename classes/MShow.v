@@ -4,7 +4,6 @@ Import MNat.Nat.
 
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
 
 Module Show.
   Class Show A :=
@@ -37,14 +36,6 @@ Module Show.
         | n' => itoaT time' n' acc'
         end
       end.
-    Import ListNotations.
-    Fixpoint list2str {T} {showT : Show.Show T} (l: list T) : string :=
-      match l with
-      | [] => ""
-      | [h] => Show.show h
-      | h :: ts => (Show.show h) ++ ", " ++ (list2str ts)
-      end.
-    Local Close Scope list_scope.
   End _Private.
   (** End private functions *)
 
@@ -65,10 +56,6 @@ Module Show.
     {
       show b := if b then "true" else "false";
     }.
-  Instance showList {T} {showT: Show T} : Show (list T) :=
-    {
-      show l := "[" ++ (_Private.list2str l) ++ "]";
-    }.
   Instance showOption {T} {showT: Show T} : Show (option T) :=
     {
       show o := match o with
@@ -84,4 +71,4 @@ End Show.
 
 Require Extraction.
 Extraction Language JSON.
-Separate Extraction Show.showAscii Show.showString Show.showNat Show.showBool Show.showList Show.showOption Show.showTuple.
+Separate Extraction Show.showAscii Show.showString Show.showNat Show.showBool Show.showOption Show.showTuple.

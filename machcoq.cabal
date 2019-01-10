@@ -46,6 +46,7 @@ executable machcoq
       Common.Config
       Common.Utils
       Common.Pretty
+      Common.Filter
       Types.Context
       Types.Templates
   hs-source-dirs:

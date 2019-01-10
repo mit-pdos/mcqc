@@ -1,26 +1,22 @@
 Require MString.
 Import MString.String.
-Require MList.
-Import MList.List.
 
 Set Implicit Arguments.
 
 Module Proc.
   Definition fd := nat.
-  Definition filename := string.
-  Definition pathname := list filename.
 
   Inductive proc: Type -> Type :=
   (** Open filepath to fd *)
-  | open : pathname -> proc fd
+  | open : string -> proc fd
   (** Open TCP port to fd *)
   | socket: nat -> proc fd
   (** Read from fd *)
   | read: fd -> nat -> proc string
   (** Write to fd *)
   | write: fd -> string -> proc unit
-  | link : pathname -> pathname -> proc bool
-  | unlink : pathname -> proc unit
+  | link : string -> string -> proc bool
+  | unlink : string -> proc unit
   (** Close fd *)
   | close : fd -> proc unit
   (** Get random UUID *)

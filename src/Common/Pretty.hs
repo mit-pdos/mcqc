@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Common.Pretty where
+import Control.Monad
 import Data.Text.Prettyprint.Doc
 
 -- Add parenteses if the argument needs them
@@ -34,4 +35,8 @@ ptrDoc :: Doc ann
 ptrDoc = "template<typename T>"
     <> line <> "using Ptr = std::shared_ptr<T>;"
 
-
+stringsFromTo :: Char -> Char -> [[Char]]
+stringsFromTo t z = stringsFromToM 1 t z
+    where ts n = take n (repeat t)
+          zs n = take n (repeat z)
+          stringsFromToM n t z = zipWithM (\a b -> [a..b]) (ts n) (zs n) ++ stringsFromToM (n+1) t z
