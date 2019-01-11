@@ -3,11 +3,9 @@
 #include <cassert>
 #include "option.hpp"
 #include "show.hpp"
-#include "copy.hpp"
-#include "list.hpp"
 #include "bool.hpp"
 #include "proc.hpp"
-#include "tuple.hpp"
+#include "pair.hpp"
 #include "string.hpp"
 #include "curry.h"
 #include "benchmark.h"
@@ -17,27 +15,12 @@
 
 using namespace Option;
 using namespace Nat;
-using namespace List;
+using namespace Pair;
 using namespace String;
-using namespace Tuple;
 using namespace Bool;
 using namespace Show;
-using namespace Copy;
 using namespace Proc;
 
-template<typename T, typename Func>
-list<T> mapl(Func f, list<T> l) {
-    return match(l,
-        [=]()    { return list<T>(); },
-        [=](auto h, auto ls) { return cons(f(h), mapl(f, ls)); });
-}
-
-template<typename T>
-static inline list<T> rev(list<T> l) {
-    return match(l,
-        []()    { return list<T>(); },
-        [](auto h, auto ls) { return app(rev(ls), list<T>(1, h)); });
-}
 
 int main() {
 
@@ -46,32 +29,13 @@ int main() {
         return a  * b * c * d;
     };
 
-    list<nat> lval = list<nat>{2,4,6,8};
-    list<nat> rval = list<nat>{1,3,5};
-
-    list<nat> zeros = list<nat>{0,0,0};
-    list<list<nat>> llval = list<list<nat>>{lval, rval, lval, rval};
-    list<list<nat>> zzval = list<list<nat>>{zeros, zeros};
-
-    print(show(split(string("hello world of c++"))));
     print(show(true));
     print(mkstring('c',string("elo")));
-    print(show(app(app(copy(llval), zzval), copy(llval))));
-    print(show(head(llval)));
-    // Move some lists around to test rval references
-    print(show(app(copy(lval), list<nat>{1,3,5})));
-    print(show(app(list<nat>{2,4,6,8}, list<nat>{1,3,5})));
-    print(show(app(copy(lval), rval)));
-    print(show(app(list<nat>{2,4,6,8}, rval)));
-    print(show(tail(list<nat>{2,4,6,8})));
-    print(show(tail(copy(lval))));
-    print(show(tail(copy(lval))));
-    print(show(tail(copy(lval))));
 
     // Create a UUID v4
     print(getuuid());
 
-    print(show(mktuple((nat)1,(nat)2, string("foo"))));
+    print(show(mkpair((nat)1, string("foo"))));
 
     std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
@@ -92,20 +56,6 @@ int main() {
         []() { throw IOException("Should never be matched, since bool is false"); },
         []() { std::cout << "Bool matching works" << std::endl; });
 
-    // Lists with initializer_list
-    print(show(rev(list<nat>{1,2,3})));
-
-    // High order logic (map)
-    print(show(mapl([](nat n) { return n * 2; }, list<nat>{1,2,3})));
-
-    // Lists benchmark
-    list<nat> bar;
-    for(nat i = 0; i < BMAX; ++i)
-        bar.push_back(i);
-    tic();
-    assert(rev(rev(bar)) == bar);
-    toc();
-
     // strings
     match(append(string("foo"), string("bar")),
         []() { throw IOException("Should never be matched, since the str is non-empty"); },
@@ -120,15 +70,15 @@ int main() {
     print(append(string(foo),baz));
     print(foo);
 
-    // Tuples
-    auto t = mktuple((nat)1, 'b', "foo");
+    // Pairs
+    auto t = mkpair((nat)1, 'b');
     match(t,
-        [](nat a, char b, const char* c) {
-            std::cout << "Tuple expanded: " << a << ", " << b << ", " << c << std::endl;
+        [](nat a, char b) {
+            std::cout << "Pair expanded: " << a << ", " << b << std::endl;
         });
+
+    std::cout << "fst(t): " << fst(t) << std::endl;
     std::cout << "snd(t): " << snd(t) << std::endl;
-    std::cout << "fst(t): "; print(show(fst(t)));
-    std::cout << "fst(fst(t)): "; print(show(fst(fst(t))));
     return 0;
 }
 

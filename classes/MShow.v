@@ -63,7 +63,7 @@ Module Show.
                   | None => "None"
                 end;
     }.
-  Instance showTuple {A B} {showA : Show A} {showB : Show B} : Show (A * B) :=
+  Instance showProd {A B} {showA : Show A} {showB : Show B} : Show (A * B) :=
     {
       show t := "(" ++ (show (fst t)) ++ ", " ++ (show (snd t)) ++ ")"
     }.
@@ -71,4 +71,4 @@ End Show.
 
 Require Extraction.
 Extraction Language JSON.
-Separate Extraction Show.showAscii Show.showString Show.showNat Show.showBool Show.showOption Show.showTuple.
+Separate Extraction Show.showAscii Show.showString Show.showNat Show.showBool Show.showOption Show.showProd.

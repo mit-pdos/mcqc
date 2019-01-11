@@ -14,13 +14,6 @@ import Debug.Trace
 w2c :: Word8 -> Char
 w2c = C.chr . fromIntegral
 
--- Define a succ for Texts
-next :: Text -> Text
-next = T.pack . reverse . incrementText . reverse . T.unpack
-    where incrementText []          = ['a']
-          incrementText ('z':xs)    = 'a' : incrementText xs
-          incrementText (x:xs)      = succ x : xs
-
 -- Make an untyped definition
 mkdef :: Text -> CDef
 mkdef nm = CDef (toCName nm) CTAuto

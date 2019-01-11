@@ -44,11 +44,7 @@ toCTypeAbs abs TypVar  { .. }
     | name `elem` abs = CTFree . (+1) . MA.fromJust . L.elemIndex name $ abs
     | otherwise = CTVar (toCTBase name) $ map toCExpr args
 toCTypeAbs _ TypGlob    { targs = [], .. } = CTBase $ toCTBase name
-toCTypeAbs abs TypGlob    { .. }
-    | name == "Datatypes.prod" = CTExpr (toCTBase name) $ concatMap prodlist targs
-    | otherwise = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
-    where prodlist TypGlob { name = "Datatypes.prod", targs = [a,b] } = prodlist a ++ prodlist b
-          prodlist o = [toCTypeAbs abs o]
+toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
 toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
 toCTypeAbs _ TypDummy          {}     = CTBase "void"
 toCTypeAbs _ TypUnknown        {}     = CTAuto

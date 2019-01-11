@@ -40,13 +40,14 @@ compile Module { .. } = do
     let alldecls = map toCDecl declarations
     -- Get the context so far
     ctx <- get
-    let untyped = filter (\d -> not $ getname d `M.member` ctx) alldecls
+    let untyped = filterDecl ctx alldecls
+    -- Link with context
+    linked <- otraverse link untyped
     -- Add declarations
-    let newctx = foldl addctx ctx untyped
+    let newctx = foldl addctx ctx linked
     let incls = L.sort . L.nub . concatMap (filterAllowed . getincludes) $ alldecls
     put newctx
-    CFile incls . mconcat <$> otraverse typeify untyped
-
+    CFile incls . mconcat <$> otraverse typeify linked
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> State (Context CType) CDecl
@@ -57,6 +58,25 @@ typeify CDFunc { .. } = do
     return $ CDFunc _fd _fargs (exprmodifier  _fbody)
 typeify CDSeq { .. } = CDSeq <$> typeify _left <*> typeify _right
 typeify o = return o
+
+-- Remove coq_ prefix for things in Context
+namelink :: Context CType -> CExpr -> CExpr
+namelink ctx CExprCall { _cd = CDef { .. }, .. }
+    | cannonical `M.member` ctx = CExprCall (CDef cannonical _ty) recparams
+    | otherwise = CExprCall (CDef _nm _ty) recparams
+    where recparams = fmap (namelink ctx) _cparams
+          cannonical = case T.stripPrefix "coq_" _nm of
+            (Just cannon) -> cannon
+            (Nothing) -> _nm
+namelink ctx other = omap (namelink ctx) other
+
+-- Link names using namelink
+link :: CDecl -> State (Context CType) CDecl
+link d = get >>= \ctx -> return $ reexpr (namelink ctx) d
+    where reexpr f CDFunc  { .. } = CDFunc _fd _fargs $ f _fbody
+          reexpr f CDExpr  { .. } = CDExpr _en $ f _expr
+          reexpr f CDSeq   { .. } = (reexpr f _left) <> (reexpr f _right)
+          reexpr f d = d
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl

@@ -8,8 +8,8 @@
     CPP: #include "option.hpp"
     CPP: #include "proc.hpp"
     CPP: #include "string.hpp"
-    CPP: #include "tuple.hpp"
-    CPP: read_loop(fd f)
+    CPP: #include "pair.hpp"
+    CPP: read_loop(nat f)
     CPP: cat(pathname path, string fn)
 *)
 Add LoadPath "../../classes".
@@ -25,7 +25,7 @@ Import MShow.Show.
 Local Open Scope string_scope.
 Local Open Scope proc_scope.
 
-Definition read_loop (f: fd) :=
+Definition read_loop (f: nat) :=
   tup <- until
       (fun prev => (snd prev) =? 0)
       (fun prev => s <- read f 4096;

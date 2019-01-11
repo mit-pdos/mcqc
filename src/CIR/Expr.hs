@@ -66,7 +66,7 @@ data CExpr =
           | CExprStr    { _str :: Text }
           | CExprNat    { _nat :: Int }
           | CExprBool   { _bool :: Bool }
-          | CExprTuple  { _items :: [CExpr] }
+          | CExprPair   { _fst :: CExpr, _snd :: CExpr }
     deriving (Show, Eq, Generic, ToJSON)
 
 instance Semigroup CExpr where
@@ -90,7 +90,7 @@ instance MonoFunctor CExpr where
     omap f   CExprCall   { .. } = CExprCall _cd $ fmap f _cparams
     omap f   CExprStmt   { .. } = CExprStmt _sd $ f _sbody
     omap f   CExprSeq    { .. } = CExprSeq (f _left) (f _right)
-    omap f   CExprTuple  { .. } = CExprTuple $ fmap f _items
+    omap f   CExprPair   { .. } = CExprPair (f _fst) (f _snd)
     omap f   CExprLambda { .. } = CExprLambda _lds $ f _lbody
     -- If it doesn't match anything, then it's a normal form, ignore
     omap _   other              = other
@@ -100,7 +100,7 @@ instance MonoFunctorM CExpr where
     omapM f   CExprStmt   { .. } = f _sbody >>= \b -> return $ CExprStmt _sd b
     omapM f   CExprLambda { .. } = f _lbody >>= \b -> return $ CExprLambda _lds b
     omapM f   CExprSeq    { .. } = do { l <- f _left; r <- f _right; return $ CExprSeq l r }
-    omapM f   CExprTuple  { .. } = mapM f _items >>= \items -> return $ CExprTuple items
+    omapM f   CExprPair   { .. } = do { l <- f _fst; r <- f _snd; return $ CExprPair l r }
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
 
@@ -112,26 +112,26 @@ instance Typeful CDef where
     getMaxVaridx  = getMaxVaridx . gettype
 
 instance Typeful CExpr where
-    getincludes CExprSeq    { .. } = "proc":(getincludes _left ++ getincludes _right)
+    getincludes CExprSeq    { .. } = "proc" : getincludes _left ++ getincludes _right
     getincludes CExprCall   { _cd = CDef { _nm = "show"}, .. } = "show" : concatMap getincludes _cparams
     getincludes CExprCall   { _cd = CDef { _nm = "gmatch"}, .. } = "variant" : concatMap getincludes _cparams
     getincludes CExprCall   { _cd = CDef { .. }, .. } = _nm : concatMap getincludes _cparams
     getincludes CExprStr    { .. } = ["String"]
     getincludes CExprNat    { .. } = ["nat"]
-    getincludes CExprTuple  { .. } = "tuple" : concatMap getincludes _items
+    getincludes CExprPair   { .. } = "pair" : getincludes _fst ++ getincludes _snd
     getincludes CExprStmt   { .. } = "proc" : getincludes _sd ++ getincludes _sbody
     getincludes CExprLambda { .. } = concatMap getincludes _lds ++ getincludes _lbody
     getincludes CExprBool   { .. } = ["bool"]
     getincludes CExprVar    { .. } = []
 
-    gettype s@CExprSeq { .. } = gettype . last . seqToList $ s
-    gettype CExprCall { .. } = gettype _cd
-    gettype CExprStr { .. } = CTBase "string"
-    gettype CExprNat { .. } = CTBase "nat"
-    gettype CExprTuple { .. } = CTExpr "tuple" $ map gettype _items
-    gettype CExprStmt  { .. } = gettype _sd
+    gettype CExprSeq    { .. } = gettype . last . seqToList $ _right
+    gettype CExprCall   { .. } = gettype _cd
+    gettype CExprStr    { .. } = CTBase "string"
+    gettype CExprNat    { .. } = CTBase "nat"
+    gettype CExprPair   { .. } = CTExpr "pair" $ [gettype i | i <- [_fst, _snd]]
+    gettype CExprStmt   { .. } = gettype _sd
     gettype CExprLambda { .. } = gettype _lbody
-    gettype CExprBool { .. } = CTBase "bool"
+    gettype CExprBool   { .. } = CTBase "bool"
     gettype _ = CTAuto
 
     unify ctx t CExprCall { _cd = CDef { .. },  .. }
@@ -209,7 +209,6 @@ instance Nameful CDef where
 instance Nameful CExpr where
     getname CExprCall   { .. } = _nm _cd
     getname CExprStr    { .. } = _str
-    getname CExprTuple  { .. } = T.pack . show $ _items
     getname CExprNat    { .. } = T.pack . show $ _nat
     getname CExprStmt   { .. } = _nm _sd
     getname CExprVar    { .. } = _var
@@ -271,7 +270,7 @@ instance Pretty CExpr where
   pretty CExprStr    { .. } = "string(\"" <> pretty _str <> "\")"
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
-  pretty CExprTuple  { .. } = "mktuple" <> (parens . commatize $ map pretty _items)
+  pretty CExprPair   { .. } = "std::make_pair" <> (parens $ pretty _fst <> "," <+> pretty _snd)
   pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") (init . seqToList $ s))
                             <> line
                             <> "return" <+> pretty (last . seqToList $ s) <> ";"

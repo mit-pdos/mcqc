@@ -2,14 +2,16 @@
 #define SHOW_H
 #include <iostream>
 #include <variant>
+#include "pair.hpp"
+#include "option.hpp"
 #include "string.hpp"
 #include "nat.hpp"
 #include "type_checks.h"
-#include "tuple.hpp"
 
 using namespace Nat;
 using namespace String;
-using namespace Tuple;
+using namespace Pair;
+using namespace Option;
 
 template <class T, class... TArgs> decltype(void(T{std::declval<TArgs>()...}), std::true_type{}) test_is_braces_constructible(int);
 template <class, class...> std::false_type test_is_braces_constructible(...);
@@ -18,60 +20,58 @@ template <class T, class... TArgs> using is_braces_constructible = decltype(test
 namespace Show {
 
     // nat -> string
-    template<typename N=nat>
-    typename std::enable_if<is_same_kind_v<N, nat>, string>::type
-    show(N&& n) {
+    static inline string show(nat n) {
         return std::to_string(n);
     }
 
     // bool -> string
-    template<typename B=bool>
-    typename std::enable_if<is_same_kind_v<B, bool>, string>::type
-    show(B&& b) {
+    static inline string show(bool b) {
         if (b) { return string("true"); }
         return string("false");;
     }
 
     // char -> string
-    template<typename C=char>
-    typename std::enable_if<is_same_kind_v<C, char>, string>::type
-    show(C&& c) {
+    static inline string show(char c) {
         return string(1, c);
     }
 
     // string -> string
-    template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static string show(S&& s) {
+    static inline string show(string s) {
         return FWD(s);
     }
 
-    // tuple (product) -> string
-    template<class TupType, size_t... I>
-    static string show(const TupType& t, std::index_sequence<I...>)
-    {
+    // option -> string
+    template<class T>
+    static inline string show(option<T> o) {
         std::stringstream ss;
-        ss<< "(";
-        (..., (ss << (I == 0? "" : ", ") << show(std::get<I>(t))));
-        ss << ")";
+        if (o.has_value()) {
+            ss << "Some " << show(o.value());
+        }
+        else {
+            ss << "None";
+        }
         return ss.str();
     }
-    template<class ...Args>
-    static string show(const tuple<Args...>& t)
-    {
-        return show(t, std::make_index_sequence<sizeof...(Args)>());
+
+    // pair (product) -> string
+    template<class A, class B>
+    static inline string show(pair<A,B> p) {
+        std::stringstream ss;
+        ss << "(" << p.first << ", " << p.second << ")";
+        return ss.str();
     }
 
     // Forward declaration
     template<class T>
-    static string show_struct(T&& object) noexcept;
+    static inline string show_struct(T&& object) noexcept;
 
     // pointer (sum type)-> string
     template<class ...Args>
-    static string show(std::shared_ptr<std::variant<Args...>> p);
+    static inline string show(std::shared_ptr<std::variant<Args...>> p);
 
     // pointer (sum type)-> string
     template<class ...Args>
-    static string show(std::shared_ptr<std::variant<Args...>> p) {
+    static inline string show(std::shared_ptr<std::variant<Args...>> p) {
         return std::visit([](auto&& arg) {
             return show_struct(FWD(arg));
         }, *p);
@@ -79,7 +79,7 @@ namespace Show {
 
     // Guard for structs
     template<class T>
-    static string show(T&& t) noexcept {
+    static inline string show(T&& t) noexcept {
         return show_struct(FWD(t));
     }
 
@@ -91,7 +91,7 @@ namespace Show {
 
     // product type -> string
     template<class T>
-    static string show_struct(T&& object) noexcept {
+    static inline string show_struct(T&& object) noexcept {
         using type = std::decay_t<T>;
         std::stringstream ss;
         if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type, any_type, any_type>{}) {

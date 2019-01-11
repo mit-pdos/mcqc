@@ -6,7 +6,6 @@
 #include "option.hpp"
 #include "exception.h"
 #include "nat.hpp"
-#include "tuple.hpp"
 
 // Keep libc from poluting the global namespace
 namespace sys {
@@ -36,9 +35,6 @@ namespace Proc {
     template<class T>
     using proc = T;
 
-    // Filedescriptor type
-    using fd = nat;
-
     // open file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static inline nat open(S&& s) noexcept(false) {
@@ -49,16 +45,16 @@ namespace Proc {
     }
 
     // read file
-    static inline string read(nat fd, nat size) {
+    static inline string read(nat f, nat size) {
         auto dp = string(size, '\0' );
-        sys::read(fd, &(dp[0]), sizeof(char)*size);
+        sys::read(f, &(dp[0]), sizeof(char)*size);
         return dp;
     }
 
     // write file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static inline void write(nat fd, S&& s) {
-        sys::write(fd, &s[0], sizeof(char)*s.size());
+    static inline void write(nat nat, S&& s) {
+        sys::write(nat, &s[0], sizeof(char)*s.size());
     }
 
     // close file
@@ -92,11 +88,7 @@ namespace Proc {
              typename = std::enable_if_t<CallableWith<FuncCmp, T>
                 && "1st argument func not callable with T">,
              typename = std::enable_if_t<CallableWith<Func, option<T>>
-                && "2nd argument func not callable with option<T>">,
-             typename = std::enable_if_t<std::is_same_v<bool, std::invoke_result_t<FuncCmp, T>>
-                && "Return type of FuncCmp is not bool">,
-             typename = std::enable_if_t<std::is_same_v<T, std::invoke_result_t<Func, option<T>>>
-                && "Return type of Func is not T">>
+                && "2nd argument func not callable with option<T>">>
     static inline T until(FuncCmp fcmp, Func f, option<T> init) {
         option<T> base = init;
         T result;

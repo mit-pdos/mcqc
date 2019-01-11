@@ -1,6 +1,9 @@
 module Common.Filter where
 import Common.Config
 import Data.Text (Text)
+import CIR.Expr
+import Types.Context
+import qualified Data.Map  as M
 import qualified Data.Text as T
 
 modpred :: String -> Bool
@@ -18,4 +21,5 @@ filterMod = map T.pack . filter modpred . map T.unpack
 filterAllowed :: [Text] -> [Text]
 filterAllowed = filter (`elem` libs)
 
-
+filterDecl :: Nameful d => Context a -> [d] -> [d]
+filterDecl ctx = filter (\d -> not $ getname d `M.member` ctx)

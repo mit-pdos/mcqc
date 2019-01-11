@@ -22,15 +22,15 @@ asciiSemantics other = omap asciiSemantics other
 
 stringSemantics :: CExpr -> CExpr
 -- Handle String(char c, string s) constructor
-stringSemantics CExprCall { _cd = CDef { _nm = "String.String" }, _cparams = [char, str] } =
+stringSemantics CExprCall { _cd = CDef { _nm = "String" }, _cparams = [char, str] } =
     case (char, str) of
         (CExprStr { _str = h }, CExprStr { _str = tl }) -> CExprStr $ h `T.append` tl
-        (CExprStr { _str = h }, CExprCall { _cd = CDef { _nm = "String.EmptyString" }, .. }) -> CExprStr h
+        (CExprStr { _str = h }, CExprCall { _cd = CDef { _nm = "EmptyString" }, .. }) -> CExprStr h
         (_, _) -> CExprCall (CDef "mkstring" strT) [char, str]
     where strT = CTBase "string"
-stringSemantics CExprCall { _cd = CDef { _nm = "String.EmptyString" }, _cparams = [] } =
+stringSemantics CExprCall { _cd = CDef { _nm = "EmptyString" }, _cparams = [] } =
     CExprStr mempty
-stringSemantics CExprCall { _cd = CDef { _nm = "String.EmptyString" }, .. } =
+stringSemantics CExprCall { _cd = CDef { _nm = "EmptyString" }, .. } =
     error "EmptyString takes no arguments"
 stringSemantics other = omap stringSemantics other
 

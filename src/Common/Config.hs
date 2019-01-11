@@ -11,7 +11,7 @@ libs = [ "nat", "bool", "proc", "show", "string", "variant", "pair" ]
 
 -- Base types (pass-by-value)
 base :: [Text]
-base = [ "nat", "ascii", "bool", "proc", "string", "prod", "option" ]
+base = [ "fd", "nat", "unit", "ascii", "bool", "proc", "string", "prod", "option" ]
 
 -- Type context of native libraries
 nativeContext :: Context CType
@@ -32,6 +32,11 @@ nativeContext = M.fromList [
     ("eqb" ,      CTFunc (CTBase "bool") [CTBase "nat", CTBase "nat"]),
     ("leb" ,      CTFunc (CTBase "bool") [CTBase "nat", CTBase "nat"]),
     ("ltb" ,      CTFunc (CTBase "bool") [CTBase "nat", CTBase "nat"]),
+    -- Bool
+    ("negb",      CTFunc (CTBase "bool") [CTBase "bool"]),
+    ("andb",      CTFunc (CTBase "bool") [CTBase "bool", CTBase "bool"]),
+    ("orb",      CTFunc (CTBase "bool") [CTBase "bool", CTBase "bool"]),
+    ("xorb",      CTFunc (CTBase "bool") [CTBase "bool", CTBase "bool"]),
     -- String
     ("append",    CTFunc (CTBase "string") [CTBase "string", CTBase "string"]),
     ("get",       CTFunc (CTBase "char") [CTBase "nat", CTBase "string"]),
@@ -62,6 +67,10 @@ nativeContext = M.fromList [
         CTExpr "proc" [CTFree 1],
         CTFunc (CTExpr "proc" [CTFree 2]) [CTFree 1]
     ]),
+    -- Pairs
+    ("fst",       CTFunc (CTFree 1) [CTExpr "pair" [CTFree 1, CTFree 2]]),
+    ("snd",       CTFunc (CTFree 2) [CTExpr "pair" [CTFree 1, CTFree 2]]),
+    -- Option
     ("some",      CTFunc (CTExpr "option" [CTFree 1]) [CTFree 1]),
     ("none",      CTFunc (CTExpr "option" [CTFree 1]) []),
     -- Show

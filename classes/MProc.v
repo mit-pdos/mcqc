@@ -4,21 +4,20 @@ Import MString.String.
 Set Implicit Arguments.
 
 Module Proc.
-  Definition fd := nat.
 
   Inductive proc: Type -> Type :=
-  (** Open filepath to fd *)
-  | open : string -> proc fd
-  (** Open TCP port to fd *)
-  | socket: nat -> proc fd
-  (** Read from fd *)
-  | read: fd -> nat -> proc string
-  (** Write to fd *)
-  | write: fd -> string -> proc unit
+  (** Open filepath to nat *)
+  | open : string -> proc nat
+  (** Open TCP port to nat *)
+  | socket: nat -> proc nat
+  (** Read from nat *)
+  | read: nat -> nat -> proc string
+  (** Write to nat *)
+  | write: nat -> string -> proc unit
   | link : string -> string -> proc bool
   | unlink : string -> proc unit
-  (** Close fd *)
-  | close : fd -> proc unit
+  (** Close nat *)
+  | close : nat -> proc unit
   (** Get random UUID *)
   | getuuid : proc string
   (** Get random number *)

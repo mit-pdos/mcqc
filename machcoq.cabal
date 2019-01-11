@@ -34,7 +34,8 @@ executable machcoq
       Sema.String
       Sema.Nat
       Sema.Proc
-      Sema.Tuple
+      Sema.Pair
+      Sema.Option
       Sema.Pipeline
       CIR.File
       CIR.Decl

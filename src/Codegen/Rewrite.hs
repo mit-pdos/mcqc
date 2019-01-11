@@ -19,7 +19,7 @@ safeStripPrefix pre s = case T.stripPrefix (T.append pre ".") s of
 
 -- String rewriting for low-level translation of Gallina base types to C++ base types
 toCTBase :: Text -> Text
-toCTBase "Datatypes.prod" = "tuple"
+toCTBase "Datatypes.prod" = "pair"
 toCTBase "Datatypes.unit" = "void"
 toCTBase "Ascii.ascii" = "char"
 toCTBase s = rewrite s
