@@ -2,16 +2,12 @@
 module Sema.String where
 import CIR.Expr
 import Common.Utils
-import Data.Text (Text)
 import Data.MonoTraversable
 import qualified Data.Text as T
 import Data.Bits
-import Debug.Trace
 
 -- Ascii as byte semantics
 asciiSemantics :: CExpr -> CExpr
-asciiSemantics c@CExprCall { _cd = CDef { _nm = "Ascii.Ascii" }, .. }
-    | trace ("Ascii semantics for " ++ show c) False = undefined
 asciiSemantics CExprCall { _cd = CDef { _nm = "Ascii.Ascii" }, _cparams = fp }
     | length fp == 8 = CExprStr $ T.pack [w2c (makeByte (map _bool fp))]
     | otherwise      = error "Ascii char is not 8 bytes"
@@ -20,8 +16,8 @@ asciiSemantics CExprCall { _cd = CDef { _nm = "Ascii.Ascii" }, _cparams = fp }
           makeByte (b:bs) = fromBool b `shift` (7 - length bs) .|. makeByte bs
 asciiSemantics other = omap asciiSemantics other
 
+-- Handle string semantics
 stringSemantics :: CExpr -> CExpr
--- Handle String(char c, string s) constructor
 stringSemantics CExprCall { _cd = CDef { _nm = "String" }, _cparams = [char, str] } =
     case (char, str) of
         (CExprStr { _str = h }, CExprStr { _str = tl }) -> CExprStr $ h `T.append` tl

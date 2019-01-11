@@ -25,15 +25,6 @@ import qualified Data.Text     as T
 import qualified Data.Map      as M
 import qualified Common.Config as Conf
 
--- Compile a Coq expression to a C Expression
-compilexpr :: Expr -> CExpr
-compilexpr e
-    | isSeq ce  = ce
-    | otherwise = CExprCall (mkdef "return") [ce]
-    where ce    = semantics . toCExpr $ e
-          isSeq CExprSeq { .. } = True
-          isSeq _ = False
-
 -- Compile a module
 compile :: Module -> State (Context CType) CFile
 compile Module { .. } = do
@@ -47,7 +38,17 @@ compile Module { .. } = do
     let newctx = foldl addctx ctx linked
     let incls = L.sort . L.nub . concatMap (filterAllowed . getincludes) $ alldecls
     put newctx
-    CFile incls . mconcat <$> otraverse typeify linked
+    typed <- otraverse typeify linked
+    return . CFile incls . makemain . mconcat $ typed
+
+-- Compile a Coq expression to a C Expression
+compilexpr :: Expr -> CExpr
+compilexpr e
+    | isSeq ce  = ce
+    | otherwise = CExprCall (mkdef "return") [ce]
+    where ce    = semantics . toCExpr $ e
+          isSeq CExprSeq { .. } = True
+          isSeq _ = False
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> State (Context CType) CDecl
@@ -59,6 +60,15 @@ typeify CDFunc { .. } = do
 typeify CDSeq { .. } = CDSeq <$> typeify _left <*> typeify _right
 typeify o = return o
 
+makemain :: CDecl -> CDecl
+makemain CDFunc { _fd = CDef { _nm = "main", _ty = CTExpr "proc" [CTBase "void"] }, _fargs = [], .. } =
+    CDFunc (CDef "main" $ CTBase "int") [] $ mkbody _fbody
+    where mkbody CExprCall { _cd = CDef { _nm = "return" }, _cparams = [a] } = CExprSeq a retz
+          mkbody CExprSeq  { .. } = CExprSeq _left $ mkbody _right
+          mkbody o = CExprSeq o retz
+          retz = CExprVar "0"
+makemain d = omap makemain d
+
 -- Remove coq_ prefix for things in Context
 namelink :: Context CType -> CExpr -> CExpr
 namelink ctx CExprCall { _cd = CDef { .. }, .. }
@@ -67,7 +77,7 @@ namelink ctx CExprCall { _cd = CDef { .. }, .. }
     where recparams = fmap (namelink ctx) _cparams
           cannonical = case T.stripPrefix "coq_" _nm of
             (Just cannon) -> cannon
-            (Nothing) -> _nm
+            (Nothing) -> T.toLower _nm
 namelink ctx other = omap (namelink ctx) other
 
 -- Link names using namelink

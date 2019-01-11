@@ -25,6 +25,7 @@ instance Template CExpr where
 gcs :: CType -> CType -> Maybe CType
 gcs CTFree { _idx = a  } CTFree { _idx = b } | a == b = Just $ CTFree a
 gcs CTFree { .. } t = Just t
+gcs t CTBase { .. } = Just CTAuto
 gcs CTExpr { _tbase = a, _tins = [as]  } CTExpr { _tbase = b, _tins = [bs] } | a == b = gcs as bs
 gcs CTFunc { _fret = ra } CTFunc { _fret = rb } = gcs ra rb
 gcs CTFunc { .. } t = gcs _fret t

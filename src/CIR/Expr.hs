@@ -240,6 +240,7 @@ instance Pretty CDef where
 instance Pretty CType where
   pretty CTFunc  { .. } = group $ pretty _fret <> (parens . commatize $ map pretty _fins)
   pretty CTExpr  { .. } = pretty _tbase <> "<" <> commatize (map pretty _tins) <> ">"
+  pretty CTVar   { .. } = pretty _vname <> "<" <> commatize (map pretty _vargs) <> ">"
   pretty CTBase  { .. } = pretty _base
   -- Use template letters starting at T as is custom in C++
   pretty CTFree  { .. } = pretty $ stringsFromTo 'T' 'Z' !! (_idx - 1)

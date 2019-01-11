@@ -148,6 +148,6 @@ instance Pretty CDecl where
           <> line <> "};" <> line
     where toNm = pretty . _nm
   pretty CDEmpty {} = mempty
-  pretty CDSeq { .. } = vsep [pretty _left, pretty _right]
+  pretty CDSeq { .. } = vcat [pretty _left, pretty _right]
   pretty e = error $ "Unhandled declaration " ++ show e
 

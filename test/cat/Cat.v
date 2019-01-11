@@ -3,14 +3,15 @@
     RUN: %clean
     RUN: %machcoq Cat.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %clang -c %t.cpp
 
     CPP: #include "nat.hpp"
-    CPP: #include "option.hpp"
-    CPP: #include "proc.hpp"
-    CPP: #include "string.hpp"
     CPP: #include "pair.hpp"
+    CPP: #include "proc.hpp"
+    CPP: #include "show.hpp"
+    CPP: #include "string.hpp"
     CPP: read_loop(nat f)
-    CPP: cat(pathname path, string fn)
+    CPP: cat(string path, string fn)
 *)
 Add LoadPath "../../classes".
 Require MNat.
@@ -23,7 +24,6 @@ Import MString.String.
 Import MShow.Show.
 
 Local Open Scope string_scope.
-Local Open Scope proc_scope.
 
 Definition read_loop (f: nat) :=
   tup <- until

@@ -11,7 +11,7 @@ libs = [ "nat", "bool", "proc", "show", "string", "variant", "pair" ]
 
 -- Base types (pass-by-value)
 base :: [Text]
-base = [ "fd", "nat", "unit", "ascii", "bool", "proc", "string", "prod", "option" ]
+base = [ "nat", "unit", "ascii", "bool", "proc", "string", "prod", "option" ]
 
 -- Type context of native libraries
 nativeContext :: Context CType

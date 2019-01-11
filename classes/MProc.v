@@ -38,6 +38,6 @@ Module Proc.
                             (at level 60, right associativity).
 
   Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
-                               (at level 60, right associativity) : proc_scope.
+                               (at level 60, right associativity).
 End Proc.
 

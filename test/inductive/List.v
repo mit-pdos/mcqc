@@ -10,32 +10,33 @@
     CPP: using namespace Variant;
 
     Base types
-    CPP: struct Nil {};
     CPP: template<{{class}} [[TT:.?]]>
-    CPP: struct Cons {
+    CPP: struct Coq_nil {};
+    CPP: template<{{class}} [[TT]]>
+    CPP: struct Coq_cons {
     CPP: [[TT]] [[AA:.?]];
-    CPP: std::shared_ptr<std::variant<Nil, Cons<[[TT]]>>> [[BB:.?]];
-    CPP: Cons([[TT]] [[AA]], std::shared_ptr<std::variant<Nil, Cons<[[TT]]>>> [[BB]]) {
+    CPP: std::shared_ptr<std::variant<Coq_nil<[[TT]]>, Coq_cons<[[TT]]>>> [[BB:.?]];
+    CPP: Coq_cons([[TT]] [[AA]], std::shared_ptr<std::variant<Coq_nil<[[TT]]>, Coq_cons<[[TT]]>>> [[BB]]) {
     CPP: this->[[AA]] = [[AA]];
     CPP: this->[[BB]] = [[BB]];
     CPP: }
 
     Type alias for sum type
     CPP: template<class [[TT]]>
-    CPP: using coq_List = std::variant<Nil, Cons<[[TT]]>>
+    CPP: using list = std::variant<Coq_nil<[[TT]]>, Coq_cons<[[TT]]>>
 
     Coq constructor functions
     CPP: template<class [[TT]]>
-    CPP: std::shared_ptr<coq_List<[[TT]]>> nil()
-    CPP: return std::make_shared<coq_List<[[TT]]>>(Nil());
+    CPP: std::shared_ptr<list<[[TT]]>> coq_nil()
+    CPP: return std::make_shared<list<[[TT]]>>(Coq_nil<[[TT]]>());
     CPP: template<class [[TT]]>
-    CPP: std::shared_ptr<coq_List<[[TT]]>> cons([[TT]] [[AA]], std::shared_ptr<coq_List<[[TT]]>> [[BB]])
-    CPP: return std::make_shared<coq_List<[[TT]]>>(Cons([[AA]], [[BB]]));
+    CPP: std::shared_ptr<list<[[TT]]>> coq_cons([[TT]] [[AA]], std::shared_ptr<list<[[TT]]>> [[BB]])
+    CPP: return std::make_shared<list<[[TT]]>>(Coq_cons<[[TT]]>([[AA]], [[BB]]));
 
     Match definition
     CPP: template<class [[TT]], class [[UU:.?]], class [[VV:.?]]>
-    CPP: match(std::shared_ptr<coq_List<[[TT]]>> self, [[UU]] f, [[VV]] g)
-    CPP: return gmatch(self, [=](Nil a) { return f(); }, [=](Cons<[[TT]]> a) { return g(a.[[AA]], a.[[BB]]); });
+    CPP: match(std::shared_ptr<list<[[TT]]>> self, [[UU]] f, [[VV]] g)
+    CPP: return gmatch(self, [=](Coq_nil<[[TT]]> _) { return f(); }, [=](Coq_cons<[[TT]]> _) { return g(_.[[AA]], _.[[BB]]); });
     CPP: }
 *)
 
