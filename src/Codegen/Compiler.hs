@@ -43,12 +43,7 @@ compile Module { .. } = do
 
 -- Compile a Coq expression to a C Expression
 compilexpr :: Expr -> CExpr
-compilexpr e
-    | isSeq ce  = ce
-    | otherwise = CExprCall (mkdef "return") [ce]
-    where ce    = semantics . toCExpr $ e
-          isSeq CExprSeq { .. } = True
-          isSeq _ = False
+compilexpr e = semantics . toCExpr $ e
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> State (Context CType) CDecl

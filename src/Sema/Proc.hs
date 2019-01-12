@@ -1,10 +1,10 @@
-{-# LANGUAGE RecordWildCards, OverloadedStrings  #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Sema.Proc where
 import qualified Data.Text as T
 import Common.Utils
 import CIR.Expr
 import Data.MonoTraversable
-import Debug.Trace
 
 -- Proc semantics (monadic)
 bindSemantics :: CExpr -> CExpr
@@ -25,5 +25,11 @@ removeInstances CExprCall { _cparams = (v@CExprVar { .. }:ts), .. }
     where lastthing = last $ T.splitOn "." _var
 removeInstances other = omap removeInstances other
 
+-- Compile a Coq expression to a C Expression
+seqSemantics :: CExpr -> CExpr
+seqSemantics s@CExprSeq { .. } = s
+seqSemantics e = CExprCall (mkdef "return") [e]
+
+
 procSemantics :: CExpr -> CExpr
-procSemantics = removeInstances . bindSemantics
+procSemantics = seqSemantics . removeInstances . bindSemantics
