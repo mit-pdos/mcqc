@@ -8,7 +8,7 @@ all: hello
 Hello.json: Hello.v
 	coqc -Q ../../classes "" $<
 Hello.cpp: Hello.json
-	stack exec machcoq -- $<
+	stack exec mcqc -- $<
 hello: Hello.cpp
 	${CXX} ${CXXFLAGS} $< -o $@
 

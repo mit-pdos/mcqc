@@ -4,12 +4,12 @@
 --
 -- hash: 4e7af62ea4c3df50faa28dcdc4308d1899a3b0e20b481847b58773d037aeda00
 
-name:           machcoq
+name:           mcqc
 version:        0.1.0
 synopsis:       A codegen from Coq extracted JSON to C++
 description:    Based on Aeson, linear types
 category:       Development
-homepage:       https://github.mit.edu/elefthei/machcoq
+homepage:       https://github.com/mit-pdos/mcqc
 maintainer:     Lef Ioannidis <elefthei@mit.edu>
 license:        MIT
 license-file:   LICENSE
@@ -18,9 +18,9 @@ cabal-version:  >= 1.10
 
 source-repository head
   type: git
-  location: https://github.com/elefthei/machcoq
+  location: https://github.com/mit-pdos/mcqc
 
-executable machcoq
+executable mcqc
   main-is: Main.hs
   ghc-options: -Wall -Wno-name-shadowing
   other-modules:

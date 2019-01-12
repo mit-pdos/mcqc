@@ -9,7 +9,7 @@ List.json: List.v
 	coqc -Q ../../classes "" $<
 
 List.cpp: List.json
-	stack exec machcoq -- $<
+	stack exec mcqc -- $<
 
 list: main.cpp List.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------

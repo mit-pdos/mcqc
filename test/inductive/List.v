@@ -1,6 +1,6 @@
 (**
     RUN: %coqc %s
-    RUN: %machcoq List.json -o %t.cpp
+    RUN: %mcqc List.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
     RUN: %clean

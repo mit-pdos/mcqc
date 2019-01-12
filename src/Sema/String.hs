@@ -20,7 +20,7 @@ asciiSemantics other = omap asciiSemantics other
 
 -- Parse strings
 serialize :: CExpr -> (Maybe Text, Maybe CExpr)
-serialize CExprCall { _cd = CDef { _nm = "String" }, _cparams = [s@CExprStr { .. }, e] } =
+serialize CExprCall { _cd = CDef { _nm = "String" }, _cparams = [CExprStr { .. }, e] } =
     case serialize e of
       (Just estr, Nothing) -> (Just $ _str `T.append` estr, Nothing)
       (Just estr, Just e)  -> (Just $ _str `T.append` estr, Just $ stringSemantics e)

@@ -4,7 +4,6 @@ import System.Console.GetOpt
 import System.Exit
 import System.IO
 import System.FilePath
-import System.FilePath.Posix
 
 data Flag
     = Output String         -- -o
@@ -43,4 +42,4 @@ getFlags argv = case getOpt Permute flags argv of
     (_,_,errs)      -> do
         hPutStrLn stderr (concat errs ++ usageInfo header flags)
         exitWith (ExitFailure 1)
-    where header = "Usage: machcoq [-d] [-o cpp_file] <json_file ...>"
+    where header = "Usage: mcqc [-d] [-o cpp_file] <json_file ...>"

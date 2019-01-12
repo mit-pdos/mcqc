@@ -1,7 +1,7 @@
 (**
   RUN: %coqc %s
   RUN: %clean
-  RUN: %machcoq Hello.json -o %t.cpp
+  RUN: %mcqc Hello.json -o %t.cpp
   RUN: FileCheck %s -check-prefix=CPP < %t.cpp
   RUN: %clang %t.cpp
 

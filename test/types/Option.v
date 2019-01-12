@@ -1,7 +1,7 @@
 (**
     RUN: %coqc %s
     RUN: %clean
-    RUN: %machcoq Option.json -o %t.cpp
+    RUN: %mcqc Option.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
 
     CPP: #include "option.hpp"

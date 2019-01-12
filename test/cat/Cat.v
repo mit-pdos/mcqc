@@ -1,7 +1,7 @@
 (**
     RUN: %coqc %s
     RUN: %clean
-    RUN: %machcoq Cat.json -o %t.cpp
+    RUN: %mcqc Cat.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 

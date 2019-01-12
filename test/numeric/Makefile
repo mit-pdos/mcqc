@@ -9,7 +9,7 @@ Fib.json: Fib.v
 	coqc -Q ../../classes "" $<
 
 Fib.cpp: Fib.json
-	stack exec machcoq -- $<
+	stack exec mcqc -- $<
 
 fib: main.cpp Fib.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------

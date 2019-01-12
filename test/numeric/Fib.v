@@ -1,7 +1,7 @@
 (**
     RUN: %coqc %s
     RUN: %clean
-    RUN: %machcoq Fib.json -o %t.cpp
+    RUN: %mcqc Fib.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang %t.cpp -emit-llvm -g -S -o %t.ll %s
     RUN: FileCheck %s -check-prefix=LLVM < %t.ll
