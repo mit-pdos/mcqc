@@ -24,18 +24,17 @@ using namespace Proc;
 
 int main() {
 
-    // Currying
-    auto f = [](auto a, auto b, auto c, auto d) {
-        return a  * b * c * d;
-    };
-
     print(show(true));
-    print(mkstring('c',string("elo")));
 
     // Create a UUID v4
     print(getuuid());
 
     print(show(mkpair((nat)1, string("foo"))));
+
+    // Currying
+    auto f = [](auto a, auto b, auto c, auto d) {
+        return a  * b * c * d;
+    };
 
     std::cout << "Currying 4! = " << curry(f)(1)(2)(3)(4) << std::endl;
     // Optional Switch
