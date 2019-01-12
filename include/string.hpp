@@ -5,12 +5,8 @@
 #include <sstream>
 #include "type_checks.h"
 #include "nat.hpp"
-#include "option.hpp"
-#include "list.hpp"
 
 using namespace Nat;
-using namespace Option;
-using namespace List;
 
 namespace String {
     // type allias for std::string
@@ -37,20 +33,6 @@ namespace String {
         }
     }
 
-    // Destructive ctor, modifies l and appends an element
-    template<typename L=string,
-             typename = std::enable_if_t<is_same_kind_v<string, L>>>
-    static string& mkstring(char c, L&& l) {
-        if constexpr (is_constr_v<L>) {
-            auto cp = std::make_unique<string>(l);
-            cp->insert(l.begin(), 1, c);
-            return *cp;
-        } else {
-            l.insert(l.begin(), 1, c);
-            return l;
-        }
-    }
-
     // Constructive append, creates string
     template<typename L=string, typename R=string,
              typename = std::enable_if_t<is_same_kind_v<string, L>>,
@@ -70,16 +52,6 @@ namespace String {
         }
     }
 
-    // Get characater in given index of string
-    template<typename S=string,
-             typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static option<char> get(nat index, S&& s) noexcept {
-        if (index < s.length()) {
-            return some<char>(s[index]);
-        }
-        return none<char>();
-    }
-
     // Constructive, get substring based on begin index and length
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
@@ -89,35 +61,6 @@ namespace String {
             return s.substr(begin, len);
         }
         return string();
-    }
-
-     // Constructive, concat a list of strings around the given separator
-    template<typename S=string, typename L,
-             typename = std::enable_if_t<is_same_kind_v<string, S>>,
-             typename = std::enable_if_t<is_same_kind_v<list<string>, L>>>
-    static string concat(S&& sep, L&& l) noexcept {
-        std::stringstream ss;
-        for (auto it = l.begin(); it != l.end(); ++it) {
-            if (it != l.begin()) {
-                ss << FWD(sep);
-            }
-            ss << *it;
-        }
-        return ss.str();
-    }
-
-    // Opposite of concat, split a string (constructive obviously)
-    template<typename S=string,
-             typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static list<string> split(S&& s, char c = ' ') {
-        std::stringstream ss(s);
-        string buf;
-
-        list<string> l = list<string>{};
-        while (getline(ss, buf, c)) {
-            l.push_back(buf);
-        }
-        return l;
     }
 
     // Is the given string a prefix of the second string

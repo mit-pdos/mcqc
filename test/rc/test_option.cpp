@@ -9,12 +9,10 @@ using namespace rc;
 // Ours
 #include <option.hpp>
 #include <nat.hpp>
-#include <copy.hpp>
 #include <type_checks.h>
 
 using namespace Option;
 using namespace Nat;
-using namespace Copy;
 
 void check_option_match() {
   rc::check("Option<nat> match", [](const bool& b, const nat& n) {

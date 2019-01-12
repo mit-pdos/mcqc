@@ -5,13 +5,12 @@
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 
-    CPP: #include "list.{{(h|hpp|cpp)}}"
+    CPP: #include "variant.hpp"
     CPP: template<{{typename|class}} T>
-    CPP: list<T> rev(list<T> l)
+    CPP: std::shared_ptr<list<T>> rev(std::shared_ptr<list<T>> l)
     CPP: return match{{.*}}l{{.*}}
-    CPP: () { return list<T>{}; }
-    CPP: (auto h, auto ts) { return app{{.*}}rev(ts)
-    CPP: list<T>{h}
+    CPP: () { return coq_nil<T>(); }
+    CPP: (auto h, auto ts) { return app<T>(rev<T>(ts), coq_cons<T>(h, coq_nil<T>())); });
 *)
 
 Require Import Coq.Lists.List.

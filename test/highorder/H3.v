@@ -1,11 +1,11 @@
 (**
+    XFAIL:
     RUN: %coqc %s
     RUN: %clean
     RUN: %machcoq H3.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 
-    CPP: #include "list.hpp"
     CPP: #include "nat.hpp"
     CPP: bool isEven(nat n)
     CPP: return match(n,
@@ -15,12 +15,12 @@
     CPP: return isEven(m)
 
     CPP: template<{{typename|class}} [[TF:.?]]>
-    CPP: list<nat> mapOnEvensM([[TF]] f, nat n, list<nat> l)
+    CPP: std::shared_ptr<list<nat>> mapOnEvensM([[TF]] f, nat n, std::shared_ptr<list<nat>> l)
     CPP: return match(l,
-    CPP: return list<nat>{}
+    CPP: return coq_nil<nat>()
     CPP: return match(isEven(n),
-    CPP: return cons(f(h), mapOnEvensM(f, {{.*}}, ts
-    CPP: return cons(h, mapOnEvensM(f, {{.*}}, ts
+    CPP: return coq_cons<nat>(f(h), mapOnEvensM(f, {{.*}}, ts
+    CPP: return coq_cons<nat>(h, mapOnEvensM(f, {{.*}}, ts
 
     CPP: template<{{typename|class}} [[TF:.?]]>
     CPP: list<nat> mapOnEvens([[TF]] f, list<nat> l)
@@ -29,7 +29,11 @@
     CPP: return list<nat>{}
     CPP: return mapOnEvensM(f, n, l)
 *)
-
+Add LoadPath "../../classes".
+Require MProc.
+Import MProc.Proc.
+Require MShow.
+Import MShow.Show.
 Require Export Coq.Lists.List.
 Import ListNotations.
 
@@ -57,6 +61,25 @@ Definition mapOnEvens (f : nat -> nat) (l : list nat) : list nat :=
     | S n => mapOnEvensM f n l
   end.
 
+Require MString.
+Import MString.String.
+Local Open Scope string_scope.
+
+Fixpoint showl {T} {showT: Show T} (l : list T) : string :=
+  "[" ++ match l with
+         | [] => ""
+         | a::[] => (show a)
+         | a::ts => (show a) ++ ", " ++ (showl ts)
+         end ++ "]".
+
+Instance showList {T} {showT: Show T} : Show (list T) :=
+  {
+    show := showl
+  }.
+
+
+Definition main := print (showl (mapOnEvens (fun x => x + x) [1;2;3;4;5;6])).
+
 Require Extraction.
 Extraction Language JSON.
-Separate Extraction mapOnEvens.
+Separate Extraction main.

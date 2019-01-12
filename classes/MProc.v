@@ -1,30 +1,30 @@
 Require MString.
 Import MString.String.
-Require MList.
-Import MList.List.
 
 Set Implicit Arguments.
 
 Module Proc.
-  Definition fd := nat.
-  Definition filename := string.
 
   Inductive proc: Type -> Type :=
-  (** Open filepath to fd *)
-  | open : filename -> proc fd
-  (** Open TCP port to fd *)
-  | socket: nat -> proc fd
-  (** Read from fd *)
-  | read: fd -> nat -> proc string
-  (** Write to fd *)
-  | write: fd -> string -> proc unit
-  | link : filename -> filename -> proc bool
-  | unlink : filename -> proc unit
-  (** Close fd *)
-  | close : fd -> proc unit
-   (** Get random number *)
+  (** Open filepath to nat *)
+  | open : string -> proc nat
+  (** Open TCP port to nat *)
+  | socket: nat -> proc nat
+  (** Read from nat *)
+  | read: nat -> nat -> proc string
+  (** Write to nat *)
+  | write: nat -> string -> proc unit
+  | link : string -> string -> proc bool
+  | unlink : string -> proc unit
+  (** Close nat *)
+  | close : nat -> proc unit
+  (** Get random UUID *)
+  | getuuid : proc string
+  (** Get random number *)
   | randnat: proc nat
-    (** Until loop with initial value*)
+  (** Get PID *)
+  | pidfn: proc string
+  (** Until loop with initial value*)
   | until : forall T, (T -> bool) -> (option T -> proc T) -> option T -> proc T
   (** Spawn async future *)
   | spawn: forall T, (T -> unit) -> T -> proc unit

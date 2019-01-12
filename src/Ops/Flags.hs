@@ -3,11 +3,12 @@ import Data.List
 import System.Console.GetOpt
 import System.Exit
 import System.IO
+import System.FilePath
+import System.FilePath.Posix
 
 data Flag
     = Output String         -- -o
     | Debug                 -- -d
-    | Libs String           -- -I
     | Help                  -- -h, --help
     deriving (Eq,Ord,Show)
 
@@ -16,8 +17,6 @@ flags =
         "Redirect output to specified file."
    ,Option ['d'] []       (NoArg Debug)
         "Does not generate C++ output but prints the final IR as Json."
-   ,Option ['I'] []       (ReqArg Libs "DIR")
-        "Where to look for Coq ADT typeclasses and instances. Default is `classes`"
    ,Option []    ["help"] (NoArg Help)
         "Print this help message"
    ,Option ['h'] []       (NoArg Help)
@@ -27,6 +26,7 @@ flags =
 -- Take the output of getArgs and return (flags, filenames)
 getFlags :: [String] -> IO ([Flag], String)
 getFlags argv = case getOpt Permute flags argv of
+    ([], [fn], []) -> return ([Output $ fn -<.> "cpp"], fn)
     (args,[fn],[]) -> do
         if Help `elem` args
             then do hPutStrLn stderr (usageInfo header flags)

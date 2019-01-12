@@ -13,5 +13,19 @@ namespace Bool {
         if(a) { return f(); }
         return g();
     }
+
+    static inline bool negb(bool a) {
+        return !a;
+    }
+    static inline bool andb(bool a, bool b) {
+        return a & b;
+    }
+    static inline bool orb(bool a, bool b) {
+        return a | b;
+    }
+    static inline bool xorb(bool a, bool b) {
+        return a ^ b;
+    }
+
 }
 #endif

@@ -2,6 +2,7 @@
 #define TYPE_CHECKS_H
 #include <type_traits>
 #include <utility>
+#include <string>
 
 // Checks if type is callable by decltype magic
 template<class T, class...Args>

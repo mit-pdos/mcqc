@@ -1,4 +1,5 @@
-{-# LANGUAGE DuplicateRecordFields, OverloadedStrings  #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Parser.Decl where
 import Parser.Expr
 import Parser.Fix

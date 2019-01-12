@@ -66,6 +66,7 @@ instance FromJSON Expr where
                                                    <*> v .:  "body"
         Just "expr:rel"         -> ExprRel         <$> v .:  "name"
         Just "expr:global"      -> ExprGlobal      <$> v .:  "name"
+        Just "expr:axiom"       -> return ExprDummy {}
         Just "expr:dummy"       -> return ExprDummy {}
         Just s                  -> fail $ "Unknown expr: " ++  show v  ++ " because " ++ show s
         Nothing                 -> IndConstructor  <$> v .:  "name"

@@ -12,4 +12,5 @@ struct IOException: std::runtime_error {
 struct OverflowException: std::runtime_error {
 	OverflowException(const std::string &msg): std::runtime_error(msg) {};
 };
+
 #endif

@@ -3,16 +3,12 @@ import CIR.Expr
 import Sema.Nat
 import Sema.Proc
 import Sema.Bool
-import Sema.Option
-import Sema.List
 import Sema.String
-import Sema.Tuple
+import Sema.Pair
 
 semantics :: CExpr -> CExpr
 semantics = procSemantics .
-            listSemantics .
-            optionSemantics .
-            tupleSemantics .
+            pairSemantics .
             stringSemantics .
             asciiSemantics .
             natSemantics .

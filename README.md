@@ -1,25 +1,29 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/mit-pdos/machcoq)
 
-<img src="https://elefthei.github.io/assets/css/images/machcoq.jpg" alt="MachCoq" width="200"/>
+<img src="https://elefthei.github.io/assets/css/images/machcoq.jpg" alt="MCQC" width="200"/>
 
-Coq to functional C++17 extractor
+MCQC Coq to C++17 compiler
 --------------------------
 
 # Introduction
 
-Alternative extractor to C++, no GC no RTS, pure static.
+Alternative Coq extractor to C++ written in Haskell.
+Takes in JSON extraction (available after Coq v.8.5.1) and exports valid, performant and memory safe C++17.
+See `test/numeric` and `test/cat` for examples. No GC no RTS, uses `shared_ptr` for reference
+counting and a library of base types (in `include/*.hpp`).
 
 # Building
 
-First, cd into `classes` and run `make`.
-This will generate the object files for Coq typeclasses used.
-
-Then with stack , run the following in the source root:
+Then with stack, run the following in the source root:
 ```
 stack build
 ```
 
 # Testing
+
+First, cd into `classes` and run `make`.
+This will generate the object files for Coq typeclasses used.
+
 Uses `llvm-lit` for testing, installable from `pip`.
 ```
 lit test

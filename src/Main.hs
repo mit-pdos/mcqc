@@ -1,71 +1,63 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
-import System.IO
 import System.Environment
-import System.FilePath.Posix
-import System.Directory
 import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as B
-import qualified Data.Text as T
-import qualified Data.Map as M
 import Control.Monad
+import Control.Monad.State
 import Data.Aeson
-import Types.Inference
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
 import Codegen.Compiler
-import Debug.Trace
-import PrettyPrinter.File()
 import Ops.Flags
+import Types.Context
+import Common.Filter
 import CIR.File
-import Classparser.Parser
+import Parser.Mod
+import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.Text as T
+import qualified Common.Config as Conf
 
--- TODO: Use namespaces to verify link of C++17 functions in place of their coq counterparts
-prettyprint  :: CFile -> ByteString
-prettyprint = B.pack . T.unpack . renderStrict . layoutPretty layoutOptions . pretty
+-- Render from Pretty printer Doc to bytestring
+render :: Doc ann -> ByteString
+render = B.pack . T.unpack . renderStrict . layoutPretty layoutOptions
     where layoutOptions = LayoutOptions { layoutPageWidth = AvailablePerLine 40 1 }
 
 main :: IO ()
 main = do
     args <- getArgs
     (flags, fn) <- getFlags args
-    -- Parse typeclasses
-    libpath <- getLibDir flags
-    -- Load context if it exists
-    context <- doesDirectoryExist libpath >>=
-        (\b -> if b
-            then loadCtx libpath
-            else trace ("Warning: Class path does not exist " ++ show libpath) $ return M.empty)
     -- Read AST
-    jsonast <- B.readFile fn
-    -- Check if JSON parsing was a success
-    let ast = case eitherDecode jsonast of
-                  (Right r) -> r
-                  (Left s) -> error s
-    -- Keep executable flags, the others are config
-    let eflags = case filter isExec flags of
-                     ([]) -> [Output fn]
-                     (a)  -> a
+    ast <- readAst fn
     -- Handle flags
-    forM_ eflags (\flag ->
+    forM_ flags (\flag ->
         case flag of
             (Output outfn) -> do
-                let cppast = prettyprint . compile context $ ast
-                B.writeFile (outfn -<.> "cpp") cppast
+                let modules = filterMod . used_modules $ ast
+                let extfn = map (`T.append` ".json") modules
+                externals <- mapM (readAst . T.unpack) extfn
+                -- All the compiling in one line
+                let bigfile = flip evalState Conf.nativeContext (mconcat <$> mapM compile (externals ++ [ast]))
+                B.writeFile outfn . render . pretty $ (bigfile :: CFile)
             (Debug) -> do
                 putStrLn . header $ "Args"
                 putStrLn . show $ args
-                putStrLn . header $ "Typeclass context"
-                printCtx context
+                putStrLn . header $ "Modules Imported"
+                let modules = filterMod . used_modules $ ast
+                putStrLn . show $ modules
                 putStrLn . header $ "JSON dump"
-                let cppast = B.unpack . encodePretty . compile context $ ast
-                hPutStrLn stderr cppast
+                let extfn = map (`T.append` ".json") modules
+                externals <- mapM (readAst . T.unpack) extfn
+                putStrLn . show $ externals
+                -- All the compiling in one line
+                let (bigfile, st) = flip runState Conf.nativeContext (mconcat <$> mapM compile (externals ++ [ast]))
+                putStrLn . B.unpack . encodePretty $ (bigfile :: CFile)
+                putStrLn . header $ "Context after compiling"
+                printCtx st
             -- Default
             (o) -> error $ "Unhandled flag " ++ show o)
-    where getLibDir (Libs p:_) = return p
-          getLibDir (_:ts)     = getLibDir ts -- If not found, assume its in `./classes`
-          getLibDir ([])       = getCurrentDirectory >>= \d -> return (d </> "classes")
-          isExec (Libs _) = False
-          isExec (_)      = True
-          header s = (replicate 12 '=') ++ concat [" ", s, " "] ++ (replicate 12 '=')
+    where header s = (replicate 12 '=') ++ concat [" ", s, " "] ++ (replicate 12 '=')
+          readAst fn = B.readFile fn >>=
+                        (\json -> case eitherDecode json of
+                            (Right r) -> return r
+                            (Left s) -> error s)

@@ -5,7 +5,6 @@
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 
-    CPP: #include "list.hpp"
     CPP: #include "nat.hpp"
     CPP: using pathname = list<nat>;
 *)
