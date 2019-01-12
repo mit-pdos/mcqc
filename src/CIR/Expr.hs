@@ -113,9 +113,9 @@ instance Typeful CDef where
 
 instance Typeful CExpr where
     getincludes CExprSeq    { .. } = "proc" : getincludes _left ++ getincludes _right
-    getincludes CExprCall   { _cd = CDef { _nm = "show"}, .. } = "show" : concatMap getincludes _cparams
-    getincludes CExprCall   { _cd = CDef { _nm = "gmatch"}, .. } = "variant" : concatMap getincludes _cparams
-    getincludes CExprCall   { _cd = CDef { .. }, .. } = _nm : concatMap getincludes _cparams
+    getincludes CExprCall   { _cd = CDef { _nm = "show" , ..}, .. } = "show" : getincludes _ty ++ concatMap getincludes _cparams
+    getincludes CExprCall   { _cd = CDef { _nm = "gmatch" }, .. } = "variant" : concatMap getincludes _cparams
+    getincludes CExprCall   { _cd = CDef { .. }, .. } = _nm : getincludes _ty ++ concatMap getincludes _cparams
     getincludes CExprStr    { .. } = ["String"]
     getincludes CExprNat    { .. } = ["nat"]
     getincludes CExprPair   { .. } = "pair" : getincludes _fst ++ getincludes _snd
@@ -161,6 +161,7 @@ instance Typeful CType where
     getincludes CTExpr { .. } = T.toLower _tbase : concatMap getincludes _tins
     getincludes CTVar  { .. } = concatMap getincludes _vargs
     getincludes CTBase { .. } = [T.toLower _base]
+    getincludes CTPtr  { .. } = getincludes _inner
     getincludes _             = []
 
     -- Unify the same type

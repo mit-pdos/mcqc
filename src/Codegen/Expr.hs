@@ -4,11 +4,11 @@
 {-# LANGUAGE BangPatterns #-}
 module Codegen.Expr where
 import CIR.Expr
-import Codegen.Rewrite
+import Parser.Expr
 import Parser.Pattern
+import Codegen.Rewrite
 import Common.Utils
 import Control.Monad.State
-import Parser.Expr
 import Data.Text (Text)
 import qualified Data.List  as L
 import qualified Data.Maybe as MA
@@ -53,7 +53,7 @@ toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last typelist) (init typelist)
           flattenType t               = [toCTypeAbs abs t]
           nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
           typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
-          -- raise CTFuncs to template functions
+          -- raise CTFuncs to templates
           raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
           raiseCTFunc CTExpr { .. }   = CTExpr _tbase <$> mapM raiseCTFunc _tins
           raiseCTFunc o               = return o

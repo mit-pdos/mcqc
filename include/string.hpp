@@ -33,20 +33,6 @@ namespace String {
         }
     }
 
-    // Destructive ctor, modifies l and appends an element
-    template<typename L=string,
-             typename = std::enable_if_t<is_same_kind_v<string, L>>>
-    static string& mkstring(char c, L&& l) {
-        if constexpr (is_constr_v<L>) {
-            auto cp = std::make_unique<string>(l);
-            cp->insert(l.begin(), 1, c);
-            return *cp;
-        } else {
-            l.insert(l.begin(), 1, c);
-            return l;
-        }
-    }
-
     // Constructive append, creates string
     template<typename L=string, typename R=string,
              typename = std::enable_if_t<is_same_kind_v<string, L>>,

@@ -7,7 +7,6 @@ import Data.MonoTraversable
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Bits
-import Debug.Trace
 
 -- Ascii as byte semantics
 asciiSemantics :: CExpr -> CExpr
@@ -32,7 +31,6 @@ serialize e = (Nothing, Just e)
 
 -- Handle string semantics
 stringSemantics :: CExpr -> CExpr
-stringSemantics e | trace ("String Semantics for  " ++ show e) False = undefined
 stringSemantics e =
     case serialize e of
       (Just str, Nothing) -> CExprStr str

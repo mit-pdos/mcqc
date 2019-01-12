@@ -7,7 +7,7 @@ import qualified Data.Map as M
 
 -- Libraries in include/*.hpp
 libs :: [Text]
-libs = [ "nat", "bool", "proc", "show", "string", "variant", "pair" ]
+libs = [ "nat", "bool", "proc", "show", "option", "string", "variant", "pair" ]
 
 -- Base types (pass-by-value)
 base :: [Text]
