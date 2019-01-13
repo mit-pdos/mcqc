@@ -273,9 +273,7 @@ instance Pretty CExpr where
   pretty CExprNat    { .. } = "(nat)" <> pretty _nat
   pretty CExprBool   { .. } = pretty . T.toLower . T.pack . show $ _bool
   pretty CExprPair   { .. } = "std::make_pair" <> (parens $ pretty _fst <> "," <+> pretty _snd)
-  pretty s@CExprSeq  { .. } = vcat (map (\x -> pretty x <> ";") (init . seqToList $ s))
-                            <> line
-                            <> "return" <+> pretty (last . seqToList $ s) <> ";"
+  pretty CExprSeq    { .. } = pretty _left <> ";" <> line <> pretty _right
   pretty CExprStmt   { _sd = CDef { _nm = "_", .. }, .. } = pretty _sbody
   pretty CExprStmt   { _sd = CDef { .. }, .. } = pretty _ty <+> pretty _nm <+> "=" <+> pretty _sbody
 

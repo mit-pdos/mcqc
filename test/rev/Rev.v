@@ -25,5 +25,25 @@ Fixpoint rev {T} (l : list T) : list T :=
     | h :: ts => rev(ts) ++ [h]
   end.
 
+
+Fixpoint series (n: nat) :=
+  match n with
+    | 0 => []
+    | S m => n :: series m
+  end.
+
+Add LoadPath "../../classes".
+Require MProc.
+Require MShow.
+Import MProc.Proc.
+Import MShow.Show.
+
+Local Open Scope string_scope.
+Definition main :=
+  _ <- print "A list";
+  _ <- print (show (series 100));
+  _ <- print "Reversed";
+  print (show (rev (series 100))).
+
 Extraction Language JSON.
-Separate Extraction rev.
+Separate Extraction main.

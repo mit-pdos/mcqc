@@ -11,7 +11,7 @@ Rev.json: Rev.v
 Rev.cpp: Rev.json
 	stack exec mcqc -- $<
 
-rev: main.cpp Rev.cpp ../../include/*
+rev: Rev.cpp ../../include/*
 	@echo --------------------------------------------------------------------------------
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@

@@ -26,10 +26,18 @@ removeInstances CExprCall { _cparams = (v@CExprVar { .. }:ts), .. }
 removeInstances other = omap removeInstances other
 
 -- Compile a Coq expression to a C Expression
-seqSemantics :: CExpr -> CExpr
-seqSemantics s@CExprSeq { .. } = s
-seqSemantics e = CExprCall (mkdef "return") [e]
+retSemantics :: CExpr -> CExpr
+retSemantics s@CExprSeq { .. } = listToSeq $ otherexpr s ++ [lastexpr s]
+    where lastexpr  = mkreturn . last . seqToList
+          otherexpr = map retSemantics . init . seqToList
+          mkreturn e@CExprCall { _cd = CDef { _nm = "return" } } = e
+          mkreturn e = CExprCall (mkdef "return") [e]
+retSemantics e = omap retSemantics e
 
+lambdaSemantics :: CExpr -> CExpr
+lambdaSemantics s@CExprSeq { .. } = s
+lambdaSemantics e@CExprCall { _cd = CDef { _nm = "return" } } = e
+lambdaSemantics e = CExprCall (CDef "return" . gettype $ e) [e]
 
 procSemantics :: CExpr -> CExpr
-procSemantics = seqSemantics . removeInstances . bindSemantics
+procSemantics = lambdaSemantics . retSemantics . removeInstances . bindSemantics

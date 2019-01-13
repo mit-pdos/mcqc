@@ -94,26 +94,27 @@ namespace Show {
     static inline string show_struct(T&& object) noexcept {
         using type = std::decay_t<T>;
         std::stringstream ss;
+
         if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type, any_type, any_type>{}) {
             auto&& [p1, p2, p3, p4, p5, p6] = object;
-            ss << SHOWTEMP(type) << " " << show(p1) << " " << show(p2) << " " << show(p3) << " " << show(p4) << " " << show(p5) << " " << show(p6);
+            ss << show(p1) << " " << show(p2) << " " << show(p3) << " " << show(p4) << " " << show(p5) << " " << show(p6);
         } else if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type, any_type>{}) {
             auto&& [p1, p2, p3, p4, p5] = object;
-            ss << SHOWTEMP(type) << " " << show(p1) << " " << show(p2) << " " << show(p3) << " " << show(p4) << " " << show(p5);
+            ss << show(p1) << " " << show(p2) << " " << show(p3) << " " << show(p4) << " " << show(p5);
         } else if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type>{}) {
             auto&& [p1, p2, p3, p4] = object;
-            ss << SHOWTEMP(type) << " " << show(p1) << " " << show(p2) << " " << show(p3) << " " << show(p4);
+            ss << show(p1) << " " << show(p2) << " " << show(p3) << " " << show(p4);
         } else if constexpr(is_braces_constructible<type, any_type, any_type, any_type>{}) {
             auto&& [p1, p2, p3] = object;
-            ss << SHOWTEMP(type) << " " << show(p1) << " " << show(p2) << " " << show(p3);
+            ss << show(p1) << " " << show(p2) << " " << show(p3);
         } else if constexpr(is_braces_constructible<type, any_type, any_type>{}) {
             auto&& [p1, p2] = object;
-            ss << SHOWTEMP(type) << " " << show(p1) << " " << show(p2);
+            ss << show(p1) << " " << show(p2);
         } else if constexpr(is_braces_constructible<type, any_type>{}) {
             auto&& [p1] = object;
-            ss << SHOWTEMP(type) << " " << show(p1);
+            ss << show(p1);
         } else {
-            ss << SHOWTEMP(type);
+            ss << "Nil";
         }
         return ss.str();
     }

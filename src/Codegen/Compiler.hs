@@ -61,7 +61,7 @@ makemain CDFunc { _fd = CDef { _nm = "main", _ty = CTExpr "proc" [CTBase "void"]
     where mkbody CExprCall { _cd = CDef { _nm = "return" }, _cparams = [a] } = CExprSeq a retz
           mkbody CExprSeq  { .. } = CExprSeq _left $ mkbody _right
           mkbody o = CExprSeq o retz
-          retz = CExprVar "0"
+          retz = CExprCall (mkdef "return") [CExprVar "0"]
 makemain d = omap makemain d
 
 -- Remove coq_ prefix for things in Context

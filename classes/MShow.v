@@ -67,8 +67,7 @@ Module Show.
     {
       show t := "(" ++ (show (fst t)) ++ ", " ++ (show (snd t)) ++ ")"
     }.
+  Instance showForall {T} : Show T | 99 . Admitted.
 End Show.
 
-Require Extraction.
-Extraction Language JSON.
-Separate Extraction Show.showAscii Show.showString Show.showNat Show.showBool Show.showOption Show.showProd.
+
