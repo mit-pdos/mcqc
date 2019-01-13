@@ -5,10 +5,12 @@ import Types.Context
 import CIR.Expr
 import Data.Map
 import Data.MonoTraversable
+import Debug.Trace
 
--- Make a CDef into a template form by getting the gcs
+-- Make a CDef into a template form expected by cc
 class Template a where
     templatify :: Context CType -> a -> a
+    plug :: Int -> a -> a
 
 instance Template CDef where
     templatify ctx CDef { .. } = case ctx !? _nm of
@@ -17,9 +19,22 @@ instance Template CDef where
             (Nothing) -> CDef _nm _ty
             (Just t) -> CDef _nm t
 
+    plug n CDef { .. } = CDef _nm $ plug n _ty
+
 instance Template CExpr where
     templatify ctx CExprCall { .. } = CExprCall (templatify ctx _cd) $ fmap (templatify ctx) _cparams
     templatify ctx e = omap (templatify ctx) e
+
+    plug n CExprCall   { .. } = CExprCall (plug n _cd) $ fmap (plug n) _cparams
+    plug n CExprStmt   { .. } = CExprStmt (plug n _sd) $ plug n _sbody
+    plug n CExprLambda { .. } = CExprLambda (fmap (plug n) _lds) $ plug n _lbody
+    plug n e = omap (plug n) e
+
+instance Template CType where
+    templatify _ t = t
+
+    plug n CTFree { .. } | n < _idx = CTAuto
+    plug n t = omap (plug n) t
 
 -- Retype high order functions to CTAuto so they do not show a template
 highorder :: [CDef] -> CExpr -> CExpr

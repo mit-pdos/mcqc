@@ -3,7 +3,7 @@
     RUN: %clean
     RUN: %mcqc Rev.json -o %t.cpp
     RUN: FileCheck %s -check-prefix=CPP < %t.cpp
-    RUN: %clang -c %t.cpp
+    RUN: %clang %t.cpp
 
     CPP: #include "variant.hpp"
     CPP: template<{{typename|class}} T>
