@@ -101,7 +101,7 @@ instance Typeful CDecl where
     gettype CDType { .. } = gettype _td
     gettype CDExpr { .. } = gettype _expr
     gettype CDFunc { .. } = CTFunc (_ty _fd) (map gettype _fargs)
-    gettype _             = CTUndef
+    gettype _             = CTAuto
 
     addctx ctx CDFunc { _fd = CDef { _nm = "match" } } = ctx
     addctx ctx d@CDFunc { .. } = mergeCtx ctx $ M.singleton (_nm _fd) (gettype d)

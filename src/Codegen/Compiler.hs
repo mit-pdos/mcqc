@@ -82,7 +82,7 @@ link d = get >>= \ctx -> return $ reexpr (namelink ctx) d
     where reexpr f CDFunc  { .. } = CDFunc _fd _fargs $ f _fbody
           reexpr f CDExpr  { .. } = CDExpr _en $ f _expr
           reexpr f CDSeq   { .. } = (reexpr f _left) <> (reexpr f _right)
-          reexpr f d = d
+          reexpr _ d = d
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl

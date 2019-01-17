@@ -1,5 +1,5 @@
 (**
-    XFAIL:
+    XFAIL: true
     RUN: %coqc %s
     RUN: %clean
     RUN: %mcqc H3.json -o %t.cpp

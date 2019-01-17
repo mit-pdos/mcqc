@@ -5,7 +5,6 @@ import Types.Context
 import CIR.Expr
 import Data.Map
 import Data.MonoTraversable
-import Debug.Trace
 
 -- Make a CDef into a template form expected by cc
 class Template a where
@@ -46,8 +45,8 @@ highorder ds e = omap (highorder ds) e
 gcs :: CType -> CType -> Maybe CType
 gcs CTFree { _idx = a  } CTFree { _idx = b } | a == b = Just $ CTFree a
 gcs CTFree { .. } t = Just t
-gcs t CTBase { .. } = Just CTAuto
-gcs CTBase { .. } t = Just CTAuto
+gcs _ CTBase { .. } = Just CTAuto
+gcs CTBase { .. } _ = Just CTAuto
 gcs CTExpr { _tbase = a, _tins = [as]  } CTExpr { _tbase = b, _tins = [bs] } | a == b = gcs as bs
 gcs CTFunc { _fret = ra } CTFunc { _fret = rb } = gcs ra rb
 gcs CTFunc { .. } t = gcs _fret t
