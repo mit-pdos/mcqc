@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Parser.Decl where
 import Parser.Expr
-import Parser.Fix
 import Data.Aeson
 import Data.Text (Text)
 import Data.HashMap.Strict

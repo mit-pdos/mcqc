@@ -29,7 +29,6 @@ executable mcqc
       Parser.Decl
       Parser.Expr
       Parser.Pattern
-      Parser.Fix
       Sema.Bool
       Sema.String
       Sema.Nat

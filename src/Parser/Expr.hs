@@ -1,11 +1,13 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass, DuplicateRecordFields, OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 module Parser.Expr where
 import GHC.Generics hiding (Constructor)
 import Parser.Pattern
 import Data.Aeson
 import Data.Text
-import Data.HashMap.Strict
-import Prelude hiding (lookup)
+import qualified Data.HashMap.Strict as M
 
 -- Cases
 data Case = Case { pat :: Pattern, body :: Expr}
@@ -20,12 +22,18 @@ data Typ =
     | TypDummy {}
     deriving (Show, Eq)
 
+-- Fixpoint list items
+data Fix = FixD { oname :: Maybe Text, ftyp :: Typ, value :: Expr }
+           | FixE { name :: Text, body :: Expr }
+    deriving (Show, Eq)
+
 -- Expressions
 data Expr = ExprLambda { argnames :: [Text], body :: Expr }
           | ExprCase { expr :: Expr, cases :: [Case] }
           | IndConstructor { name :: Text, argtypes :: [Typ] }
           | ExprConstructor { name :: Text, args :: [Expr] }
           | ExprApply { func :: Expr , args :: [Expr]}
+          | ExprFix { funcs :: [Fix] }
           | ExprLet { name :: Text, nameval :: Expr, body :: Expr }
           | ExprCoerce { value :: Expr }
           | ExprRel { name :: Text }
@@ -33,9 +41,19 @@ data Expr = ExprLambda { argnames :: [Text], body :: Expr }
           | ExprDummy {}
     deriving (Show, Eq)
 
+instance FromJSON Fix where
+  parseJSON (Object v) =
+      case M.lookup "what" v of
+        Just "fixgroup:item" -> FixD <$> v .:? "name"
+                                     <*> v .:  "type"
+                                     <*> v .:  "value"
+        Just "fix:item"      -> FixE <$> v .: "name"
+                                     <*> v .: "body"
+        _                    -> fail $ "Unknown declaration type " ++ show v
+
 instance FromJSON Typ where
   parseJSON (Object v) =
-      case lookup "what" v of
+      case M.lookup "what" v of
         Just "type:arrow"       -> TypArrow  <$> v .:  "left"
                                              <*> v .:  "right"
         Just "type:var"         -> TypVar    <$> v .:  "name"
@@ -51,7 +69,7 @@ instance FromJSON Typ where
 
 instance FromJSON Expr where
   parseJSON (Object v) =
-      case lookup "what" v of
+      case M.lookup "what" v of
         Just "expr:lambda"      -> ExprLambda      <$> v .:? "argnames" .!= []
                                                    <*> v .:  "body"
         Just "expr:case"        -> ExprCase        <$> v .:  "expr"
@@ -61,6 +79,7 @@ instance FromJSON Expr where
         Just "expr:apply"       -> ExprApply       <$> v .:  "func"
                                                    <*> v .:? "args"     .!= []
         Just "expr:coerce"      -> ExprCoerce      <$> v .:  "value"
+        Just "expr:fix"         -> ExprFix         <$> v .:  "funcs"
         Just "expr:let"         -> ExprLet         <$> v .:  "name"
                                                    <*> v .:  "nameval"
                                                    <*> v .:  "body"

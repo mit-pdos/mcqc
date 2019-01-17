@@ -30,13 +30,19 @@ toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (mkdef name
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (mkdef name) $ map toCExpr args
 toCExpr ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (mkdef h) $ map toCExpr args
 toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr $ ExprApply value args
+toCExpr ExprApply       { func = ExprFix { funcs = [FixE { .. }] }, .. } = fixpoint <> call
+    where fixpoint = CExprStmt (mkdef name) $ toCExpr body
+          call = CExprCall (mkdef name) $ map toCExpr args
 --    where assignment = CExprStmt (mkdef name) $ toCExpr nameval
 toCExpr ExprLet         { .. } = assignment <> (toCExpr body)
     where assignment = CExprStmt (mkdef name) $ toCExpr nameval
+toCExpr ExprFix         { funcs = [ FixE { .. } ] } = CExprStmt (mkdef name) $ toCExpr body
+toCExpr ExprFix         { .. } = error $ "Dunno what to do with " ++ show funcs
 toCExpr ExprRel         { .. } = CExprVar . toCName $ name
 toCExpr ExprGlobal      { .. } = CExprVar . toCName $ name
 toCExpr ExprCoerce      { .. } = toCExpr value
 toCExpr ExprDummy       {}     = CExprVar ""
+toCExpr e = error $ "What are you " ++ show e
 
 -- Transcribe to CType with a list of abstractors
 toCTypeAbs :: [Text] -> Typ -> CType

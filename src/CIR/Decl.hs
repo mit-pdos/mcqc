@@ -23,7 +23,6 @@ import qualified Data.Map                   as M
 data CDecl =
     CDFunc     { _fd :: CDef, _fargs :: [CDef], _fbody :: CExpr }
     | CDType   { _td :: CDef }
-    | CDExpr   { _en :: Text, _expr :: CExpr }
     | CDStruct { _sn :: Text, _fields :: [CDef], _nfree :: Int }
     | CDSeq    { _left :: CDecl, _right :: CDecl }
     | CDEmpty  {}
@@ -77,7 +76,6 @@ instance MonoTraversable CDecl where
 instance Nameful CDecl where
     getname CDFunc   { .. } = _nm _fd
     getname CDType   { .. } = _nm _td
-    getname CDExpr   { .. } = _en
     getname CDStruct { .. } = _sn
     getname CDEmpty  {} = ""
     getname CDSeq    { .. } = getname _left
@@ -88,18 +86,15 @@ instance Typeful CDecl where
     getincludes CDType   { .. } = getincludes _td
     getincludes CDFunc   { .. } = getincludes _fd ++ concatMap getincludes _fargs ++ getincludes _fbody
     getincludes CDStruct { .. } = concatMap getincludes _fields
-    getincludes CDExpr   { .. } = getincludes _expr
     getincludes CDSeq    { .. } = getincludes _left ++ getincludes _right
 
     unify ctx t CDType   { .. } = CDType $ unify ctx t _td
-    unify ctx t CDExpr   { .. } = CDExpr _en $ unify ctx t _expr
     unify ctx t CDFunc   { .. } = CDFunc (unify ctx t _fd) _fargs $ unify ctx t _fbody
     unify ctx t CDStruct { .. } = CDStruct _sn (map (unify ctx t) _fields) _nfree
     unify ctx t CDSeq    { .. } = CDSeq (unify ctx t _left) (unify ctx t _right)
     unify _ _  a = a
 
     gettype CDType { .. } = gettype _td
-    gettype CDExpr { .. } = gettype _expr
     gettype CDFunc { .. } = CTFunc (_ty _fd) (map gettype _fargs)
     gettype _             = CTAuto
 
@@ -112,7 +107,6 @@ instance Typeful CDecl where
               exprmaker n = (getname n, CTExpr _nm [CTFree i | i <- [1..freedom]])
               basemaker n = (getname n, CTBase _nm)
     addctx ctx CDType { .. } = addctx ctx _td
-    addctx ctx CDExpr { .. } = mergeCtx ctx $ M.singleton _en (gettype _expr)
     addctx ctx CDSeq  { .. } = ctx `addctx` _left `addctx` _right
     addctx ctx _ = ctx
 
