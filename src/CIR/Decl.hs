@@ -8,6 +8,7 @@
 module CIR.Decl where
 import CIR.Expr hiding (omapM)
 import Common.Pretty
+import Common.Utils
 import GHC.Generics
 import Types.Context
 import Data.Aeson
@@ -16,7 +17,6 @@ import Data.Text (Text)
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import qualified Data.ByteString.Lazy.Char8 as B
-import qualified Data.List                  as L
 import qualified Data.Map                   as M
 
 -- Global scope C++ definitions,
@@ -112,20 +112,18 @@ instance Typeful CDecl where
 
     getMaxVaridx = getMaxVaridx . gettype
 
--- Pretty print the template line
-mkTemplateLine :: [CType] -> Doc ann
-mkTemplateLine argsT =
-    if null templates then mempty else "template<" <> commatize templates <> ">" <> line
-    where getTemplates t = take (getMaxVaridx t) ['T'..'Z']
-          templates = [ "class" <+> pretty a | a <- L.nub $ concatMap getTemplates argsT]
-
 -- Pretty print a declaration
 instance Pretty CDecl where
   pretty CDFunc   { _fd = CDef { .. }, .. } =
           mkTemplateLine (_ty:map gettype _fargs)
-          <> pretty _ty <+> pretty _nm <> "(" <> (commatize . map pretty $ _fargs) <> ") {"
-          <> line <> (tab . pretty) _fbody
-          <> line <> "}" <> line
+          <> pretty _ty <+> pretty _nm <> "(" <> (commatize . raiseFuncs nfreevars $ _fargs) <> ") {"
+          <> line <> (tab . pretty $ _fbody)
+          <> line <> "}"
+          <> line
+          where nfreevars = maximum . map getMaxVaridx $ (_ty:map gettype _fargs)
+                raiseFuncs n (CDef { _ty = CTFunc { .. }, .. }:ts) = pretty (CDef _nm $ CTFree (n+1)):raiseFuncs (n+1) ts
+                raiseFuncs n (h:ts) = pretty h:raiseFuncs n ts
+                raiseFuncs _ [] = []
   pretty CDType   { _td = CDef { .. }, .. } =
           mkTemplateLine [_ty]
           <> "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";" <> line
@@ -142,6 +140,7 @@ instance Pretty CDecl where
           <> line <> "};" <> line
     where toNm = pretty . _nm
   pretty CDEmpty {} = mempty
+  pretty CDSeq { _right = CDEmpty, .. } = pretty _left
+  pretty CDSeq { _left  = CDEmpty, .. } = pretty _right
   pretty CDSeq { .. } = vcat [pretty _left, pretty _right]
-  pretty e = error $ "Unhandled declaration " ++ show e
 

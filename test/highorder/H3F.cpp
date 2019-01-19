@@ -14,11 +14,6 @@ using namespace Show;
 using namespace String;
 using namespace Variant;
 
-
-
-
-
-
 template<class T>
 struct Coq_nil {};
 template<class T>
@@ -84,17 +79,8 @@ std::shared_ptr<list<nat>> mapOnEvens(T f, std::shared_ptr<list<nat>> l) {
     [=](auto n) { return mapOnEvensM<T>(f, n, l); });
 }
 
-template<class T>
-string showl(std::shared_ptr<list<T>> l) {
-  return append(string("["), append(match(l,
-    [=]() { return string(""); },
-    [=](auto a, auto ts) { return match(ts,
-      [=]() { return show(a); },
-      [=](auto _, auto b) { return append(show(a), append(string(", "), showl(ts))); }); }), string("]")));
-}
-
 int main() {
-  print(showl(mapOnEvens([=](auto x) { return add(x, x); }, coq_cons<nat>((nat)1, coq_cons<nat>((nat)2, coq_cons<nat>((nat)3, coq_cons<nat>((nat)4, coq_cons<nat>((nat)5, coq_cons<nat>((nat)6, coq_nil<nat>())))))))));
+  print(show(mapOnEvens([=](auto x) { return add(x, x); }, coq_cons<nat>((nat)1, coq_cons<nat>((nat)2, coq_cons<nat>((nat)3, coq_cons<nat>((nat)4, coq_cons<nat>((nat)5, coq_cons<nat>((nat)6, coq_nil<nat>())))))))));
   return 0;
 }
 

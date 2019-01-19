@@ -8,7 +8,6 @@ import Parser.Expr
 import Parser.Pattern
 import Codegen.Rewrite
 import Common.Utils
-import Control.Monad.State
 import Data.Text (Text)
 import qualified Data.List  as L
 import qualified Data.Maybe as MA
@@ -54,15 +53,15 @@ toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs
 toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
 toCTypeAbs _ TypDummy          {}     = CTBase "void"
 toCTypeAbs _ TypUnknown        {}     = CTAuto
-toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last typelist) (init typelist)
+toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last . flattenType $ t) (init . flattenType $ t)
     where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
           flattenType t               = [toCTypeAbs abs t]
-          nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
-          typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
+          -- nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
+          -- typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
           -- raise CTFuncs to templates
-          raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
-          raiseCTFunc CTExpr { .. }   = CTExpr _tbase <$> mapM raiseCTFunc _tins
-          raiseCTFunc o               = return o
+          -- raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
+          -- raiseCTFunc CTExpr { .. }   = CTExpr _tbase <$> mapM raiseCTFunc _tins
+          -- raiseCTFunc o               = return o
 
 -- Type compiling, from Coq to C++
 toCType :: Typ -> CType
