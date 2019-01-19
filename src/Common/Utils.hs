@@ -53,7 +53,7 @@ addPtr t = t
 -- Pretty print the template line
 mkTemplateLine :: [CType] -> Doc ann
 mkTemplateLine argsT
-    | nfreevars > 0 = "template<" <> (commatize . L.nub $ prettytempl nfreevars argsT) <> ">" <> line
+    | length (prettytempl nfreevars argsT) > 0 = "template<" <> (commatize . L.nub $ prettytempl nfreevars argsT) <> ">" <> line
     | otherwise = mempty
     where nfreevars = maximum . map getMaxVaridx $ argsT
           mktemplate n = pretty $ stringsFromTo 'T' 'Z' !! n
@@ -65,7 +65,7 @@ mkTemplateLine argsT
              "class" <+> mktemplate (_idx-1) <+> "= std::invoke_result_t<"
                 <> mktemplate n <> ","
                 <+> (commatize . map pretty $ _fins) <> ">"]
-          prettytempl n (CTFunc { .. }:ts) = "class" <+> mktemplate (n+1) : prettytempl (n+1) (_fins ++ ts)
+          prettytempl n (CTFunc { .. }:ts) = "class" <+> mktemplate n : prettytempl (n+1) (_fins ++ ts)
           prettytempl n (CTFree { .. }:ts)
               | isFuncRet _idx `L.any` ts = prettytempl n ts
               | otherwise = "class" <+> mktemplate (_idx-1) : prettytempl n ts
