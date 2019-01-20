@@ -10,7 +10,7 @@ import Data.Bits
 
 -- Ascii as byte semantics
 asciiSemantics :: CExpr -> CExpr
-asciiSemantics CExprCall { _cd = CDef { _nm = "Ascii.Ascii" }, _cparams = fp }
+asciiSemantics CExprCall { _cd = CDef { _nm = "Ascii" }, _cparams = fp }
     | length fp == 8 = CExprStr $ T.pack [w2c (makeByte (map _bool fp))]
     | otherwise      = error "Ascii char is not 8 bytes"
     where fromBool b      = if b then 1 else zeroBits
