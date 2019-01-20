@@ -1,5 +1,5 @@
 (**
-    XFAIL:
+    XFAIL: true
     RUN: %coqc %s
     RUN: %clean
     RUN: %mcqc H3.json -o %t.cpp
@@ -65,20 +65,7 @@ Require MString.
 Import MString.String.
 Local Open Scope string_scope.
 
-Fixpoint showl {T} {showT: Show T} (l : list T) : string :=
-  "[" ++ match l with
-         | [] => ""
-         | a::[] => (show a)
-         | a::ts => (show a) ++ ", " ++ (showl ts)
-         end ++ "]".
-
-Instance showList {T} {showT: Show T} : Show (list T) :=
-  {
-    show := showl
-  }.
-
-
-Definition main := print (showl (mapOnEvens (fun x => x + x) [1;2;3;4;5;6])).
+Definition main := print (show (mapOnEvens (fun x => x + x) [1;2;3;4;5;6])).
 
 Require Extraction.
 Extraction Language JSON.

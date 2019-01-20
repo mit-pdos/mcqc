@@ -2,6 +2,11 @@
 module Common.Pretty where
 import Control.Monad
 import Data.Text.Prettyprint.Doc
+import Data.Text.Prettyprint.Doc.Render.Text
+
+instance Eq (Doc ann) where
+    x == y = (render x) == (render y)
+        where render = renderLazy . layoutPretty defaultLayoutOptions
 
 -- Add parenteses if the argument needs them
 maybeparens :: Doc ann -> Doc ann

@@ -49,7 +49,6 @@ data CType =
     | CTPtr   { _inner :: CType }
     | CTFree  { _idx :: Int }
     | CTAuto  {}
-    | CTUndef {} -- Should never output this type, means type inference failed
     deriving (Show, Eq, Generic, ToJSON)
 
 -- C++ Expressions
@@ -166,9 +165,6 @@ instance Typeful CType where
 
     -- Unify the same type
     unify _ a b | a == b = b
-    -- Any type is better than undefined type
-    unify _ t CTUndef {} = t
-    unify _ CTUndef {} t = t
     -- Type is better than auto-type
     unify _ t CTAuto = t
     unify _ CTAuto _ = CTAuto
@@ -246,7 +242,6 @@ instance Pretty CType where
   -- Use template letters starting at T as is custom in C++
   pretty CTFree  { .. } = pretty $ stringsFromTo 'T' 'Z' !! (_idx - 1)
   pretty CTAuto  {}     = "auto" :: Doc ann
-  pretty CTUndef {}     = error "Undef type found, type inference error"
   pretty CTPtr   { .. } = "std::shared_ptr<" <> pretty _inner <> ">"
 
 instance Pretty CExpr where

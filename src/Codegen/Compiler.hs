@@ -5,7 +5,6 @@
 module Codegen.Compiler (compile) where
 import Parser.Mod
 import Parser.Decl
-import Parser.Fix
 import Parser.Expr
 import CIR.File
 import CIR.Decl
@@ -80,14 +79,13 @@ namelink ctx other = omap (namelink ctx) other
 link :: CDecl -> State (Context CType) CDecl
 link d = get >>= \ctx -> return $ reexpr (namelink ctx) d
     where reexpr f CDFunc  { .. } = CDFunc _fd _fargs $ f _fbody
-          reexpr f CDExpr  { .. } = CDExpr _en $ f _expr
           reexpr f CDSeq   { .. } = (reexpr f _left) <> (reexpr f _right)
-          reexpr f d = d
+          reexpr _ d = d
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
 -- Fixpoint Declarations -> C Functions
-toCDecl FixDecl { fixlist = [ Fix { name = Just nm, value = ExprLambda { .. }, .. } ] } =
+toCDecl FixDecl { fixlist = [ FixD { oname = Just nm, value = ExprLambda { .. }, .. } ] } =
     case toCType ftyp of
       (CTFunc { .. }) -> CDFunc (CDef nm . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
       (e) -> error $ "Fixpoint with non-function type " ++ show e
@@ -108,8 +106,8 @@ toCDecl i@IndDecl  { .. } = contract . expand $ i
 -- Type Declarations
 toCDecl TypeDecl { .. } = CDType . CDef (toCTBase name) $ toCType tval
 -- Sanitize declarations for correctness
-toCDecl FixDecl { fixlist = [ Fix { name = Just _, value = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
-toCDecl FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
-toCDecl FixDecl { fixlist = [] }                                   = error "Empty fixlist for declaration found, undefined behavior"
-toCDecl FixDecl { fixlist = _:_ }                                  = error "Fixlist with multiple fixpoints is undefined behavior"
+toCDecl FixDecl { fixlist = [ FixD { oname = Just _, value = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
+toCDecl FixDecl { fixlist = [ FixD { oname = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
+toCDecl FixDecl { fixlist = [] }                                     = error "Empty fixlist for declaration found, undefined behavior"
+toCDecl FixDecl { fixlist = _:_ }                                    = error "Fixlist with multiple fixpoints is undefined behavior"
 toCDecl _ = mempty

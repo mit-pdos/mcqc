@@ -12,10 +12,14 @@
     CPP: () { return coq_nil<T>(); }
     CPP: (auto h, auto ts) { return app<T>(rev<T>(ts), coq_cons<T>(h, coq_nil<T>())); });
 *)
-
+Add LoadPath "../../classes".
 Require Import Coq.Lists.List.
-Require Extraction.
 Import ListNotations.
+
+Require MProc.
+Require MShow.
+Import MProc.Proc.
+Import MShow.Show.
 
 Set Implicit Arguments.
 
@@ -25,25 +29,20 @@ Fixpoint rev {T} (l : list T) : list T :=
     | h :: ts => rev(ts) ++ [h]
   end.
 
-
 Fixpoint series (n: nat) :=
   match n with
     | 0 => []
     | S m => n :: series m
   end.
 
-Add LoadPath "../../classes".
-Require MProc.
-Require MShow.
-Import MProc.Proc.
-Import MShow.Show.
-
 Local Open Scope string_scope.
 Definition main :=
   _ <- print "A list";
-  _ <- print (show (series 100));
+  _ <- print (show (series 1000));
   _ <- print "Reversed";
-  print (show (rev (series 100))).
+  print (show (rev (series 1000))).
 
+
+Require Extraction.
 Extraction Language JSON.
 Separate Extraction main.

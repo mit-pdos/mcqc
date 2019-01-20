@@ -8,7 +8,6 @@ import Parser.Expr
 import Parser.Pattern
 import Codegen.Rewrite
 import Common.Utils
-import Control.Monad.State
 import Data.Text (Text)
 import qualified Data.List  as L
 import qualified Data.Maybe as MA
@@ -30,13 +29,19 @@ toCExpr ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (mkdef name
 toCExpr ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (mkdef name) $ map toCExpr args
 toCExpr ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (mkdef h) $ map toCExpr args
 toCExpr ExprApply       { func = ExprCoerce { .. }, .. } = toCExpr $ ExprApply value args
+toCExpr ExprApply       { func = ExprFix { funcs = [FixE { .. }] }, .. } = fixpoint <> call
+    where fixpoint = CExprStmt (mkdef name) $ toCExpr body
+          call = CExprCall (mkdef name) $ map toCExpr args
 --    where assignment = CExprStmt (mkdef name) $ toCExpr nameval
 toCExpr ExprLet         { .. } = assignment <> (toCExpr body)
     where assignment = CExprStmt (mkdef name) $ toCExpr nameval
+toCExpr ExprFix         { funcs = [ FixE { .. } ] } = CExprStmt (mkdef name) $ toCExpr body
+toCExpr ExprFix         { .. } = error $ "Dunno what to do with " ++ show funcs
 toCExpr ExprRel         { .. } = CExprVar . toCName $ name
 toCExpr ExprGlobal      { .. } = CExprVar . toCName $ name
 toCExpr ExprCoerce      { .. } = toCExpr value
 toCExpr ExprDummy       {}     = CExprVar ""
+toCExpr e = error $ "What are you " ++ show e
 
 -- Transcribe to CType with a list of abstractors
 toCTypeAbs :: [Text] -> Typ -> CType
@@ -48,15 +53,15 @@ toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs
 toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
 toCTypeAbs _ TypDummy          {}     = CTBase "void"
 toCTypeAbs _ TypUnknown        {}     = CTAuto
-toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last typelist) (init typelist)
+toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last . flattenType $ t) (init . flattenType $ t)
     where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
           flattenType t               = [toCTypeAbs abs t]
-          nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
-          typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
+          -- nfreevars                   = foldl max 0 [getMaxVaridx i | i <- flattenType t]
+          -- typelist                    = evalState (mapM raiseCTFunc $ flattenType t) nfreevars
           -- raise CTFuncs to templates
-          raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
-          raiseCTFunc CTExpr { .. }   = CTExpr _tbase <$> mapM raiseCTFunc _tins
-          raiseCTFunc o               = return o
+          -- raiseCTFunc CTFunc { .. }   = do { m <- get; put (m+1); return $ CTFree (m+1) }
+          -- raiseCTFunc CTExpr { .. }   = CTExpr _tbase <$> mapM raiseCTFunc _tins
+          -- raiseCTFunc o               = return o
 
 -- Type compiling, from Coq to C++
 toCType :: Typ -> CType
