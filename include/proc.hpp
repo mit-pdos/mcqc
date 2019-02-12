@@ -38,7 +38,7 @@ namespace Proc {
     // open file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
     static inline nat open(S&& s) noexcept(false) {
-        if (int o = sys::open(FWD(s).c_str(), O_RDWR | O_CREAT | O_EXLOCK)) {
+        if (int o = sys::open(FWD(s).c_str(), O_RDWR | O_CREAT)) {
             return static_cast<nat>(o);
         }
         throw IOException("File not found");

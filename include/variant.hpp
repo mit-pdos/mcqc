@@ -1,6 +1,7 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 #include <variant>
+#include <memory>
 
 namespace Variant {
 
