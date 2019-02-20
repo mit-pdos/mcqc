@@ -26,22 +26,18 @@ Add LoadPath "../../classes".
 Require MNat.
 Import Nat.
 
-Fixpoint fib(n: nat) :=
+Fixpoint fact(n: nat) :=
   match n with
     | 0 => 1
-    | S sm =>
-      match sm with
-        | 0 => 1
-        | S m => (fib m) + (fib sm)
-      end
+    | S sm => n * (fact sm)
   end.
 
 Require Extraction.
 Extraction Language Haskell.
 Extract Inductive nat => "Prelude.Int" [ "0" "Prelude.succ" ]
   "(\fO fS n -> if n Prelude.== 0 then fO () else fS (n Prelude.- 1))".
-Extract Constant add => "(\a b -> if (a Prelude.> (2 Prelude.^ 32 Prelude.- 1)) Prelude.|| (b Prelude.> 2 Prelude.^ 32 Prelude.- 1) then 0 else (a Prelude.+ b))".
+Extract Constant add => "(\a b -> if (a Prelude.> 2 Prelude.^ 16) Prelude.|| (b Prelude.> 2 Prelude.^ 16) then 0 else (a Prelude.+ b))".
 Extract Constant mul => "(Prelude.*)".
 Extract Inductive bool => "Prelude.Bool" [ "Prelude.True" "Prelude.False" ].
-Separate Extraction mul fib.
+Separate Extraction fact.
 
