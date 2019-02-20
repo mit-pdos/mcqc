@@ -14,7 +14,7 @@
     CPP: return (nat)1;
     CPP: add{{.*}}fib(m){{.*}}fib(sm)
 
-    LLVM: define i32 @{{.*}}fib{{.*}}
+    LLVM: define {{.*}} i32 @{{.*}}fib{{.*}}
     LLVM: icmp eq i32 [[NN:%[0-9]+]], 0
     LLVM: [[SM:%[0-9]+]] = add i32 [[NN]], -1
     LLVM: icmp eq i32 [[SM]], 0

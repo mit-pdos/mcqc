@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <utility>
 #include <string>
+#include <memory>
 
 // Checks if type is callable by decltype magic
 template<class T, class...Args>
