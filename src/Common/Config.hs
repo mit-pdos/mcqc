@@ -45,7 +45,7 @@ nativeContext = M.fromList [
     ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
     ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
     ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
-    ("size",      CTFunc (CTBase "nat") [CTBase "string"]),
+    ("length",      CTFunc (CTBase "nat") [CTBase "string"]),
     -- Proc
     ("open",      CTFunc (CTExpr "proc" [CTBase "nat"]) [CTBase "string"]),
     ("socket",    CTFunc (CTExpr "proc" [CTBase "nat"]) [CTBase "nat"]),

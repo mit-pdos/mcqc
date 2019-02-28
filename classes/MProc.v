@@ -1,5 +1,4 @@
-Require MString.
-Import MString.String.
+Require Import Coq.Strings.String.
 
 Set Implicit Arguments.
 

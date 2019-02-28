@@ -85,7 +85,7 @@ namespace String {
     /// Arithmetic
     template<typename S=string,
              typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static nat size(S&& l) {
+    static nat length(S&& l) {
         return static_cast<nat>(l.length());
     }
 }

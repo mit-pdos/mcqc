@@ -2,7 +2,7 @@
     RUN: %coqc %s
     RUN: %clean
     RUN: %mcqc Cat.json -o %t.cpp
-    RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %FC %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 
     CPP: #include "nat.hpp"
@@ -14,24 +14,23 @@
     CPP: cat(string path, string fn)
 *)
 Add LoadPath "../../classes".
-Require MNat.
 Require MProc.
-Require MString.
-Require MShow.
-Import MNat.Nat.
 Import MProc.Proc.
-Import MString.String.
+Require MShow.
 Import MShow.Show.
 
+Require Import Coq.Init.Nat.
+Require Import Coq.Strings.String.
 Local Open Scope string_scope.
+Local Open Scope nat_scope.
 
 Definition read_loop (f: nat) :=
   tup <- until
       (fun prev => (snd prev) =? 0)
       (fun prev => s <- read f 4096;
                   ret match prev with
-                      | Some (sp, _) => ((sp ++ s), size s)
-                      | None => (s, size s)
+                      | Some (sp, _) => ((sp ++ s), length s)
+                      | None => (s, length s)
                       end
       )
       (Some ("", 4096));

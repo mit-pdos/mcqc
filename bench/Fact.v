@@ -22,9 +22,7 @@
     LLVM: {{.*}} call {{.*}}i32 @{{.*}}fib{{.*}}[[MM]]
     LLVM: {{.*}} call {{.*}}i32 @{{.*}}fib{{.*}}[[SM]]
 *)
-Add LoadPath "../../classes".
-Require MNat.
-Import Nat.
+Require Import Coq.Init.Nat.
 
 Fixpoint fact(n: nat) :=
   match n with

@@ -1,9 +1,8 @@
-
-Require MNat.
-Import MNat.Nat.
-
+Require Import Coq.Init.Nat.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Strings.String.
+
+Local Open Scope string_scope.
 
 Module Show.
   Class Show A :=
@@ -27,7 +26,7 @@ Module Show.
       | _ => "9"
       end.
     Fixpoint itoaT (time n : nat) (acc : string) : string :=
-      let acc' := String (natToDigit (mod n 10)) acc in
+      let acc' := String (natToDigit (modulo n 10)) acc in
       match time with
       | 0 => acc'
       | S time' =>

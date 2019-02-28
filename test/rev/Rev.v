@@ -2,7 +2,7 @@
     RUN: %coqc %s
     RUN: %clean
     RUN: %mcqc Rev.json -o %t.cpp
-    RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %FC %s -check-prefix=CPP < %t.cpp
     RUN: %clang %t.cpp
 
     CPP: #include "variant.hpp"
@@ -35,7 +35,9 @@ Fixpoint series (n: nat) :=
     | S m => n :: series m
   end.
 
+Require Import Coq.Strings.String.
 Local Open Scope string_scope.
+
 Definition main :=
   _ <- print "A list";
   _ <- print (show (series 1000));

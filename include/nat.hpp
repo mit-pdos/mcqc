@@ -84,7 +84,7 @@ namespace Nat {
     }
 
     // total division, does not fail when /0
-    constexpr nat mod(nat a, nat b) {
+    constexpr nat modulo(nat a, nat b) {
         if (b == 0) {
             return 0;
         }

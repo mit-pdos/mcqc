@@ -2,7 +2,7 @@
     RUN: %coqc %s
     RUN: %clean
     RUN: %mcqc Option.json -o %t.cpp
-    RUN: FileCheck %s -check-prefix=CPP < %t.cpp
+    RUN: %FC %s -check-prefix=CPP < %t.cpp
 
     CPP: #include "option.hpp"
     CPP: template<{{typename|class}} T>
