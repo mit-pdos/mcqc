@@ -17,62 +17,62 @@ base = [ "nat", "unit", "ascii", "bool", "proc", "string", "prod", "option" ]
 nativeContext :: Context CType
 nativeContext = M.fromList [
     -- Ptr
-    ("std::make_shared", CTFunc (CTPtr $ CTFree 1) [CTFree 1]),
+    ("std::make_shared", [CTFree 1] --> (CTPtr $ CTFree 1)),
     -- Nat
-    ("succ",      CTFunc (CTBase "nat") [CTBase "nat"]),
-    ("pred",      CTFunc (CTBase "nat") [CTBase "nat"]),
-    ("even",      CTFunc (CTBase "bool") [CTBase "nat"]),
-    ("odd" ,      CTFunc (CTBase "bool") [CTBase "nat"]),
-    ("add" ,      CTFunc (CTBase "nat") [CTBase "nat", CTBase "nat"]),
-    ("sub" ,      CTFunc (CTBase "nat") [CTBase "nat", CTBase "nat"]),
-    ("mul" ,      CTFunc (CTBase "nat") [CTBase "nat", CTBase "nat"]),
-    ("div" ,      CTFunc (CTBase "nat") [CTBase "nat", CTBase "nat"]),
-    ("mod" ,      CTFunc (CTBase "nat") [CTBase "nat", CTBase "nat"]),
-    ("pow" ,      CTFunc (CTBase "nat") [CTBase "nat", CTBase "nat"]),
-    ("eqb" ,      CTFunc (CTBase "bool") [CTBase "nat", CTBase "nat"]),
-    ("leb" ,      CTFunc (CTBase "bool") [CTBase "nat", CTBase "nat"]),
-    ("ltb" ,      CTFunc (CTBase "bool") [CTBase "nat", CTBase "nat"]),
+    ("succ",      [CTBase "nat"] --> CTBase "nat"),
+    ("pred",      [CTBase "nat"] --> CTBase "nat"),
+    ("even",      [CTBase "nat"] --> CTBase "bool"),
+    ("odd" ,      [CTBase "nat"] --> CTBase "bool"),
+    ("add" ,      [CTBase "nat", CTBase "nat"] --> CTBase "nat"),
+    ("sub" ,      [CTBase "nat", CTBase "nat"] --> CTBase "nat"),
+    ("mul" ,      [CTBase "nat", CTBase "nat"] --> CTBase "nat"),
+    ("div" ,      [CTBase "nat", CTBase "nat"] --> CTBase "nat"),
+    ("mod" ,      [CTBase "nat", CTBase "nat"] --> CTBase "nat"),
+    ("pow" ,      [CTBase "nat", CTBase "nat"] --> CTBase "nat"),
+    ("eqb" ,      [CTBase "nat", CTBase "nat"] --> CTBase "bool"),
+    ("leb" ,      [CTBase "nat", CTBase "nat"] --> CTBase "bool"),
+    ("ltb" ,      [CTBase "nat", CTBase "nat"] --> CTBase "bool"),
     -- Bool
-    ("negb",      CTFunc (CTBase "bool") [CTBase "bool"]),
-    ("andb",      CTFunc (CTBase "bool") [CTBase "bool", CTBase "bool"]),
-    ("orb",      CTFunc (CTBase "bool") [CTBase "bool", CTBase "bool"]),
-    ("xorb",      CTFunc (CTBase "bool") [CTBase "bool", CTBase "bool"]),
+    ("negb",      [CTBase "bool"] --> CTBase "bool"),
+    ("andb",      [CTBase "bool", CTBase "bool"] --> CTBase "bool"),
+    ("orb",       [CTBase "bool", CTBase "bool"] --> CTBase "bool"),
+    ("xorb",      [CTBase "bool", CTBase "bool"] --> CTBase "bool"),
     -- String
-    ("append",    CTFunc (CTBase "string") [CTBase "string", CTBase "string"]),
-    ("get",       CTFunc (CTBase "char") [CTBase "nat", CTBase "string"]),
-    ("substring", CTFunc (CTBase "string") [CTBase "nat", CTBase "nat", CTBase "string"]),
-    ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
-    ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
-    ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
-    ("prefix",    CTFunc (CTBase "bool") [CTBase "string", CTBase "string"]),
-    ("length",      CTFunc (CTBase "nat") [CTBase "string"]),
+    ("append",    [CTBase "string", CTBase "string"] --> CTBase "string"),
+    ("get",       [CTBase "nat", CTBase "string"] --> CTBase "char"),
+    ("substring", [CTBase "nat", CTBase "nat", CTBase "string"] --> CTBase "string"),
+    ("prefix",    [CTBase "string", CTBase "string"] --> CTBase "string"),
+    ("prefix",    [CTBase "string", CTBase "string"] --> CTBase "bool"),
+    ("prefix",    [CTBase "string", CTBase "string"] --> CTBase "bool"),
+    ("prefix",    [CTBase "string", CTBase "string"] --> CTBase "bool"),
+    ("length",    [CTBase "string"] --> CTBase "nat"),
     -- Proc
-    ("open",      CTFunc (CTExpr "proc" [CTBase "nat"]) [CTBase "string"]),
-    ("socket",    CTFunc (CTExpr "proc" [CTBase "nat"]) [CTBase "nat"]),
-    ("read",      CTFunc (CTExpr "proc" [CTBase "string"]) [CTBase "nat", CTBase "nat"]),
-    ("write",     CTFunc (CTExpr "proc" [CTBase "void"])   [CTBase "nat", CTBase "string"]),
-    ("link",      CTFunc (CTExpr "proc" [CTBase "bool"])   [CTBase "string", CTBase "string"]),
-    ("unlink",    CTFunc (CTExpr "proc" [CTBase "void"])   [CTBase "string"]),
-    ("close",     CTFunc (CTExpr "proc" [CTBase "void"])   [CTBase "nat"]),
-    ("randnat",   CTFunc (CTExpr "proc" [CTBase "nat" ])   []),
-    ("until",     CTFunc (CTExpr "proc" [CTFree 1]) [
-        CTFunc (CTBase "bool") [CTFree 1],
-        CTFunc (CTExpr "proc" [CTFree 1]) [CTExpr "option" [CTFree 1]],
-        CTExpr "option" [CTFree 1]
-    ]),
-    ("spawn",     CTFunc (CTExpr "proc" [CTBase "void"]) [CTFunc (CTBase "void") [CTFree 1], CTFree 1]),
-    ("print",     CTFunc (CTExpr "proc" [CTBase "void"]) [CTBase "string"]),
-    ("ret",       CTFunc (CTExpr "proc" [CTFree 1]) [CTFree 1]),
-    ("bind",      CTFunc (CTExpr "proc" [CTFree 2]) [
-        CTExpr "proc" [CTFree 1],
-        CTFunc (CTExpr "proc" [CTFree 2]) [CTFree 1]
-    ]),
+    ("open",      [CTBase "string"] --> CTExpr "proc" [CTBase "nat"]),
+    ("socket",    [CTBase "nat"] --> CTExpr "proc" [CTBase "nat"]),
+    ("read",      [CTBase "nat", CTBase "nat"] --> CTExpr "proc" [CTBase "string"]),
+    ("write",     [CTBase "nat", CTBase "string"] --> CTExpr "proc" [CTBase "void"]),
+    ("link",      [CTBase "string", CTBase "string"] --> CTExpr "proc" [CTBase "bool"]),
+    ("unlink",    [CTBase "string"] --> CTExpr "proc" [CTBase "void"]),
+    ("close",     [CTBase "nat"] --> CTExpr "proc" [CTBase "void"]),
+    ("randnat",   [] --> CTExpr "proc" [CTBase "nat" ]),
+    ("until",     [
+                        [CTFree 1] --> CTBase "bool",
+                        [CTExpr "option" [CTFree 1]] --> CTExpr "proc" [CTFree 1],
+                        CTExpr "option" [CTFree 1]
+                  ] --> CTExpr "proc" [CTFree 1]),
+    ("spawn",     [CTFunc (CTBase "void") [CTFree 1], CTFree 1] --> CTExpr "proc" [CTBase "void"]),
+    ("print",     [CTBase "string"] --> CTExpr "proc" [CTBase "void"]),
+    ("ret",       [CTFree 1] --> CTExpr "proc" [CTFree 1]),
+    ("bind",      [
+                        CTExpr "proc" [CTFree 1],
+                        [CTFree 1] --> CTExpr "proc" [CTFree 2]
+                  ] --> CTExpr "proc" [CTFree 2]),
     -- Pairs
-    ("fst",       CTFunc (CTFree 1) [CTExpr "pair" [CTFree 1, CTFree 2]]),
-    ("snd",       CTFunc (CTFree 2) [CTExpr "pair" [CTFree 1, CTFree 2]]),
+    ("fst",       [CTExpr "pair" [CTFree 1, CTFree 2]] --> CTFree 1),
+    ("snd",       [CTExpr "pair" [CTFree 1, CTFree 2]] --> CTFree 2),
     -- Option
-    ("some",      CTFunc (CTExpr "option" [CTFree 1]) [CTFree 1]),
-    ("none",      CTFunc (CTExpr "option" [CTFree 1]) []),
-    -- Show
+    ("some",      [CTFree 1] --> CTExpr "option" [CTFree 1]),
+    ("none",      [] --> CTExpr "option" [CTFree 1]),
     -- Show is ad-hoc polymorphic but a parametric polymorphic type will do
-    ("show",      CTFunc (CTBase "string") [CTFree 1])]
+    ("show",      [CTFree 1] --> CTBase "string")]
+

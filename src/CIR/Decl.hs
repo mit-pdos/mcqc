@@ -95,7 +95,7 @@ instance Typeful CDecl where
     unify _ _  a = a
 
     gettype CDType { .. } = gettype _td
-    gettype CDFunc { .. } = CTFunc (_ty _fd) (map gettype _fargs)
+    gettype CDFunc { .. } = map gettype _fargs --> _ty _fd
     gettype _             = CTAuto
 
     addctx ctx CDFunc { _fd = CDef { _nm = "match" } } = ctx

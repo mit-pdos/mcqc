@@ -51,7 +51,7 @@ toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs
 toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
 toCTypeAbs _ TypDummy          {}     = CTBase "void"
 toCTypeAbs _ TypUnknown        {}     = CTAuto
-toCTypeAbs abs t@TypArrow { .. }      = CTFunc (last . flattenType $ t) (init . flattenType $ t)
+toCTypeAbs abs t@TypArrow { .. }      = (init . flattenType $ t) --> (last . flattenType $ t)
     where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
           flattenType t               = [toCTypeAbs abs t]
 

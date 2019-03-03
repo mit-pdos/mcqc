@@ -72,17 +72,16 @@ makemain d = omap makemain d
 -- TODO: match the type as well as name
 namelink :: Context CType -> CExpr -> CExpr
 namelink ctx CExprCall { _cd = CDef { .. }, .. } =
-    let cannonical = cannonicalizeFn _nm
-        newdef = flip CDef _ty $ if cannonical `M.member` ctx then cannonical else _nm in
-    CExprCall newdef $ map (namelink ctx) _cparams
+   let cannonical = cannonicalizeFn _nm
+       newdef = flip CDef _ty $ if cannonical `M.member` ctx then cannonical else _nm in
+   CExprCall newdef $ map (namelink ctx) _cparams
 namelink ctx other = omap (namelink ctx) other
 
 -- Link names using namelink
 link :: CDecl -> Env CDecl
-link CDFunc { .. } = do
-    ctx <- get
-    return $ CDFunc _fd _fargs (namelink ctx _fbody)
-link d = otraverse link d
+link CDFunc { .. } = get >>= \ctx -> return $ CDFunc _fd _fargs (namelink ctx _fbody)
+link CDSeq  { .. } = CDSeq <$> link _left <*> link _right
+link d = return d
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl

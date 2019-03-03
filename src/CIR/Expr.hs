@@ -51,6 +51,11 @@ data CType =
     | CTAuto  {}
     deriving (Show, Eq, Generic, ToJSON)
 
+-- Make infix syntactic sugar
+(-->) :: [CType] -> CType -> CType
+args --> ret = CTFunc ret args
+infixl 8 -->
+
 -- C++ Expressions
 data CExpr =
           -- High level C++ expressions
@@ -78,7 +83,7 @@ type instance Element CDef  = CDef
 
 -- CTypes are monomorphic functors
 instance MonoFunctor CType where
-    omap f   CTFunc { .. } = CTFunc (f _fret) $ fmap f _fins
+    omap f   CTFunc { .. } = fmap f _fins --> f _fret
     omap f   CTExpr { .. } = CTExpr _tbase $ fmap f _tins
     omap f   CTPtr  { .. } = CTPtr $ f _inner
     omap _   CTVar  { .. } = error $ "Type:var with CExpr subterm cannot be traversed " ++ show _vname
@@ -170,7 +175,7 @@ instance Typeful CType where
     unify _ CTAuto _ = CTAuto
     -- Function types
     unify c CTFunc { _fret = a, _fins = ina} CTFunc { _fret = b, _fins = inb}
-        | length ina == length inb = CTFunc (unify c a b) $ zipWith (unify c) ina inb
+        | length ina == length inb = zipWith (unify c) ina inb --> unify c a b
         | otherwise = error $ "Attempting to unify func types with different args" ++ show ina ++ " " ++ show inb
     -- Ignore Proc monad wrapped types
     unify c CTExpr { _tbase = "proc" , _tins = [a] } t = unify c a t

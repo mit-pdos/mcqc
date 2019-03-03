@@ -18,7 +18,7 @@ data CDInd = CDInd { _id :: CDef, _ictors :: [CDef] }
 -- Inductive contructor to CDef, with abstractors
 mkctor :: [Text] -> CType -> Expr -> CDef
 mkctor abs indtype IndConstructor { .. } = CDef name ctyp
-    where ctyp = CTFunc indtype . map transT $ argtypes
+    where ctyp = map transT argtypes --> indtype
           transT = mkptr . toCTypeAbs abs
           mkptr t | t == indtype = CTPtr t | otherwise = t
 mkctor _ _ o = error $ "Non inductive constructor found, failing " ++ show o
