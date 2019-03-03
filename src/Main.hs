@@ -37,7 +37,7 @@ main = do
                 let extfn = map (`T.append` ".json") modules
                 externals <- mapM (readAst . T.unpack) extfn
                 -- All the compiling in one line
-                let bigfile = flip evalState Conf.nativeContext (mconcat <$> mapM compile (externals ++ [ast]))
+                let bigfile = flip evalState Conf.nativeContext $ (mconcat <$> mapM compile (externals ++ [ast]))
                 B.writeFile outfn . render . pretty $ (bigfile :: CFile)
             (Debug) -> do
                 putStrLn . header $ "Args"
@@ -50,7 +50,7 @@ main = do
                 externals <- mapM (readAst . T.unpack) extfn
                 putStrLn . show $ externals
                 -- All the compiling in one line
-                let (bigfile, st) = flip runState Conf.nativeContext (mconcat <$> mapM compile (externals ++ [ast]))
+                let (bigfile, st) = flip runState Conf.nativeContext $ (mconcat <$> mapM compile (externals ++ [ast]))
                 putStrLn . B.unpack . encodePretty $ (bigfile :: CFile)
                 putStrLn . header $ "Context after compiling"
                 printCtx st

@@ -18,3 +18,11 @@ toCName = unquote . unctor . last . T.splitOn "."
     where unquote = T.replace "\"" "M" . T.replace "\'" "M"
           -- Make constructors call the function, not the struct
           unctor  = T.replace "Coq_" "coq_"
+
+-- Cannonicalize function names
+cannonicalizeFn :: Text -> Text
+cannonicalizeFn name =
+    case T.stripPrefix "coq_" name of
+        (Just cannon) -> cannon
+        (Nothing) -> T.toLower name
+

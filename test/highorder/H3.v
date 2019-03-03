@@ -1,5 +1,4 @@
 (**
-    XFAIL: true
     RUN: %coqc %s
     RUN: %clean
     RUN: %mcqc H3.json -o %t.cpp
@@ -23,10 +22,10 @@
     CPP: return coq_cons<nat>(h, mapOnEvensM(f, {{.*}}, ts
 
     CPP: template<{{typename|class}} [[TF:.?]]>
-    CPP: list<nat> mapOnEvens([[TF]] f, list<nat> l)
+    CPP: std::shared_ptr<list<nat>> mapOnEvens([[TF]] f, std::shared_ptr<list<nat>> l)
     CPP: len = length(l)
     CPP: return match(len,
-    CPP: return list<nat>{}
+    CPP: return coq_nil<nat>()
     CPP: return mapOnEvensM(f, n, l)
 *)
 Add LoadPath "../../classes".
@@ -61,8 +60,7 @@ Definition mapOnEvens (f : nat -> nat) (l : list nat) : list nat :=
     | S n => mapOnEvensM f n l
   end.
 
-Require MString.
-Import MString.String.
+Require Import Coq.Strings.String.
 Local Open Scope string_scope.
 
 Definition main := print (show (mapOnEvens (fun x => x + x) [1;2;3;4;5;6])).

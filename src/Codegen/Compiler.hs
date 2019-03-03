@@ -2,7 +2,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE BangPatterns #-}
-module Codegen.Compiler (compile) where
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+module Codegen.Compiler where
 import Parser.Mod
 import Parser.Decl
 import Parser.Expr
@@ -24,8 +26,10 @@ import qualified Data.Text     as T
 import qualified Data.Map      as M
 import qualified Common.Config as Conf
 
+type Env a = State (Context CType) a
+
 -- Compile a module
-compile :: Module -> State (Context CType) CFile
+compile :: Module -> Env CFile
 compile Module { .. } = do
     let alldecls = map toCDecl declarations
     -- Get the context so far
@@ -45,7 +49,7 @@ compilexpr :: Expr -> CExpr
 compilexpr e = semantics . toCExpr $ e
 
 -- Add types to generated CDecl by type inference based on a type context
-typeify :: CDecl -> State (Context CType) CDecl
+typeify :: CDecl -> Env CDecl
 -- typeify d | trace ("Typeifying CDecl " ++ show d) False = undefined
 typeify CDFunc { .. } = do
     ctx <- get
@@ -65,22 +69,20 @@ makemain CDFunc { _fd = CDef { _nm = "main", _ty = CTExpr "proc" [CTBase "void"]
 makemain d = omap makemain d
 
 -- Remove coq_ prefix for things in Context
+-- TODO: match the type as well as name
 namelink :: Context CType -> CExpr -> CExpr
-namelink ctx CExprCall { _cd = CDef { .. }, .. }
-    | cannonical `M.member` ctx = CExprCall (CDef cannonical _ty) recparams
-    | otherwise = CExprCall (CDef _nm _ty) recparams
-    where recparams = fmap (namelink ctx) _cparams
-          cannonical = case T.stripPrefix "coq_" _nm of
-            (Just cannon) -> cannon
-            (Nothing) -> T.toLower _nm
+namelink ctx CExprCall { _cd = CDef { .. }, .. } =
+    let cannonical = cannonicalizeFn _nm
+        newdef = flip CDef _ty $ if cannonical `M.member` ctx then cannonical else _nm in
+    CExprCall newdef $ map (namelink ctx) _cparams
 namelink ctx other = omap (namelink ctx) other
 
 -- Link names using namelink
-link :: CDecl -> State (Context CType) CDecl
-link d = get >>= \ctx -> return $ reexpr (namelink ctx) d
-    where reexpr f CDFunc  { .. } = CDFunc _fd _fargs $ f _fbody
-          reexpr f CDSeq   { .. } = (reexpr f _left) <> (reexpr f _right)
-          reexpr _ d = d
+link :: CDecl -> Env CDecl
+link CDFunc { .. } = do
+    ctx <- get
+    return $ CDFunc _fd _fargs (namelink ctx _fbody)
+link d = otraverse link d
 
 -- Declarations to C Function
 toCDecl :: Declaration -> CDecl
