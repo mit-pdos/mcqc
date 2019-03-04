@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
 module CIR.File where
+import Classes.Pretty()
 import GHC.Generics
 import CIR.Decl
 import Data.Aeson

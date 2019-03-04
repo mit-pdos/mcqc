@@ -3,6 +3,7 @@
 module Codegen.Utils where
 import CIR.Expr
 import CIR.Decl
+import Classes.Typeful
 import Codegen.Rewrite
 import Types.Templates
 import Types.Context

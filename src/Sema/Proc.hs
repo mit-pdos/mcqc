@@ -1,10 +1,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Sema.Proc where
-import qualified Data.Text as T
-import Common.Utils
 import CIR.Expr
+import Classes.Typeful
 import Data.MonoTraversable
+import qualified Data.Text as T
 
 -- Proc semantics (monadic)
 bindSemantics :: CExpr -> CExpr

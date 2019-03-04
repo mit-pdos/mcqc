@@ -1,8 +1,8 @@
 module Common.Filter where
 import Common.Config
 import Data.Text (Text)
-import CIR.Expr
 import Types.Context
+import Classes.Nameful
 import qualified Data.Map  as M
 import qualified Data.Text as T
 

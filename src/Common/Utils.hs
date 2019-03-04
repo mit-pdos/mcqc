@@ -1,17 +1,15 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Common.Utils where
+import Classes.Typeful ()
+import Classes.Pretty ()
 import CIR.Expr
-import Codegen.Rewrite
-import qualified Data.Text as T
-import qualified Data.Char as C
-import qualified Data.List as L
-import qualified Common.Config as Conf
 import Data.Text (Text)
-import Common.Pretty
 import Data.Word (Word8)
 import Debug.Trace
-import Data.Text.Prettyprint.Doc
+import qualified Data.Text     as T
+import qualified Data.Char     as C
+import qualified Common.Config as Conf
 
 -- Word to Character cast
 w2c :: Word8 -> Char
@@ -46,26 +44,3 @@ addPtr t@CTVar { .. }
     | otherwise = CTPtr t
 addPtr t = t
 
--- Pretty print the template line
-mkTemplateLine :: [CType] -> Doc ann
-mkTemplateLine argsT
-    | length (prettytempl nfreevars argsT) > 0 = "template<" <> (commatize . L.nub $ prettytempl nfreevars argsT) <> ">" <> line
-    | otherwise = mempty
-    where nfreevars = maximum . map getMaxVaridx $ argsT
-          mktemplate n = pretty $ stringsFromTo 'T' 'Z' !! n
-          isFuncRet n CTFunc { .. } | _fret == CTFree n = True
-          isFuncRet _ _ = False
-          prettytempl n (CTFunc { _fret = CTFree { .. }, .. }:ts) =
-            prettytempl (n+1) (_fins ++ ts) ++
-            ["class" <+> mktemplate n,
-             "class" <+> mktemplate (_idx-1) <+> "= std::invoke_result_t<"
-                <> mktemplate n <> ","
-                <+> (commatize . map pretty $ _fins) <> ">"]
-          prettytempl n (CTFunc { .. }:ts) = "class" <+> mktemplate n : prettytempl (n+1) (_fins ++ ts)
-          prettytempl n (CTFree { .. }:ts)
-              | isFuncRet _idx `L.any` ts = prettytempl n ts
-              | otherwise = "class" <+> mktemplate (_idx-1) : prettytempl n ts
-          prettytempl n (CTExpr { .. }:ts) = prettytempl n (_tins ++ ts)
-          prettytempl n (CTPtr  { .. }:ts) = prettytempl n (_inner:ts)
-          prettytempl n (_:ts) = prettytempl n ts
-          prettytempl _ [] = []

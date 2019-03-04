@@ -8,7 +8,7 @@ import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
-import Codegen.Compilable
+import Classes.Compilable
 import Codegen.Utils
 import Ops.Flags
 import Types.Context

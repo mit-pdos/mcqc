@@ -5,7 +5,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Codegen.Compilable where
+module Classes.Compilable where
 import Parser.Mod
 import Parser.Decl
 import Parser.Expr
@@ -15,6 +15,7 @@ import CIR.Expr
 import Common.Filter
 import Common.Utils
 import Parser.Pattern
+import Classes.Typeful
 import Codegen.Rewrite
 import Codegen.Utils
 import Codegen.Ind

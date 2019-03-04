@@ -1,6 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Codegen.Ind where
+import Classes.Typeful
+import Classes.Nameful
 import Parser.Decl
 import Parser.Expr
 import CIR.Expr
