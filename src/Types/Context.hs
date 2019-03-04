@@ -6,6 +6,7 @@ module Types.Context where
 import System.IO.Unsafe
 import Data.Map
 import Data.Text (Text)
+import Control.Monad.State
 
 -- Named context
 type Context a = Map Text a

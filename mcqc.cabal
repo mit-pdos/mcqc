@@ -38,7 +38,8 @@ executable mcqc
       CIR.File
       CIR.Decl
       CIR.Expr
-      Codegen.Compiler
+      Codegen.Compilable
+      Codegen.Utils
       Codegen.Ind
       Codegen.Rewrite
       Common.Config

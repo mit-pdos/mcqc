@@ -8,7 +8,8 @@ import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Text
-import Codegen.Compiler
+import Codegen.Compilable
+import Codegen.Utils
 import Ops.Flags
 import Types.Context
 import Common.Filter
@@ -37,7 +38,7 @@ main = do
                 let extfn = map (`T.append` ".json") modules
                 externals <- mapM (readAst . T.unpack) extfn
                 -- All the compiling in one line
-                let bigfile = flip evalState Conf.nativeContext $ (mconcat <$> mapM compile (externals ++ [ast]))
+                let bigfile = flip evalState Conf.nativeContext $ (mconcat <$> mapM comp (externals ++ [ast]))
                 B.writeFile outfn . render . pretty $ (bigfile :: CFile)
             (Debug) -> do
                 putStrLn . header $ "Args"
@@ -50,7 +51,7 @@ main = do
                 externals <- mapM (readAst . T.unpack) extfn
                 putStrLn . show $ externals
                 -- All the compiling in one line
-                let (bigfile, st) = flip runState Conf.nativeContext $ (mconcat <$> mapM compile (externals ++ [ast]))
+                let (bigfile, st) = flip runState Conf.nativeContext $ (mconcat <$> mapM comp (externals ++ [ast]))
                 putStrLn . B.unpack . encodePretty $ (bigfile :: CFile)
                 putStrLn . header $ "Context after compiling"
                 printCtx st

@@ -9,10 +9,26 @@ import Codegen.Rewrite
 import Common.Utils
 import Data.Text (Text)
 import qualified Data.Text     as T
+import qualified Data.Maybe    as MA
+import qualified Data.List     as L
 import Debug.Trace
 
 -- Intermadiate representation for inductive datatypes
 data CDInd = CDInd { _id :: CDef, _ictors :: [CDef] }
+
+-- Transcribe to CType with a list of abstractors
+toCTypeAbs :: [Text] -> Typ -> CType
+toCTypeAbs abs TypVar  { .. }
+    | name `elem` abs = CTFree . (+1) . MA.fromJust . L.elemIndex name $ abs
+    | otherwise = CTVar (toCTBase name) []
+toCTypeAbs _ TypGlob    { targs = [], .. } = CTBase $ toCTBase name
+toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
+toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
+toCTypeAbs _ TypDummy          {}     = CTBase "void"
+toCTypeAbs _ TypUnknown        {}     = CTAuto
+toCTypeAbs abs t@TypArrow { .. }      = (init . flattenType $ t) --> (last . flattenType $ t)
+    where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
+          flattenType t               = [toCTypeAbs abs t]
 
 -- Inductive contructor to CDef, with abstractors
 mkctor :: [Text] -> CType -> Expr -> CDef
