@@ -39,7 +39,6 @@ executable mcqc
       CIR.Decl
       CIR.Expr
       Codegen.Compiler
-      Codegen.Expr
       Codegen.Ind
       Codegen.Rewrite
       Common.Config

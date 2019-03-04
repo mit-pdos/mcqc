@@ -5,7 +5,6 @@ import Parser.Decl
 import Parser.Expr
 import CIR.Expr
 import CIR.Decl
-import Codegen.Expr
 import Codegen.Rewrite
 import Common.Utils
 import Data.Text (Text)

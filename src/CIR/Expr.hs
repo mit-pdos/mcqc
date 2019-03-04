@@ -4,16 +4,24 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE InstanceSigs #-}
 module CIR.Expr where
 import GHC.Generics
+import Parser.Expr
+import Parser.Pattern
 import Data.Aeson
 import Data.MonoTraversable
+import Codegen.Rewrite
 import Common.Pretty
 import Types.Context
 import Data.Text.Prettyprint.Doc
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Map  as M
+import qualified Data.Text  as T
+import qualified Data.Map   as M
+import qualified Data.List  as L
+import qualified Data.Maybe as MA
 
 -- Foldable is not possible as CExpr cannot be empty, FunctorM will do
 class MonoFunctorM mono where
@@ -35,6 +43,10 @@ class Typeful a where
 -- This class is for instances with names
 class Nameful a where
     getname      :: a -> Text
+
+-- Compilable relation, a compiles to b
+class Compilable a b | a -> b where
+    comp :: a -> b
 
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
@@ -223,7 +235,54 @@ instance Nameful CType where
     getname CTVar  { .. } = _vname
     getname t = error $ "Cannot get a name for type " ++ show t
 
+-- Expression compiling, from Coq to C++
+instance Compilable Expr CExpr where
+    comp :: Expr -> CExpr
+    comp ExprLambda      { .. } = CExprLambda defs $ comp body
+        where defs = map mkauto argnames
+    comp ExprCase        { .. } = CExprCall (mkauto "match") $ comp expr:map mkLambda cases
+        where mkLambda Case    { .. } = CExprLambda (mkautos pat) $ comp body
+              mkautos                  = map mkauto . getArgs
+              getArgs PatCtor  { .. } = argnames
+              getArgs PatTuple { .. } = concatMap getArgs items
+              getArgs PatRel   { .. } = [name]
+              getArgs PatWild  {}     = ["_"]
+    comp ExprConstructor { .. } = CExprCall (mkauto name) $ map comp args
+    comp ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (mkauto name) $ map comp args
+    comp ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (mkauto name) $ map comp args
+    comp ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (mkauto h) $ map comp args
+    comp ExprApply       { func = ExprCoerce { .. }, .. } = comp $ ExprApply value args
+    comp ExprApply       { func = ExprFix { funcs = [FixE { .. }] }, .. } = fixpoint <> call
+        where fixpoint = CExprStmt (mkauto name) $ comp body
+              call = CExprCall (mkauto name) $ map comp args
+    comp ExprLet         { .. } = assignment <> (comp body)
+        where assignment = CExprStmt (mkauto name) $ comp nameval
+    comp ExprFix         { funcs = [ FixE { .. } ] } = CExprStmt (mkauto name) $ comp body
+    comp ExprFix         { .. } = error $ "Unsure what to do with " ++ show funcs
+    comp ExprRel         { .. } = CExprVar . toCName $ name
+    comp ExprGlobal      { .. } = CExprVar . toCName $ name
+    comp ExprCoerce      { .. } = comp value
+    comp ExprDummy       {}     = CExprVar ""
+
+instance Compilable Typ CType where
+    comp :: Typ -> CType
+    comp = toCTypeAbs []
+
 -- Utility functions
+-- Transcribe to CType with a list of abstractors
+toCTypeAbs :: [Text] -> Typ -> CType
+toCTypeAbs abs TypVar  { .. }
+    | name `elem` abs = CTFree . (+1) . MA.fromJust . L.elemIndex name $ abs
+    | otherwise = CTVar (toCTBase name) $ map comp args
+toCTypeAbs _ TypGlob    { targs = [], .. } = CTBase $ toCTBase name
+toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
+toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
+toCTypeAbs _ TypDummy          {}     = CTBase "void"
+toCTypeAbs _ TypUnknown        {}     = CTAuto
+toCTypeAbs abs t@TypArrow { .. }      = (init . flattenType $ t) --> (last . flattenType $ t)
+    where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
+          flattenType t               = [toCTypeAbs abs t]
+
 -- Convert sequence to list of expressions
 seqToList :: CExpr -> [CExpr]
 seqToList CExprSeq { .. } = _left:seqToList _right
@@ -234,6 +293,10 @@ listToSeq :: [CExpr] -> CExpr
 listToSeq []     = error "Empty sequence list given, unable to convert to expression"
 listToSeq [a]    = a
 listToSeq (a:ts) = a <> listToSeq ts
+
+-- Make an untyped definition
+mkauto :: Text -> CDef
+mkauto nm = CDef (toCName nm) CTAuto
 
 -- Pretty printer
 instance Pretty CDef where

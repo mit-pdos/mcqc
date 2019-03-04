@@ -114,7 +114,7 @@ instance Typeful CDecl where
 
 -- Pretty print a declaration
 instance Pretty CDecl where
-  pretty CDFunc   { _fd = CDef { .. }, .. } =
+  pretty CDFunc { _fd = CDef { .. }, .. } =
           mkTemplateLine (_ty:map gettype _fargs)
           <> pretty _ty <+> pretty _nm <> "(" <> (commatize . raiseFuncs nfreevars $ _fargs) <> ") {"
           <> line <> (tab . pretty $ _fbody)
@@ -124,7 +124,7 @@ instance Pretty CDecl where
                 raiseFuncs n (CDef { _ty = CTFunc { .. }, .. }:ts) = pretty (CDef _nm $ CTFree (n+1)):raiseFuncs (n+1) ts
                 raiseFuncs n (h:ts) = pretty h:raiseFuncs n ts
                 raiseFuncs _ [] = []
-  pretty CDType   { _td = CDef { .. }, .. } =
+  pretty CDType { _td = CDef { .. }, .. } =
           mkTemplateLine [_ty]
           <> "using" <+> pretty _nm <+> "=" <+> pretty _ty <> ";" <> line
   pretty CDStruct { _fields = [], .. } =

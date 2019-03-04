@@ -17,10 +17,6 @@ import Data.Text.Prettyprint.Doc
 w2c :: Word8 -> Char
 w2c = C.chr . fromIntegral
 
--- Make an untyped definition
-mkdef :: Text -> CDef
-mkdef nm = CDef (toCName nm) CTAuto
-
 -- Print warning
 warn :: String -> a -> a
 warn s = trace ("Warning: " ++ s)

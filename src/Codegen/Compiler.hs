@@ -4,6 +4,8 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE InstanceSigs #-}
 module Codegen.Compiler where
 import Parser.Mod
 import Parser.Decl
@@ -11,7 +13,6 @@ import Parser.Expr
 import CIR.File
 import CIR.Decl
 import CIR.Expr
-import Codegen.Expr
 import Codegen.Ind
 import Codegen.Rewrite
 import Types.Context
@@ -28,10 +29,41 @@ import qualified Common.Config as Conf
 
 type Env a = State (Context CType) a
 
+-- Declarations to C Function
+instance Compilable Declaration CDecl where
+    comp :: Declaration -> CDecl
+    -- Fixpoint Declarations -> C Functions
+    comp FixDecl { fixlist = [ FixD { oname = Just nm, value = ExprLambda { .. }, .. } ] } =
+        case comp ftyp of
+          (CTFunc { .. }) -> CDFunc (CDef nm . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
+          (e) -> error $ "Fixpoint with non-function type " ++ show e
+        where cbody = semantics . comp $ body
+    -- Lambda Declarations -> C Functions
+    comp TermDecl { val = ExprLambda { .. }, .. } =
+        case comp typ of
+          (CTFunc { .. }) -> CDFunc (CDef name . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
+          -- A constant term declaration is defined as a function with no args and the expression as the body
+          (e) -> CDFunc (CDef name e) [] cbody
+        where cbody = semantics . comp $ body
+    -- If an Ind of base is defined as a base type, ignore
+    comp IndDecl  { .. }
+        | name `elem` Conf.base = CDEmpty
+        | (T.toLower name) `elem` Conf.base = CDEmpty
+    -- Inductive type
+    comp i@IndDecl  { .. } = contract . expand $ i
+    -- Type Declarations
+    comp TypeDecl { .. } = CDType . CDef (toCTBase name) $ comp tval
+    -- Sanitize declarations for correctness
+    comp FixDecl { fixlist = [ FixD { oname = Just _, value = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
+    comp FixDecl { fixlist = [ FixD { oname = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
+    comp FixDecl { fixlist = [] }                                     = error "Empty fixlist for declaration found, undefined behavior"
+    comp FixDecl { fixlist = _:_ }                                    = error "Fixlist with multiple fixpoints is undefined behavior"
+    comp _ = mempty
+
 -- Compile a module
 compile :: Module -> Env CFile
 compile Module { .. } = do
-    let alldecls = map toCDecl declarations
+    let alldecls = map comp declarations
     -- Get the context so far
     ctx <- get
     let untyped = filterDecl ctx alldecls
@@ -43,10 +75,6 @@ compile Module { .. } = do
     put newctx
     typed <- otraverse typeify linked
     return . CFile incls . makemain . mconcat $ typed
-
--- Compile a Coq expression to a C Expression
-compilexpr :: Expr -> CExpr
-compilexpr e = semantics . toCExpr $ e
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> Env CDecl
@@ -65,7 +93,7 @@ makemain CDFunc { _fd = CDef { _nm = "main", _ty = CTExpr "proc" [CTBase "void"]
     where mkbody CExprCall { _cd = CDef { _nm = "return" }, _cparams = [a] } = CExprSeq a retz
           mkbody CExprSeq  { .. } = CExprSeq _left $ mkbody _right
           mkbody o = CExprSeq o retz
-          retz = CExprCall (mkdef "return") [CExprVar "0"]
+          retz = CExprCall (mkauto "return") [CExprVar "0"]
 makemain d = omap makemain d
 
 -- Remove coq_ prefix for things in Context
@@ -83,32 +111,4 @@ link CDFunc { .. } = get >>= \ctx -> return $ CDFunc _fd _fargs (namelink ctx _f
 link CDSeq  { .. } = CDSeq <$> link _left <*> link _right
 link d = return d
 
--- Declarations to C Function
-toCDecl :: Declaration -> CDecl
--- Fixpoint Declarations -> C Functions
-toCDecl FixDecl { fixlist = [ FixD { oname = Just nm, value = ExprLambda { .. }, .. } ] } =
-    case toCType ftyp of
-      (CTFunc { .. }) -> CDFunc (CDef nm . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
-      (e) -> error $ "Fixpoint with non-function type " ++ show e
-    where cbody = compilexpr body
--- Lambda Declarations -> C Functions
-toCDecl TermDecl { val = ExprLambda { .. }, .. } =
-    case toCType typ of
-      (CTFunc { .. }) -> CDFunc (CDef name . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
-      -- A constant term declaration is defined as a function with no args and the expression as the body
-      (e) -> CDFunc (CDef name e) [] cbody
-    where cbody = compilexpr body
--- If an Ind of base is defined as a base type, ignore
-toCDecl IndDecl  { .. }
-    | name `elem` Conf.base = CDEmpty
-    | (T.toLower name) `elem` Conf.base = CDEmpty
--- Inductive type
-toCDecl i@IndDecl  { .. } = contract . expand $ i
--- Type Declarations
-toCDecl TypeDecl { .. } = CDType . CDef (toCTBase name) $ toCType tval
--- Sanitize declarations for correctness
-toCDecl FixDecl { fixlist = [ FixD { oname = Just _, value = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
-toCDecl FixDecl { fixlist = [ FixD { oname = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
-toCDecl FixDecl { fixlist = [] }                                     = error "Empty fixlist for declaration found, undefined behavior"
-toCDecl FixDecl { fixlist = _:_ }                                    = error "Fixlist with multiple fixpoints is undefined behavior"
-toCDecl _ = mempty
+

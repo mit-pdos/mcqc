@@ -12,7 +12,7 @@ bindSemantics :: CExpr -> CExpr
 bindSemantics CExprCall { _cd = CDef { _nm = "coq_ret"  }, _cparams = [a] } = a
 bindSemantics CExprCall { _cd = CDef { _nm = "coq_bind" }, _cparams = [call, CExprLambda { _lds = [CDef { .. }], .. }] } =
     CExprSeq statement $ bindSemantics _lbody
-    where statement = CExprStmt (mkdef _nm) $ bindSemantics call
+    where statement = CExprStmt (mkauto _nm) $ bindSemantics call
 bindSemantics other = omap bindSemantics other
 
 -- Remove native type instances (since Coq extracts them as arguments)
@@ -31,7 +31,7 @@ retSemantics s@CExprSeq { .. } = listToSeq $ otherexpr s ++ [lastexpr s]
     where lastexpr  = mkreturn . last . seqToList
           otherexpr = map retSemantics . init . seqToList
           mkreturn e@CExprCall { _cd = CDef { _nm = "return" } } = e
-          mkreturn e = CExprCall (mkdef "return") [e]
+          mkreturn e = CExprCall (mkauto "return") [e]
 retSemantics e = omap retSemantics e
 
 lambdaSemantics :: CExpr -> CExpr
