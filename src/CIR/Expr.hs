@@ -4,9 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 module CIR.Expr where
 import GHC.Generics
 import Data.Aeson
@@ -21,6 +19,10 @@ class MonoFunctorM mono where
 -- C++ Typed names
 data CDef = CDef { _nm :: Text, _ty :: CType }
     deriving (Show, Eq, Generic, ToJSON)
+
+-- Untyped definition
+mkauto :: Text -> CDef
+mkauto nm = CDef (toCName nm) $ CTAuto
 
 -- C++ Types
 data CType =
@@ -100,8 +102,4 @@ listToSeq :: [CExpr] -> CExpr
 listToSeq []     = error "Empty sequence list given, unable to convert to expression"
 listToSeq [a]    = a
 listToSeq (a:ts) = a <> listToSeq ts
-
--- Make an untyped definition
-mkauto :: Text -> CDef
-mkauto nm = CDef (toCName nm) CTAuto
 

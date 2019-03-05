@@ -3,7 +3,6 @@
 module Classes.Nameful where
 import CIR.Decl
 import CIR.Expr
-import Codegen.Rewrite
 import Data.Text (Text)
 import qualified Data.Text  as T
 

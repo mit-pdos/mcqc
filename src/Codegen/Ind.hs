@@ -19,26 +19,25 @@ import Debug.Trace
 data CDInd = CDInd { _id :: CDef, _ictors :: [CDef] }
 
 -- Transcribe to CType with a list of abstractors
-toCTypeAbs :: [Text] -> Typ -> CType
-toCTypeAbs abs TypVar  { .. }
+toCTypeAbs :: [Text] -> Type -> CType
+toCTypeAbs abs TVar  { .. }
     | name `elem` abs = CTFree . (+1) . MA.fromJust . L.elemIndex name $ abs
     | otherwise = CTVar (toCTBase name) []
-toCTypeAbs _ TypGlob    { targs = [], .. } = CTBase $ toCTBase name
-toCTypeAbs abs TypGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
-toCTypeAbs abs TypVaridx       { .. } = CTFree $ idx + length abs
-toCTypeAbs _ TypDummy          {}     = CTBase "void"
-toCTypeAbs _ TypUnknown        {}     = CTAuto
-toCTypeAbs abs t@TypArrow { .. }      = (init . flattenType $ t) --> (last . flattenType $ t)
-    where flattenType TypArrow { .. } = toCTypeAbs abs left:flattenType right
-          flattenType t               = [toCTypeAbs abs t]
+toCTypeAbs _ TGlob    { targs = [], .. } = CTBase $ toCTBase name
+toCTypeAbs abs TGlob         { .. } = CTExpr (toCTBase name) $ map (toCTypeAbs abs) targs
+toCTypeAbs abs TVaridx       { .. } = CTFree $ idx + length abs
+toCTypeAbs _ TDummy          {}   = CTBase "void"
+toCTypeAbs _ TUnknown        {}     = CTAuto
+toCTypeAbs abs t@TArrow { .. }      = (init . flattenType $ t) --> (last . flattenType $ t)
+    where flattenType TArrow { .. } = toCTypeAbs abs left:flattenType right
+          flattenType t             = [toCTypeAbs abs t]
 
 -- Inductive contructor to CDef, with abstractors
-mkctor :: [Text] -> CType -> Expr -> CDef
-mkctor abs indtype IndConstructor { .. } = CDef name ctyp
+mkctor :: [Text] -> CType -> Ind -> CDef
+mkctor abs indtype Ind { .. } = CDef name ctyp
     where ctyp = map transT argtypes --> indtype
           transT = mkptr . toCTypeAbs abs
           mkptr t | t == indtype = CTPtr t | otherwise = t
-mkctor _ _ o = error $ "Non inductive constructor found, failing " ++ show o
 
 -- Expand inductive declaration from Coq to intermediate representation CDInd
 expand :: Declaration -> CDInd
@@ -112,4 +111,3 @@ mkCtorFunc CDef { .. } CDef { _nm = ctornm, _ty = CTFunc { .. } } =
     where fdptr = CDef (T.toLower ctornm) (CTPtr _ty)
           fd = CDef ctornm _ty
           defs  = givenm 'a' _fins
-

@@ -2,7 +2,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 module Classes.Compilable where
@@ -14,7 +13,6 @@ import CIR.Decl
 import CIR.Expr
 import Common.Filter
 import Common.Utils
-import Parser.Pattern
 import Classes.Typeful
 import Codegen.Rewrite
 import Codegen.Utils
@@ -48,10 +46,9 @@ instance Compilable Module (Env CFile) where
 
 -- Declarations to C Function
 instance Compilable Declaration CDecl where
-    comp :: Declaration -> CDecl
     -- Fixpoint Declarations -> C Functions
-    comp FixDecl { fixlist = [ FixD { oname = Just nm, value = ExprLambda { .. }, .. } ] } =
-        case comp ftyp of
+    comp FixDecl { fixlist = [ Fix { name = Just nm, body = ExprLambda { .. }, .. } ] } =
+        case comp typ of
           (CTFunc { .. }) -> CDFunc (CDef nm . addPtr $ _fret) (zipf argnames . map addPtr $ _fins) cbody
           (e) -> error $ "Fixpoint with non-function type " ++ show e
         where cbody = semantics . comp $ body
@@ -81,15 +78,14 @@ instance Compilable Declaration CDecl where
     -- Type Declarations
     comp TypeDecl { .. } = CDType . CDef (toCTBase name) $ comp tval
     -- Sanitize declarations for correctness
-    comp FixDecl { fixlist = [ FixD { oname = Just _, value = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
-    comp FixDecl { fixlist = [ FixD { oname = Nothing, .. } ] }       = error "Anonymous Fixpoints are undefined behavior"
-    comp FixDecl { fixlist = [] }                                     = error "Empty fixlist for declaration found, undefined behavior"
-    comp FixDecl { fixlist = _:_ }                                    = error "Fixlist with multiple fixpoints is undefined behavior"
+    comp FixDecl { fixlist = [ Fix { name = Just _, body = _ } ] } = error "Fixpoint not followed by an ExprLambda is undefined behavior"
+    comp FixDecl { fixlist = [ Fix { name = Nothing, .. } ] }      = error "Anonymous Fixpoints are undefined behavior"
+    comp FixDecl { fixlist = [] }                                  = error "Empty fixlist for declaration found, undefined behavior"
+    comp FixDecl { fixlist = _:_ }                                 = error "Fixlist with multiple fixpoints is undefined behavior"
     comp _ = mempty
 
 -- Expression compiling, from Coq to C++
 instance Compilable Expr CExpr where
-    comp :: Expr -> CExpr
     comp ExprLambda      { .. } = CExprLambda defs $ comp body
         where defs = map mkauto argnames
     comp ExprCase        { .. } = CExprCall (mkauto "match") $ comp expr:map mkLambda cases
@@ -100,23 +96,22 @@ instance Compilable Expr CExpr where
               getArgs PatRel   { .. } = [name]
               getArgs PatWild  {}     = ["_"]
     comp ExprConstructor { .. } = CExprCall (mkauto name) $ map comp args
-    comp ExprApply       { func = ExprGlobal { .. }, .. } = CExprCall (mkauto name) $ map comp args
-    comp ExprApply       { func = ExprRel    { .. }, .. } = CExprCall (mkauto name) $ map comp args
+    comp ExprApply       { func = ExprVar { .. }, .. } = CExprCall (mkauto name) $ map comp args
     comp ExprApply       { func = ExprLambda { argnames = h:_, .. }, .. } = CExprCall (mkauto h) $ map comp args
     comp ExprApply       { func = ExprCoerce { .. }, .. } = comp $ ExprApply value args
-    comp ExprApply       { func = ExprFix { funcs = [FixE { .. }] }, .. } = fixpoint <> call
-        where fixpoint = CExprStmt (mkauto name) $ comp body
-              call = CExprCall (mkauto name) $ map comp args
+    -- XXX: Outline ExprFix like here
+    comp ExprApply       { func = ExprFix { funcs = [Fix { name = Just nm, .. }] }, .. } = fixpoint <> call
+        where fixpoint = CExprStmt (mkauto nm) $ comp body
+              call = CExprCall (mkauto nm) $ map comp args
     comp ExprLet         { .. } = assignment <> (comp body)
         where assignment = CExprStmt (mkauto name) $ comp nameval
-    comp ExprFix         { funcs = [ FixE { .. } ] } = CExprStmt (mkauto name) $ comp body
+    comp ExprFix         { funcs = [ Fix { name = Just nm, .. } ] } = CExprStmt (mkauto nm) $ comp body
     comp ExprFix         { .. } = error $ "Unsure what to do with " ++ show funcs
-    comp ExprRel         { .. } = CExprVar . toCName $ name
-    comp ExprGlobal      { .. } = CExprVar . toCName $ name
+    comp ExprVar         { .. } = CExprVar . toCName $ name
     comp ExprCoerce      { .. } = comp value
     comp ExprDummy       {}     = CExprVar ""
+    comp e = error $ "Unsure how to compile expr " ++ show e
 
-instance Compilable Typ CType where
-    comp :: Typ -> CType
+instance Compilable Type CType where
     comp = toCTypeAbs []
 

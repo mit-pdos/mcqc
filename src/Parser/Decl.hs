@@ -8,10 +8,10 @@ import Data.HashMap.Strict
 
 -- Declarations
 data Declaration =
-    IndDecl { name :: Text, iargs :: [Text], constructors :: [Expr] }
-  | TypeDecl { name :: Text, targs :: [Text], tval :: Typ }
+    IndDecl { name :: Text, iargs :: [Text], constructors :: [Ind] }
+  | TypeDecl { name :: Text, targs :: [Text], tval :: Type }
   | FixDecl { fixlist :: [Fix] }
-  | TermDecl { name :: Text, typ :: Typ, val :: Expr }
+  | TermDecl { name :: Text, typ :: Type, val :: Expr }
     deriving (Show, Eq)
 
 instance FromJSON Declaration where
@@ -28,5 +28,4 @@ instance FromJSON Declaration where
                                     <*> v .:  "type"
                                     <*> v .:  "value"
         _               -> fail $ "Unknown declaration type: " ++ show v
-
-
+  parseJSON _ = fail $ "Unknown declaration JSON representation"

@@ -4,68 +4,90 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 module Parser.Expr where
 import GHC.Generics hiding (Constructor)
-import Parser.Pattern
 import Data.Aeson
 import Data.Text
 import qualified Data.HashMap.Strict as M
 
+-- Patterns
+data Pattern = PatCtor { name :: Text,  argnames :: [Text] }
+             | PatTuple { items :: [Pattern] }
+             | PatRel  { name :: Text }
+             | PatWild {}
+    deriving (Show, Eq)
+
 -- Cases
-data Case = Case { pat :: Pattern, body :: Expr}
+data Case = Case { pat :: Pattern, body :: Expr }
     deriving (Show, Eq, Generic, FromJSON)
 
-data Typ =
-    TypArrow { left :: Typ, right :: Typ }
-    | TypVar { name :: Text, args :: [Expr] }
-    | TypGlob { name :: Text, targs :: [Typ] }
-    | TypVaridx { idx :: Int }
-    | TypUnknown {}
-    | TypDummy {}
+-- Types
+data Type =
+    TArrow { left :: Type, right :: Type }
+    | TVar { name :: Text, args :: [Expr] }
+    | TGlob { name :: Text, targs :: [Type] }
+    | TVaridx { idx :: Int }
+    | TUnknown {}
+    | TDummy {}
     deriving (Show, Eq)
 
 -- Fixpoint list items
-data Fix = FixD { oname :: Maybe Text, ftyp :: Typ, value :: Expr }
-           | FixE { name :: Text, body :: Expr }
+data Fix = Fix { name :: Maybe Text, body :: Expr, typ :: Type }
     deriving (Show, Eq)
+
+-- Inductive constructor
+data Ind = Ind { name :: Text, argtypes :: [Type] }
+    deriving (Show, Eq, Generic, FromJSON)
 
 -- Expressions
 data Expr = ExprLambda { argnames :: [Text], body :: Expr }
           | ExprCase { expr :: Expr, cases :: [Case] }
-          | IndConstructor { name :: Text, argtypes :: [Typ] }
           | ExprConstructor { name :: Text, args :: [Expr] }
-          | ExprApply { func :: Expr , args :: [Expr]}
+          | ExprApply { func :: Expr , args :: [Expr] }
           | ExprFix { funcs :: [Fix] }
           | ExprLet { name :: Text, nameval :: Expr, body :: Expr }
           | ExprCoerce { value :: Expr }
-          | ExprRel { name :: Text }
-          | ExprGlobal { name :: Text }
+          | ExprVar { name :: Text }
           | ExprDummy {}
     deriving (Show, Eq)
+
+instance FromJSON Pattern where
+  parseJSON (Object v) =
+      case M.lookup "what" v of
+        Just "pat:constructor" -> PatCtor          <$> v .:  "name"
+                                                   <*> v .:? "argnames" .!= []
+        Just "pat:tuple"       -> PatTuple         <$> v .:? "items" .!= []
+        Just "pat:rel"         -> PatRel           <$> v .:  "name"
+        Just "pat:wild"        -> pure PatWild
+        _                      -> fail $ "Unknown pattern object: " ++ show v
+  parseJSON _ = fail $ "Unknown pattern JSON representation"
 
 instance FromJSON Fix where
   parseJSON (Object v) =
       case M.lookup "what" v of
-        Just "fixgroup:item" -> FixD <$> v .:? "name"
-                                     <*> v .:  "type"
-                                     <*> v .:  "value"
-        Just "fix:item"      -> FixE <$> v .: "name"
-                                     <*> v .: "body"
-        _                    -> fail $ "Unknown declaration type " ++ show v
+        Just "fixgroup:item" -> Fix <$> v .:? "name"
+                                    <*> v .:  "value"
+                                    <*> v .:  "type"
+        Just "fix:item"      -> Fix <$> v .:? "name"
+                                    <*> v .:  "body"
+                                    <*> pure TUnknown
+        _                    -> fail $ "Unknown fixpoint type " ++ show v
+  parseJSON _ = fail $ "Unknown fixpoint JSON representation"
 
-instance FromJSON Typ where
+instance FromJSON Type where
   parseJSON (Object v) =
       case M.lookup "what" v of
-        Just "type:arrow"       -> TypArrow  <$> v .:  "left"
-                                             <*> v .:  "right"
-        Just "type:var"         -> TypVar    <$> v .:  "name"
-                                             <*> v .:? "args" .!= []
-        Just "type:glob"        -> TypGlob   <$> v .:  "name"
-                                             <*> v .:? "args" .!= []
-        Just "type:varidx"      -> TypVaridx <$> v .:  "name"
-        Just "type:unknown"     -> return TypUnknown {}
-        Just "type:axiom"       -> return TypUnknown {}
-        Just "type:dummy"       -> return TypDummy {}
+        Just "type:arrow"       -> TArrow  <$> v .:  "left"
+                                           <*> v .:  "right"
+        Just "type:var"         -> TVar    <$> v .:  "name"
+                                           <*> v .:? "args" .!= []
+        Just "type:glob"        -> TGlob   <$> v .:  "name"
+                                           <*> v .:? "args" .!= []
+        Just "type:varidx"      -> TVaridx <$> v .:  "name"
+        Just "type:unknown"     -> pure TUnknown {}
+        Just "type:axiom"       -> pure TUnknown {}
+        Just "type:dummy"       -> pure TDummy {}
         Just s                  -> fail $ "Unknown kind: " ++ show v ++ " because " ++ show s
         Nothing                 -> fail $ "No 'what' quantifier for type: " ++ show v
+  parseJSON _ = fail $ "Unknown type JSON representation"
 
 instance FromJSON Expr where
   parseJSON (Object v) =
@@ -83,10 +105,11 @@ instance FromJSON Expr where
         Just "expr:let"         -> ExprLet         <$> v .:  "name"
                                                    <*> v .:  "nameval"
                                                    <*> v .:  "body"
-        Just "expr:rel"         -> ExprRel         <$> v .:  "name"
-        Just "expr:global"      -> ExprGlobal      <$> v .:  "name"
-        Just "expr:axiom"       -> return ExprDummy {}
-        Just "expr:dummy"       -> return ExprDummy {}
+        Just "expr:rel"         -> ExprVar         <$> v .:  "name"
+        Just "expr:global"      -> ExprVar         <$> v .:  "name"
+        Just "expr:axiom"       -> pure ExprDummy {}
+        Just "expr:dummy"       -> pure ExprDummy {}
         Just s                  -> fail $ "Unknown expr: " ++  show v  ++ " because " ++ show s
-        Nothing                 -> IndConstructor  <$> v .:  "name"
-                                                   <*> v .:? "argtypes"     .!= []
+        Nothing                 -> fail $ "Expression with no 'what' quanitifier is not allowed"
+  parseJSON _ = fail $ "Unknown expr JSON representation"
+

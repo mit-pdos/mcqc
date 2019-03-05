@@ -17,5 +17,6 @@ instance FromJSON Module where
         Just "module"        -> Module <$> v .:  "name"
                                        <*> v .:? "used_modules" .!= []
                                        <*> v .:? "declarations" .!= []
-        Nothing                 -> fail $ "No 'what' quantifier for type: " ++ show v
+        _                    -> fail $ "Bad 'what' quantifier for: " ++ show v
 
+  parseJSON _ = fail $ "Unknow JSON for Mod object"
