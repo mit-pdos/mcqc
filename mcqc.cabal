@@ -6,8 +6,8 @@
 
 name:           mcqc
 version:        0.1.0
-synopsis:       A codegen from Coq extracted JSON to C++
-description:    Based on Aeson, linear types
+synopsis:       A codegen from Coq extracted JSON to C++17
+description:    MCQC is a compiler from Coq's Gallina programming language to low-level C++17 which can be compiled to assembly with clang.
 category:       Development
 homepage:       https://github.com/mit-pdos/mcqc
 maintainer:     Lef Ioannidis <elefthei@mit.edu>
@@ -31,7 +31,7 @@ executable mcqc
       Sema.Bool
       Sema.String
       Sema.Nat
-      Sema.Proc
+      Sema.IO
       Sema.Pair
       Sema.Pipeline
       CIR.File
@@ -47,16 +47,15 @@ executable mcqc
       Common.Config
       Common.Utils
       Common.Pretty
-      Common.Filter
       Types.Context
       Types.Templates
   hs-source-dirs:
       src
   build-depends:
+      base,
       aeson,
       aeson-pretty,
       ansi-wl-pprint,
-      base,
       array,
       split,
       bytestring,

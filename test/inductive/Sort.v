@@ -1,7 +1,7 @@
 Add LoadPath "../../classes".
 Require Import Coq.Lists.List.
-Require Import MProc.
-Import Proc.
+Require Import MIO.
+Import IO.
 Import ListNotations.
 Require Import MShow.
 Import Show.

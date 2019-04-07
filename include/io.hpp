@@ -1,5 +1,5 @@
-#ifndef PROC_H
-#define PROC_H
+#ifndef IO_H
+#define IO_H
 #include <iostream>
 #include <future>
 #include "string.hpp"
@@ -29,11 +29,11 @@ using namespace String;
 using namespace Option;
 using namespace Nat;
 
-namespace Proc {
+namespace Io {
 
-    // Make proc an alias for the enclosing type
+    // Make IO an alias for the enclosing type
     template<class T>
-    using proc = T;
+    using io = T;
 
     // open file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
@@ -123,7 +123,7 @@ namespace Proc {
         return ss.str();
     }
 
-    // Spawn an async process
+    // Spawn an async IOess
     // TODO: Wait on return type
     template<typename Func,
              typename ...Args,

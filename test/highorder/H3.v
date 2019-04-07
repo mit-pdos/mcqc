@@ -29,8 +29,8 @@
     CPP: return mapOnEvensM(f, n, l)
 *)
 Add LoadPath "../../classes".
-Require MProc.
-Import MProc.Proc.
+Require MIO.
+Import MIO.IO.
 Require MShow.
 Import MShow.Show.
 Require Export Coq.Lists.List.

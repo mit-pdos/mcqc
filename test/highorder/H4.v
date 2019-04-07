@@ -2,9 +2,9 @@
    XFAIL: true
 *)
 Add LoadPath "../../classes".
-Require MProc.
+Require MIO.
 Require MShow.
-Import MProc.Proc.
+Import MIO.IO.
 Import MShow.Show.
 
 Require Import Coq.Lists.List.

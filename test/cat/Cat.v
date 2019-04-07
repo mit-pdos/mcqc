@@ -5,17 +5,17 @@
     RUN: %FC %s -check-prefix=CPP < %t.cpp
     RUN: %clang -c %t.cpp
 
+    CPP: #include "io.hpp"
     CPP: #include "nat.hpp"
     CPP: #include "pair.hpp"
-    CPP: #include "proc.hpp"
     CPP: #include "show.hpp"
     CPP: #include "string.hpp"
     CPP: read_loop(nat f)
     CPP: cat(string path, string fn)
 *)
 Add LoadPath "../../classes".
-Require MProc.
-Import MProc.Proc.
+Require MIO.
+Import MIO.IO.
 Require MShow.
 Import MShow.Show.
 

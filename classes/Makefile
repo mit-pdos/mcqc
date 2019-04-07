@@ -1,6 +1,6 @@
 all: *.v
 	coqc MShow.v
-	coqc MProc.v
+	coqc MIO.v
 	coqc MArray.v
 
 clean:

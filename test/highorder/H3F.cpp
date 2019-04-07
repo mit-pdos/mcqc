@@ -2,14 +2,14 @@
 #pragma once
 #include "bool.hpp"
 #include "nat.hpp"
-#include "proc.hpp"
+#include "io.hpp"
 #include "show.hpp"
 #include "string.hpp"
 #include "variant.hpp"
 
 using namespace Bool;
 using namespace Nat;
-using namespace Proc;
+using namespace IO;
 using namespace Show;
 using namespace String;
 using namespace Variant;

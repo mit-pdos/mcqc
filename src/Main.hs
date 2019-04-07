@@ -11,7 +11,6 @@ import Data.Text.Prettyprint.Doc.Render.Text
 import Classes.Compilable
 import Ops.Flags
 import Types.Context
-import Common.Filter
 import CIR.File
 import Parser.Mod
 import qualified Data.ByteString.Lazy.Char8 as B
@@ -33,7 +32,7 @@ main = do
     forM_ flags (\flag ->
         case flag of
             (Output outfn) -> do
-                let modules = filterMod . used_modules $ ast
+                let modules = Conf.filterMod . used_modules $ ast
                 let extfn = map (`T.append` ".json") modules
                 externals <- mapM (readAst . T.unpack) extfn
                 -- All the compiling in one line
@@ -43,7 +42,7 @@ main = do
                 putStrLn . header $ "Args"
                 putStrLn . show $ args
                 putStrLn . header $ "Modules Imported"
-                let modules = filterMod . used_modules $ ast
+                let modules = Conf.filterMod . used_modules $ ast
                 putStrLn . show $ modules
                 putStrLn . header $ "JSON dump"
                 let extfn = map (`T.append` ".json") modules

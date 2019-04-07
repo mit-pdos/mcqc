@@ -1,11 +1,11 @@
 #include "array.hpp"
 #include "show.hpp"
-#include "proc.hpp"
+#include "io.hpp"
 
 #include <iostream>
 
 using namespace Show;
-using namespace Proc;
+using namespace IO;
 using namespace Array;
 
 int main() {

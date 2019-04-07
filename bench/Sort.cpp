@@ -3,14 +3,14 @@
 #include "bool.hpp"
 #include "nat.hpp"
 #include "option.hpp"
-#include "proc.hpp"
+#include "io.hpp"
 #include "show.hpp"
 #include "variant.hpp"
 
 using namespace Bool;
 using namespace Nat;
 using namespace Option;
-using namespace Proc;
+using namespace IO;
 using namespace Show;
 using namespace Variant;
 

@@ -1,15 +1,15 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Sema.Proc where
+module Sema.IO where
 import CIR.Expr
 import Classes.Typeful
 import Data.MonoTraversable
 import qualified Data.Text as T
 
--- Proc semantics (monadic)
+-- IO semantics (monadic)
 bindSemantics :: CExpr -> CExpr
--- bindSemantics s | trace ("DBG Sema/Proc.hs/bindSemantics " ++ (show s)) False = undefined
+-- bindSemantics s | trace ("DBG Sema/IO.hs/bindSemantics " ++ (show s)) False = undefined
 bindSemantics CExprCall { _cd = CDef { _nm = "coq_ret"  }, _cparams = [a] } = a
 bindSemantics CExprCall { _cd = CDef { _nm = "coq_bind" }, _cparams = [call, CExprLambda { _lds = [CDef { .. }], .. }] } =
     CExprSeq statement $ bindSemantics _lbody
@@ -40,5 +40,5 @@ lambdaSemantics s@CExprSeq { .. } = s
 lambdaSemantics e@CExprCall { _cd = CDef { _nm = "return" } } = e
 lambdaSemantics e = CExprCall (CDef "return" . gettype $ e) [e]
 
-procSemantics :: CExpr -> CExpr
-procSemantics = lambdaSemantics . retSemantics . removeInstances . bindSemantics
+ioSemantics :: CExpr -> CExpr
+ioSemantics = lambdaSemantics . retSemantics . removeInstances . bindSemantics

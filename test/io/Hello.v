@@ -5,15 +5,15 @@
   RUN: %FC %s -check-prefix=CPP < %t.cpp
   RUN: %clang %t.cpp
 
-  CPP: #include "proc.hpp"
-  CPP: using namespace Proc;
+  CPP: #include "io.hpp"
+  CPP: using namespace Io;
   CPP: int main()
   CPP: print(string("Hello world"));
   CPP: return 0;
 *)
 Add LoadPath "../../classes".
-Require MProc.
-Import MProc.Proc.
+Require MIO.
+Import MIO.IO.
 
 Require Import Coq.Strings.String.
 Local Open Scope string_scope.

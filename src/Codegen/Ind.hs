@@ -13,7 +13,6 @@ import Data.Text (Text)
 import qualified Data.Text     as T
 import qualified Data.Maybe    as MA
 import qualified Data.List     as L
-import Debug.Trace
 
 -- Intermadiate representation for inductive datatypes
 data CDInd = CDInd { _id :: CDef, _ictors :: [CDef] }

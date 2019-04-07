@@ -45,8 +45,8 @@
     CPP:   return gmatch(self, [=](Coq_leaf<[[TT]]> _) { return f(_.a); }, [=](Coq_branch<[[TT]]> _) { return g(_.a, _.b, _.c); });
 *)
 Add LoadPath "../../classes".
-Require MProc.
-Import MProc.Proc.
+Require MIO.
+Import MIO.IO.
 
 Require MShow.
 Import MShow.Show.

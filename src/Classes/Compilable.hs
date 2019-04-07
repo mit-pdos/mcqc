@@ -11,7 +11,6 @@ import Parser.Expr
 import CIR.File
 import CIR.Decl
 import CIR.Expr
-import Common.Filter
 import Common.Utils
 import Classes.Typeful
 import Codegen.Rewrite
@@ -34,12 +33,12 @@ instance Compilable Module (Env CFile) where
         let alldecls = map comp declarations
         -- Get the context so far
         ctx <- get
-        let untyped = filterDecl ctx alldecls
+        let untyped = filter (\d -> not $ isUnifiable ctx d) alldecls
         -- Link with context
         linked <- otraverse link untyped
         -- Add declarations
         let newctx = foldl addctx ctx linked
-        let incls = L.sort . L.nub . concatMap (filterAllowed . getincludes) $ alldecls
+        let incls = L.sort . L.nub . concatMap (filter (`elem` Conf.libs) . getincludes) $ alldecls
         put newctx
         typed <- otraverse typeify linked
         return . CFile incls . mconcat $ typed
@@ -55,8 +54,8 @@ instance Compilable Declaration CDecl where
     -- Main function is special
     comp TermDecl { val = ExprLambda { .. }, name = "main", .. } =
         case comp typ of
-          (CTExpr "proc" [CTBase "void"]) -> CDFunc (CDef "main" $ CTBase "int") [] cbody
-          (e) -> error $ "Main function of non 'proc<void>' type " ++ show e
+          (CTExpr "io" [CTBase "void"]) -> CDFunc (CDef "main" $ CTBase "int") [] cbody
+          (e) -> error $ "Main function of non 'io<void>' type " ++ show e
         where mkbody CExprCall { _cd = CDef { _nm = "return" }, _cparams = [a] } = CExprSeq a retz
               mkbody CExprSeq  { .. } = CExprSeq _left $ mkbody _right
               mkbody o = CExprSeq o retz

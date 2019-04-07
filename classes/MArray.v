@@ -2,8 +2,8 @@
 
 Set Implicit Arguments.
 
-Require MProc.
-Import MProc.Proc.
+Require MIO.
+Import MIO.IO.
 
 
 Module Array.
@@ -15,9 +15,9 @@ Module Array.
     (** Monad implementation *)
     | ret: forall T, T -> Array T
     | bind: forall T T', Array T -> (T -> Array T') -> Array T'.
-  
-  Parameter runArray: forall T,  Array T -> proc T.
-  
+
+  Parameter runArray: forall T,  Array T -> io T.
+
   (** Define some Arrays *)
   Compute let zero := empty 4 0 in put zero 2 1.
 

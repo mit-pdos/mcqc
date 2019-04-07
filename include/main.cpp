@@ -4,7 +4,7 @@
 #include "option.hpp"
 #include "show.hpp"
 #include "bool.hpp"
-#include "proc.hpp"
+#include "io.hpp"
 #include "pair.hpp"
 #include "string.hpp"
 #include "curry.h"
@@ -19,7 +19,7 @@ using namespace Pair;
 using namespace String;
 using namespace Bool;
 using namespace Show;
-using namespace Proc;
+using namespace IO;
 
 
 int main() {
