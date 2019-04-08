@@ -37,7 +37,7 @@ namespace Io {
 
     // open file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static inline nat open(S&& s) noexcept(false) {
+    static io<nat> open(S&& s) noexcept(false) {
         if (int o = sys::open(FWD(s).c_str(), O_RDWR | O_CREAT)) {
             return static_cast<nat>(o);
         }
@@ -45,7 +45,7 @@ namespace Io {
     }
 
     // read file
-    static inline string read(nat f, nat size) {
+    static io<string> read(nat f, nat size) {
         auto dp = string(size, '\0' );
         sys::read(f, &(dp[0]), sizeof(char)*size);
         return dp;
@@ -53,12 +53,12 @@ namespace Io {
 
     // write file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static inline void write(nat nat, S&& s) {
+    static io<void> write(nat nat, S&& s) {
         sys::write(nat, &s[0], sizeof(char)*s.size());
     }
 
     // close file
-    static inline void close(nat f) noexcept(false) {
+    static io<void> close(nat f) noexcept(false) {
         if(sys::close(f)) {
             throw IOException("Could not close file");
         }
@@ -66,7 +66,7 @@ namespace Io {
 
     // Create hardlink
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static inline bool link(S&& src, S&& dest) {
+    static io<bool> link(S&& src, S&& dest) {
         if(sys::link(FWD(src.c_str()), FWD(dest.c_str()))) {
             return true;
         }
@@ -75,7 +75,7 @@ namespace Io {
 
     // Remove link from directory
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static inline bool unlink(S&& path) {
+    static io<bool> unlink(S&& path) {
         if(sys::unlink(FWD(path.c_str()))) {
             return true;
         }
@@ -91,7 +91,7 @@ namespace Io {
                 && "2nd argument func not callable with option<T>">,
              typename = std::enable_if_t<std::is_same_v<bool, std::invoke_result_t<FuncCmp, T>>
                 && "Return type of FuncCmp is not bool">>
-    static inline T until(FuncCmp fcmp, Func f, option<T> init) {
+    static io<T> until(FuncCmp fcmp, Func f, option<T> init) {
         option<T> base = init;
         T result;
         do {
@@ -103,13 +103,13 @@ namespace Io {
     };
 
     // random number
-    static inline nat randnat() {
+    static io<nat> randnat() {
         return static_cast<nat>(rand());
     }
 
     // Make UUID v4-ish ie: "ea22d131-e1fc-4f95-8afc-6286d15e802e"
-    static inline string getuuid() {
-           std::stringstream ss;
+    static io<string> getuuid() {
+        std::stringstream ss;
         mkhexes(ss, 8);
         ss << "-";
         mkhexes(ss, 4);
@@ -128,13 +128,13 @@ namespace Io {
     template<typename Func,
              typename ...Args,
              typename = std::enable_if_t<CallableWith<Func, Args...> && "Argument not callable with argument types">>
-    static inline void spawn(Func f, Args... args) {
+    static io<void> spawn(Func f, Args... args) {
         std::async(std::launch::async, f, args...);
     }
 
     // print string to standard output
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static void print(S&& s) {
+    static io<void> print(S&& s) {
         std::cout << s << std::endl;
     }
 }
