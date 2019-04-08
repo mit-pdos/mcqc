@@ -2,7 +2,7 @@
 #define SHOW_H
 #include <iostream>
 #include <variant>
-#include "pair.hpp"
+#include "prod.hpp"
 #include "option.hpp"
 #include "string.hpp"
 #include "nat.hpp"
@@ -10,7 +10,7 @@
 
 using namespace Nat;
 using namespace String;
-using namespace Pair;
+using namespace Prod;
 using namespace Option;
 
 template <class T, class... TArgs> decltype(void(T{std::declval<TArgs>()...}), std::true_type{}) test_is_braces_constructible(int);
@@ -53,9 +53,9 @@ namespace Show {
         return ss.str();
     }
 
-    // pair (product) -> string
+    // (product) -> string
     template<class A, class B>
-    static inline string show(pair<A,B> p) {
+    static inline string show(prod<A,B> p) {
         std::stringstream ss;
         ss << "(" << p.first << ", " << p.second << ")";
         return ss.str();

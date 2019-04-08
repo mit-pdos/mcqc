@@ -8,7 +8,7 @@ import qualified Data.Map as M
 
 -- Libraries in include/*.hpp
 libs :: [Text]
-libs = [ "nat", "bool", "io", "show", "option", "string", "variant", "pair" ]
+libs = [ "nat", "bool", "io", "show", "option", "string", "variant", "prod" ]
 
 -- Base types (pass-by-value)
 base :: [Text]
@@ -69,8 +69,8 @@ nativeContext = M.fromList [
                         [CTFree 1] --> CTExpr "IO" [CTFree 2]
                   ] --> CTExpr "IO" [CTFree 2]),
     -- Pairs
-    ("fst",       [CTExpr "pair" [CTFree 1, CTFree 2]] --> CTFree 1),
-    ("snd",       [CTExpr "pair" [CTFree 1, CTFree 2]] --> CTFree 2),
+    ("fst",       [CTExpr "prod" [CTFree 1, CTFree 2]] --> CTFree 1),
+    ("snd",       [CTExpr "prod" [CTFree 1, CTFree 2]] --> CTFree 2),
     -- Option
     ("some",      [CTFree 1] --> CTExpr "option" [CTFree 1]),
     ("none",      [] --> CTExpr "option" [CTFree 1]),

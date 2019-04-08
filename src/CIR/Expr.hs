@@ -54,7 +54,7 @@ data CExpr =
           | CExprStr    { _str :: Text }
           | CExprNat    { _nat :: Int }
           | CExprBool   { _bool :: Bool }
-          | CExprPair   { _fst :: CExpr, _snd :: CExpr }
+          | CExprProd   { _fst :: CExpr, _snd :: CExpr }
     deriving (Show, Eq, Generic, ToJSON)
 
 instance Semigroup CExpr where
@@ -78,7 +78,7 @@ instance MonoFunctor CExpr where
     omap f   CExprCall   { .. } = CExprCall _cd $ fmap f _cparams
     omap f   CExprStmt   { .. } = CExprStmt _sd $ f _sbody
     omap f   CExprSeq    { .. } = CExprSeq (f _left) (f _right)
-    omap f   CExprPair   { .. } = CExprPair (f _fst) (f _snd)
+    omap f   CExprProd   { .. } = CExprProd (f _fst) (f _snd)
     omap f   CExprLambda { .. } = CExprLambda _lds $ f _lbody
     -- If it doesn't match anything, then it's a normal form, ignore
     omap _   other              = other
@@ -88,7 +88,7 @@ instance MonoFunctorM CExpr where
     omapM f   CExprStmt   { .. } = f _sbody >>= \b -> return $ CExprStmt _sd b
     omapM f   CExprLambda { .. } = f _lbody >>= \b -> return $ CExprLambda _lds b
     omapM f   CExprSeq    { .. } = do { l <- f _left; r <- f _right; return $ CExprSeq l r }
-    omapM f   CExprPair   { .. } = do { l <- f _fst; r <- f _snd; return $ CExprPair l r }
+    omapM f   CExprProd   { .. } = do { l <- f _fst; r <- f _snd; return $ CExprProd l r }
     -- If it doesn't match anything, then it's a normal form, ignore
     omapM _   other              = return other
 

@@ -5,7 +5,7 @@
 #include "show.hpp"
 #include "bool.hpp"
 #include "io.hpp"
-#include "pair.hpp"
+#include "prod.hpp"
 #include "string.hpp"
 #include "curry.h"
 #include "benchmark.h"
@@ -29,7 +29,7 @@ int main() {
     // Create a UUID v4
     print(getuuid());
 
-    print(show(mkpair((nat)1, string("foo"))));
+    print(show(mkprod((nat)1, string("foo"))));
 
     // Currying
     auto f = [](auto a, auto b, auto c, auto d) {
@@ -70,7 +70,7 @@ int main() {
     print(foo);
 
     // Pairs
-    auto t = mkpair((nat)1, 'b');
+    auto t = mkprod((nat)1, 'b');
     match(t,
         [](nat a, char b) {
             std::cout << "Pair expanded: " << a << ", " << b << std::endl;

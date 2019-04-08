@@ -4,11 +4,11 @@ import Sema.Nat
 import Sema.IO
 import Sema.Bool
 import Sema.String
-import Sema.Pair
+import Sema.Prod
 
 semantics :: CExpr -> CExpr
 semantics = ioSemantics .
-            pairSemantics .
+            prodSemantics .
             stringSemantics .
             asciiSemantics .
             natSemantics .

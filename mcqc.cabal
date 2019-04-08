@@ -32,7 +32,7 @@ executable mcqc
       Sema.String
       Sema.Nat
       Sema.IO
-      Sema.Pair
+      Sema.Prod
       Sema.Pipeline
       CIR.File
       CIR.Decl
@@ -41,7 +41,7 @@ executable mcqc
       Classes.Nameful
       Classes.Pretty
       Classes.Compilable
-      Codegen.Utils
+      Codegen.Top
       Codegen.Ind
       Codegen.Rewrite
       Common.Config

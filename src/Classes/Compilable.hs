@@ -14,7 +14,7 @@ import CIR.Expr
 import Common.Utils
 import Classes.Typeful
 import Codegen.Rewrite
-import Codegen.Utils
+import Codegen.Top
 import Codegen.Ind
 import Sema.Pipeline
 import Data.MonoTraversable

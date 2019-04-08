@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE RecordWildCards #-}
-module Codegen.Utils where
+module Codegen.Top where
 import CIR.Expr
 import CIR.Decl
 import Classes.Typeful

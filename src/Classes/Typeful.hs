@@ -82,7 +82,7 @@ instance Typeful CExpr where
     getincludes CExprCall   { _cd = CDef { .. }, .. } = _nm : getincludes _ty ++ concatMap getincludes _cparams
     getincludes CExprStr    { .. } = ["String"]
     getincludes CExprNat    { .. } = ["nat"]
-    getincludes CExprPair   { .. } = "pair" : getincludes _fst ++ getincludes _snd
+    getincludes CExprProd   { .. } = "prod" : getincludes _fst ++ getincludes _snd
     getincludes CExprStmt   { .. } = "io" : getincludes _sd ++ getincludes _sbody
     getincludes CExprLambda { .. } = concatMap getincludes _lds ++ getincludes _lbody
     getincludes CExprBool   { .. } = ["bool"]
@@ -92,7 +92,7 @@ instance Typeful CExpr where
     gettype CExprCall   { .. } = gettype _cd
     gettype CExprStr    { .. } = CTBase "string"
     gettype CExprNat    { .. } = CTBase "nat"
-    gettype CExprPair   { .. } = CTExpr "pair" $ [gettype i | i <- [_fst, _snd]]
+    gettype CExprProd   { .. } = CTExpr "prod" $ [gettype i | i <- [_fst, _snd]]
     gettype CExprStmt   { .. } = gettype _sd
     gettype CExprLambda { .. } = gettype _lbody
     gettype CExprBool   { .. } = CTBase "bool"
