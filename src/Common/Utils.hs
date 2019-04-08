@@ -33,6 +33,7 @@ givenm c = zipf [T.pack [i] | i <- [c..]]
 
 -- Wrap non-base types to a pointer
 addPtr :: CType -> CType
+addPtr CTFunc   { .. } = map addPtr _fins --> addPtr _fret
 addPtr t@CTBase { .. }
     | _base `elem` Conf.base = t
     | otherwise = CTPtr t

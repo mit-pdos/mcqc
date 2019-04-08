@@ -19,8 +19,7 @@ printCtx = putStr . concatMap (++"\n") . elems . mapWithKey (\k v -> show k ++ "
 unsafePrintCtx :: Show a => Bool -> Context a -> Bool
 unsafePrintCtx b = const b . unsafePerformIO . printCtx
 
--- Merge two contexts, throw an error if conflicting definitions happen (no overloading)
+-- Merge two contexts, always prefer old definitions
 mergeCtx :: Show a => Context a -> Context a -> Context a
-mergeCtx = unionWithKey (\k va vb ->
-    error $ "Constructor " ++ show k ++ " has conflicting definitions " ++ show va  ++ "\n" ++ show vb)
+mergeCtx = unionWithKey (\k va vb -> va)
 

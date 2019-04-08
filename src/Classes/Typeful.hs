@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Map  as M
 import qualified Data.Text as T
+import Debug.Trace
 
 -- This class is for instances with types
 class Typeful a where
@@ -125,7 +126,7 @@ instance Typeful CExpr where
     getMaxVaridx = getMaxVaridx . gettype
 
     -- The name is in the context and the type is unifiable
-    isUnifiable ctx c@CExprCall { _cd = CDef { .. }, .. } = ((cannonicalizeFn _nm) `M.member` ctx) && (isUnifiable ctx . gettype $ c)
+    isUnifiable ctx c@CExprCall { _cd = CDef { .. }, .. } = (cannonicalizeFn _nm `M.member` ctx) && (isUnifiable ctx . gettype $ c)
     isUnifiable ctx e = isUnifiable ctx . gettype $ e
 
 instance Typeful CType where
@@ -142,7 +143,7 @@ instance Typeful CType where
     unify _ t CTAuto = Just t
     unify _ CTAuto _ = Just CTAuto
     -- Function types
-    unify c CTFunc { _fret = a, _fins = ina} CTFunc { _fret = b, _fins = inb }
+    unify c CTFunc { _fret = a, _fins = ina } CTFunc { _fret = b, _fins = inb }
         | length ina == length inb = zipWithM (unify c) ina inb >>= (\uargs -> unify c a b >>= (\ret -> Just (uargs --> ret)))
         | otherwise = Nothing -- error $ "Attempting to unify func types with different args" ++ show ina ++ " " ++ show inb
     -- Ignore IO monad wrapped types
@@ -153,7 +154,7 @@ instance Typeful CType where
         | a == b && length ina == length inb = (Just . CTExpr a) =<< zipWithM (unify c) ina inb
         | otherwise = Nothing -- error $ "Attempting to unify list types with different args" ++ show ina ++ " " ++ show inb
     -- Unify free parameters, here we're assuming Coq has already type-checked this
-    unify _ CTFree { .. } t = Just t
+    unify _ CTFree { .. } _ = Nothing
     unify _ t CTFree { .. } = Just t
     -- Pointers go down, not up
     unify c CTPtr { .. } t = CTPtr <$> unify c _inner t
@@ -174,4 +175,4 @@ instance Typeful CType where
               getVaridxs _ = [0]
 
     -- Is the type unifiable with anything in the context
-    isUnifiable ctx t = not . null . mapMaybe (unify ctx t) . M.elems $ ctx
+    isUnifiable ctx t = not . null . mapMaybe (\ct -> unify ctx ct t) . M.elems $ ctx
