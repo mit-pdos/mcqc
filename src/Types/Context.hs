@@ -7,6 +7,7 @@ import System.IO.Unsafe
 import Data.Map
 import Data.Text (Text)
 import Control.Monad.State
+import Debug.Trace
 
 -- Named context
 type Context a = Map Text a
@@ -21,5 +22,5 @@ unsafePrintCtx b = const b . unsafePerformIO . printCtx
 
 -- Merge two contexts, always prefer old definitions
 mergeCtx :: Show a => Context a -> Context a -> Context a
-mergeCtx = unionWithKey (\k va vb -> va)
+mergeCtx = unionWithKey (\k va vb -> trace ("Warning: Polyrmorphism in context for " ++ show k ++ " keeping this declaration " ++ show vb) vb)
 
