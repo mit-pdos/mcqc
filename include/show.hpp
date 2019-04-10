@@ -21,7 +21,7 @@ namespace Show {
 
     // nat -> string
     static inline string show(nat n) {
-        return std::to_string(n);
+        return n.get_str();
     }
 
     // bool -> string

@@ -15,11 +15,11 @@
 
 using namespace Option;
 using namespace Nat;
-using namespace Pair;
+using namespace Prod;
 using namespace String;
 using namespace Bool;
 using namespace Show;
-using namespace IO;
+using namespace Io;
 
 
 int main() {
@@ -29,7 +29,7 @@ int main() {
     // Create a UUID v4
     print(getuuid());
 
-    print(show(mkprod((nat)1, string("foo"))));
+    print(show(std::make_pair((nat)1, string("foo"))));
 
     // Currying
     auto f = [](auto a, auto b, auto c, auto d) {
@@ -70,7 +70,7 @@ int main() {
     print(foo);
 
     // Pairs
-    auto t = mkprod((nat)1, 'b');
+    auto t = std::make_pair((nat)1, 'b');
     match(t,
         [](nat a, char b) {
             std::cout << "Pair expanded: " << a << ", " << b << std::endl;

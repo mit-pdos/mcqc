@@ -14,8 +14,8 @@ namespace sys {
 }
 
 namespace {
-     static inline void mkhexes(std::stringstream &s, nat cnt) {
-        nat r = rand() % 16;
+     static inline void mkhexes(std::stringstream &s, unsigned int cnt) {
+        unsigned int r = rand() % 16;
         for(int i = 0; i < cnt; ++i, r = rand() % 16) {
             if (r > 9)
                 s << (char)('a'+(char)(r - 10));
@@ -46,20 +46,20 @@ namespace Io {
 
     // read file
     static io<string> read(nat f, nat size) {
-        auto dp = string(size, '\0' );
-        sys::read(f, &(dp[0]), sizeof(char)*size);
+        auto dp = string((unsigned int)size.get_ui(), '\0' );
+        sys::read((unsigned int)f.get_ui(), &(dp[0]), sizeof(char)*size.get_ui());
         return dp;
     }
 
     // write file
     template<typename S=string, typename = std::enable_if_t<is_same_kind_v<string, S>>>
-    static io<void> write(nat nat, S&& s) {
-        sys::write(nat, &s[0], sizeof(char)*s.size());
+    static io<void> write(nat f, S&& s) {
+        sys::write((int)f.get_ui(), &s[0], sizeof(char)*s.size());
     }
 
     // close file
     static io<void> close(nat f) noexcept(false) {
-        if(sys::close(f)) {
+        if(sys::close((int)f.get_ui())) {
             throw IOException("Could not close file");
         }
     }

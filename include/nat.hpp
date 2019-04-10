@@ -4,61 +4,55 @@
 #include <type_traits>
 #include "exception.h"
 #include "type_checks.h"
+#include <gmpxx.h>
+#include <gmp.h>
 
 namespace Nat {
-    // nat definition
-    using nat = unsigned int;
+    // nat definition as bignum
+    using nat = mpz_class;
 
     // Pattern matching nat
-    template<typename Func, typename Func2, typename Ret = std::invoke_result_t<Func>,
+    template<typename Func, typename Func2,
              typename = std::enable_if_t<CallableWith<Func>          && "1st argument not callable with void">,
-             typename = std::enable_if_t<CallableWith<Func2, nat>    && "2nd argument not callable with nat">,
-             typename = std::enable_if_t<std::is_same_v<Ret, std::invoke_result_t<Func2, nat>> && "Arg function return types must match">>
-    constexpr Ret match(nat a, Func f, Func2 g){
-        switch(a) {
-        case 0:  return f();     // Call function with no argument
-        default: return g(a-1);  // Call function with m, where S m = a
+             typename = std::enable_if_t<CallableWith<Func2, nat>    && "2nd argument not callable with nat">>
+    static inline auto match(nat a, Func f, Func2 g) {
+        if (a == 0) {
+            return f();     // Call function with no argument
+        } else {
+            return g(a-1);  // Call function with m, where S m = a
         }
     }
 
     // Successor function (adds one)
-    constexpr nat succ(nat a) {
-        // Boundary check
-        if (a >= UINT_MAX) {
-            throw new OverflowException("Out of UINT_MAX limit");
-        }
+    static nat succ(nat a) {
         return a + 1;
     }
 
     // Predecessor function (minus one, total)
-    constexpr nat pred(nat a) {
-        // static_assert(a > 0 , "Out of UINT_MAX limit");
+    static nat pred(nat a) {
         if (a == 0) {
-            return 0; // This is what coq does, but maybe we want to throw
+            return 0;
         }
         return a - 1;
     }
 
     // Utility functions
     // Boolean
-    constexpr bool even(nat a) {
-        return ~(a & 1);
+    static bool even(nat a) {
+        return mpz_even_p(a.get_mpz_t());
     }
-    constexpr bool odd(nat a) {
-        return (a & 1);
+    static bool odd(nat a) {
+        return mpz_odd_p(a.get_mpz_t());
     }
 
     // Arithmetic
     // Add
-    constexpr nat add(nat a, nat b) {
-        if (UINT_MAX - a < b || UINT_MAX - b < a) {
-            throw new OverflowException("add: Out of UINT_MAX limit");
-        }
+    static nat add(nat a, nat b) {
         return a + b;
     }
 
     // Subtract
-    constexpr nat sub(nat a, nat b) {
+    static nat sub(nat a, nat b) {
         if (a < b) {
             return 0;
         }
@@ -66,17 +60,12 @@ namespace Nat {
     }
 
     // Multiply
-    constexpr nat mul(nat a, nat b) {
-        if (a == 0 || b == 0) {
-            return 0;
-        } else if (UINT_MAX/a < b || UINT_MAX/b < a) {
-            throw new OverflowException("mul: Out of UINT_MAX limit");
-        }
+    static nat mul(nat a, nat b) {
         return a * b;
     }
 
     // total division, does not fail when /0
-    constexpr nat div(nat a, nat b) {
+    static nat div(nat a, nat b) {
         if (b == 0) {
             return 0;
         }
@@ -84,7 +73,7 @@ namespace Nat {
     }
 
     // total division, does not fail when /0
-    constexpr nat modulo(nat a, nat b) {
+    static nat modulo(nat a, nat b) {
         if (b == 0) {
             return 0;
         }

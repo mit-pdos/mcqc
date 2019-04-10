@@ -1,7 +1,7 @@
 .PHONY=all
 
 CXX=clang++
-CXXFLAGS?=-O3 -fno-stack-protector -pedantic -Wno-switch-bool -std=c++17 -I../../include
+CXXFLAGS?=-O3 -fno-stack-protector -lgmp -lgmpxx -std=c++17 -I../../include
 
 all: fib
 

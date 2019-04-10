@@ -1,7 +1,7 @@
 .PHONY=all
 
 CPP=clang++
-CCFLAGS?=-g -DNDEBUG -std=c++17 -Wno-switch-bool -lc
+CCFLAGS?=-g -lgmpxx -lgmp -DNDEBUG -std=c++17 -Wno-switch-bool -lc
 
 OPT=opt-6.0
 OPTFLAGS?=-O3 -always-inline -dot-callgraph
