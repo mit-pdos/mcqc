@@ -1,6 +1,6 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/mit-pdos/mcqc)
 
-<img src="https://elefthei.github.io/assets/css/images/machcoq.jpg" alt="MCQC" width="200"/>
+<img src="https://elefthei.github.io/assets/css/images/mcqc.png" alt="MCQC" width="150"/>
 
 MCQC Coq to C++17 compiler
 --------------------------
