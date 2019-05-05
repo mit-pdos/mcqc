@@ -11,7 +11,7 @@ Cat.json: Cat.v
 Cat.cpp: Cat.json
 	stack exec mcqc -- $<
 
-cat: main.cpp Cat.cpp ../../include/*
+cat: main.cpp Cat.cpp
 	@echo --------------------------------------------------------------------------------
 	@echo Compiling $@ ...
 	${CXX} ${CXXFLAGS} $< -o $@

@@ -16,6 +16,11 @@ bindSemantics CExprCall { _cd = CDef { _nm = "coq_bind" }, _cparams = [call, CEx
     where statement = CExprStmt (mkauto _nm) $ bindSemantics call
 bindSemantics other = omap bindSemantics other
 
+-- tt is the inhabitant of unit
+ttSemantics :: CExpr -> CExpr
+ttSemantics CExprCall { _cd = CDef { _nm = "coq_tt" }, _cparams = [] } = CExprVar ""
+ttSemantics e = omap ttSemantics e
+
 -- Remove native type instances (since Coq extracts them as arguments)
 removeInstances :: CExpr -> CExpr
 removeInstances CExprCall { _cparams = (v@CExprVar { .. }:ts), .. }
@@ -41,4 +46,4 @@ lambdaSemantics e@CExprCall { _cd = CDef { _nm = "return" } } = e
 lambdaSemantics e = CExprCall (CDef "return" . gettype $ e) [e]
 
 ioSemantics :: CExpr -> CExpr
-ioSemantics = lambdaSemantics . retSemantics . removeInstances . bindSemantics
+ioSemantics = ttSemantics . lambdaSemantics . retSemantics . removeInstances . bindSemantics

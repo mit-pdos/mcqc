@@ -55,7 +55,7 @@ Definition cat (path: string) (fn : string) :=
   contents <- read_loop f;
   _ <- close f;
   _ <- print (show contents);
-  ret unit.
+  ret tt.
 
 Require Extraction.
 Extraction Language JSON.
