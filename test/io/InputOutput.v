@@ -21,7 +21,7 @@
     input_output body
     CPP: io<void> input_output(string greeting)
     CPP: print(greeting);
-    CPP: auto s = getLine(string("this string not used"));
+    CPP: auto s = getLine();
     CPP: print(string("Here is what you typed:"));
     CPP: print(s);
     CPP: return
@@ -47,18 +47,21 @@ Definition read_loop (f: nat) :=
       (Some ("", 4096));
     ret (fst tup).
 
-Definition getLine (notUsed : string) : io string :=
+Definition getLine : io string :=
   s <- read_loop 0;
   ret s.
 
 Definition input_output (greeting: string) : io unit :=
   _ <- print greeting;
-  s <- getLine "this string not used";
+  s <- getLine;
   _ <- print "Here is what you typed:";
   _ <- print s;
   ret tt.
 
+Definition main :=
+  input_output "Type something and press return".
+
 Require Extraction.
 Extraction Language JSON.
-Separate Extraction input_output.
+Separate Extraction main.
 

@@ -38,7 +38,14 @@ instance Monoid CDecl where
 instance MonoFunctor CDecl where
     omap f CDSeq { .. } = f _left <> f _right
     omap _ CDEmpty = mempty
+    -- XXX: Looks wrong
     omap _ d = d
+
+-- Expression map
+emap :: (CExpr -> CExpr) -> CDecl -> CDecl
+emap f CDFunc { .. } = CDFunc _fd _fargs $ f _fbody
+emap f CDSeq { .. } = emap f _left <> emap f _right
+emap _ d = d
 
 instance MonoFoldable CDecl where
     ofoldMap f = ofoldr (mappend . f) mempty

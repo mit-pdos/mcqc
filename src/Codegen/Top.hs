@@ -16,7 +16,6 @@ type Env a = State (Context CType) a
 
 -- Add types to generated CDecl by type inference based on a type context
 typeify :: CDecl -> Env CDecl
--- typeify d | trace ("Typeifying CDecl " ++ show d) False = undefined
 typeify CDFunc { .. } = do
     ctx <- get
     let ftype = gettype _fd

@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -34,14 +35,23 @@ instance Compilable Module (Env CFile) where
         -- Get the context so far
         ctx <- get
         let untyped = filter (\d -> not $ isUnifiable ctx d) alldecls
+        -- Nullary functions are not objects
+        let nullary = filter (/= mempty) . map (\case
+                CDFunc { _fargs = [], .. } -> _nm _fd
+                _ -> mempty) $ untyped
+        -- Make nullary objects calls
         -- Link with context
-        linked <- otraverse link untyped
+        linked <- otraverse link . map (emap (mknullary nullary)) $ untyped
         -- Add declarations
         let newctx = foldl addctx ctx linked
         let incls = L.sort . L.nub . concatMap (filter (`elem` Conf.libs) . getincludes) $ alldecls
         put newctx
         typed <- otraverse typeify linked
         return . CFile incls . mconcat $ typed
+        where mknullary nullfns CExprVar { .. }
+                | _var `elem` nullfns = CExprCall (mkauto _var) []
+                | otherwise = CExprVar _var
+              mknullary nullfns e = omap (mknullary nullfns) e
 
 -- Declarations to C Function
 instance Compilable Declaration CDecl where
