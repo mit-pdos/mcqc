@@ -29,7 +29,7 @@ Uses `llvm-lit` for testing, installable from `pip`.
 lit test
 ```
 
-To enable property based testing with RapidCheck of the C++ library, run:
+To run property-based tests of the C++ library:
 ```
 RC=on lit test/rc
 ```
