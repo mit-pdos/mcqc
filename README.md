@@ -2,12 +2,12 @@
 
 <img src="https://elefthei.github.io/assets/css/images/mcqc.png" alt="MCQC" width="150"/>
 
-MCQC Coq to C++17 compiler
---------------------------
+Monadic Coq Compiler
+--------------------
 
 # Introduction
 
-Alternative Coq extractor to C++ written in Haskell.
+Alternative Coq compiler, by extraction to C++17. Written in Haskell.
 Takes in JSON extraction (available after Coq v.8.5.1) and exports valid, performant and memory safe C++17.
 See `test/numeric` and `test/cat` for examples. No GC no RTS, uses `shared_ptr` for reference
 counting and a library of base types (in `include/*.hpp`).
