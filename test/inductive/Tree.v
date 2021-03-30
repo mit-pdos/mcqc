@@ -44,7 +44,7 @@
     CPP: auto match(std::shared_ptr<tree<[[TT]]>> self, [[TF]] f, [[TG]] g) {
     CPP:   return gmatch(self, [=](Coq_leaf<[[TT]]> _) { return f(_.a); }, [=](Coq_branch<[[TT]]> _) { return g(_.a, _.b, _.c); });
 *)
-Add LoadPath "../../classes".
+Add Rec LoadPath "../../classes" as Mcqc.
 Require MIO.
 Import MIO.IO.
 
