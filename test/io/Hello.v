@@ -11,7 +11,7 @@
   CPP: print(string("Hello world"));
   CPP: return 0;
 *)
-Add LoadPath "../../classes".
+Add Rec LoadPath "../../classes" as Mcqc.
 Require MIO.
 Import MIO.IO.
 
