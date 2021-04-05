@@ -11,8 +11,8 @@
   CPP: print(string("Hello world"));
   CPP: return 0;
 *)
-Add LoadPath "../../classes".
-Require MIO.
+Add Rec LoadPath "../../classes" as Mcqc.
+From Mcqc Require MIO.
 Import MIO.IO.
 
 Require Import Coq.Strings.String.

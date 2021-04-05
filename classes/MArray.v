@@ -2,7 +2,7 @@
 
 Set Implicit Arguments.
 
-Require MIO.
+From Mcqc Require Import MIO.
 Import MIO.IO.
 
 

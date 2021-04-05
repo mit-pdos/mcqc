@@ -10,7 +10,7 @@
 using namespace Bool;
 using namespace Nat;
 using namespace Option;
-using namespace IO;
+using namespace Io;
 using namespace Show;
 using namespace Variant;
 

@@ -44,12 +44,13 @@
     CPP: auto match(std::shared_ptr<tree<[[TT]]>> self, [[TF]] f, [[TG]] g) {
     CPP:   return gmatch(self, [=](Coq_leaf<[[TT]]> _) { return f(_.a); }, [=](Coq_branch<[[TT]]> _) { return g(_.a, _.b, _.c); });
 *)
-Add LoadPath "../../classes".
-Require MIO.
+Add Rec LoadPath "../../classes" as Mcqc.
+From Mcqc Require MIO.
 Import MIO.IO.
 
-Require MShow.
+From Mcqc Require MShow.
 Import MShow.Show.
+
 Require Import Coq.Lists.List.
 Import ListNotations.
 

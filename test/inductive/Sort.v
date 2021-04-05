@@ -1,4 +1,4 @@
-Add LoadPath "../../classes".
+Add Rec LoadPath "../../classes" as Mcqc.
 Require Import Coq.Lists.List.
 Require Import MIO.
 Import IO.

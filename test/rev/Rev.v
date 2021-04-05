@@ -12,12 +12,12 @@
     CPP: () { return coq_nil<T>(); }
     CPP: (auto h, auto ts) { return app<T>(rev<T>(ts), coq_cons<T>(h, coq_nil<T>())); });
 *)
-Add LoadPath "../../classes".
+Add Rec LoadPath "../../classes" as Mcqc.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require MIO.
-Require MShow.
+From Mcqc Require MIO.
+From Mcqc Require MShow.
 Import MIO.IO.
 Import MShow.Show.
 
