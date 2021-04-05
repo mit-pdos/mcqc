@@ -1,10 +1,12 @@
-Add LoadPath "../../classes".
+Add Rec LoadPath "../../classes" as Mcqc.
 Require Import Coq.Lists.List.
-Require Import MIO.
+From Mcqc Require Import MIO.
 Import IO.
 Import ListNotations.
-Require Import MShow.
+From Mcqc Require Import MShow.
 Import Show.
+
+Require Import Coq.Strings.String.
 Local Open Scope string_scope.
 
 Fixpoint series(n: nat) :=

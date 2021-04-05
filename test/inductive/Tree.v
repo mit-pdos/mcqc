@@ -45,11 +45,12 @@
     CPP:   return gmatch(self, [=](Coq_leaf<[[TT]]> _) { return f(_.a); }, [=](Coq_branch<[[TT]]> _) { return g(_.a, _.b, _.c); });
 *)
 Add Rec LoadPath "../../classes" as Mcqc.
-Require MIO.
+From Mcqc Require MIO.
 Import MIO.IO.
 
-Require MShow.
+From Mcqc Require MShow.
 Import MShow.Show.
+
 Require Import Coq.Lists.List.
 Import ListNotations.
 

@@ -6,7 +6,7 @@
 
 using namespace Nat;
 using namespace Show;
-using namespace IO;
+using namespace Io;
 
 nat fact(nat n) {
   return match(n,

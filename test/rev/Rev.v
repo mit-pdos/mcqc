@@ -16,8 +16,8 @@ Add Rec LoadPath "../../classes" as Mcqc.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require MIO.
-Require MShow.
+From Mcqc Require MIO.
+From Mcqc Require MShow.
 Import MIO.IO.
 Import MShow.Show.
 

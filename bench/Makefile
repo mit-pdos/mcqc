@@ -11,13 +11,13 @@ ifndef FACTNUM
 endif
 
 Sort.hs: Sort.v
-	coqc -Q ../classes "" $<
+	coqc -Q ../classes Mcqc $<
 Rev.hs: Rev.v
-	coqc -Q ../classes "" $<
+	coqc -Q ../classes Mcqc $<
 Fib.hs: Fib.v
-	coqc -Q ../classes "" $<
+	coqc -Q ../classes Mcqc $<
 Fact.hs: Fact.v
-	coqc -Q ../classes "" $<
+	coqc -Q ../classes Mcqc $<
 
 # Compilers
 CXX=clang++
@@ -69,4 +69,4 @@ benchfact: cfact hfact
 
 clean:
 	-rm -r *.dSYM
-	-rm ?fact ?fib ?sort ?rev *.massif *.json *.glob *.vo *.hi *.mli *.o Fact.hs Fib.hs Nat.hs Rev.hs Sort.hs Datatypes.hs Mergesort.hs
+	-rm ?fact ?fib ?sort ?rev *.massif *.json *.glob *.vo *.vok *.vos *.aux *.hi *.mli *.o Fact.hs Fib.hs Nat.hs Rev.hs Sort.hs Datatypes.hs Mergesort.hs

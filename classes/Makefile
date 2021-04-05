@@ -4,4 +4,4 @@ all: *.v
 	coqc MArray.v -Q ${PWD} Mcqc
 
 clean:
-	-rm -f *.vo *.glob *.json
+	-rm -f *.vo *.vok *.vos *.aux *.glob *.json

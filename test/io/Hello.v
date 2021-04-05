@@ -12,7 +12,7 @@
   CPP: return 0;
 *)
 Add Rec LoadPath "../../classes" as Mcqc.
-Require MIO.
+From Mcqc Require MIO.
 Import MIO.IO.
 
 Require Import Coq.Strings.String.

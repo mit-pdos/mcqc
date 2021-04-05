@@ -27,7 +27,7 @@
     CPP: return
 *)
 Add Rec LoadPath "../../classes" as Mcqc.
-Require MIO.
+From Mcqc Require MIO.
 Import MIO.IO.
 
 Require Import Coq.Init.Nat.

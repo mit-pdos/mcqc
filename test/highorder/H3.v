@@ -28,10 +28,10 @@
     CPP: return coq_nil<nat>()
     CPP: return mapOnEvensM(f, n, l)
 *)
-Add LoadPath "../../classes".
-Require MIO.
+Add Rec LoadPath "../../classes" as Mcqc.
+From Mcqc Require MIO.
 Import MIO.IO.
-Require MShow.
+From Mcqc Require MShow.
 Import MShow.Show.
 Require Export Coq.Lists.List.
 Import ListNotations.
@@ -60,11 +60,6 @@ Definition mapOnEvens (f : nat -> nat) (l : list nat) : list nat :=
     | S n => mapOnEvensM f n l
   end.
 
-Require Import Coq.Strings.String.
-Local Open Scope string_scope.
-
-Definition main := print (show (mapOnEvens (fun x => x + x) [1;2;3;4;5;6])).
-
 Require Extraction.
 Extraction Language JSON.
-Separate Extraction main.
+Separate Extraction mapOnEvens.
